@@ -1,30 +1,21 @@
 {
-  "name": "lit-evaluator",
-  "private": true,
-  "version": "0.1.0",
+  "name": "new-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "validate:context": "node scripts/validate-context.js"
+    "dev": "node index.js"
   },
-  "dependencies": {
-    "@lit/context": "^1.1.0",
-    "lit": "^3.3.1"
-  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^26.0.1",
-    "@rollup/plugin-node-resolve": "^15.3.0",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/node": "^22.10.7",
-    "@web/dev-server": "^0.4.6",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "rimraf": "^6.0.1",
-    "tslib": "^2.8.1",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "typescript": "^5.9.3"
   }
 }

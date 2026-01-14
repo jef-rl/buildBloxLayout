@@ -1,0 +1,19 @@
+{
+  "name": "@project/framework",
+  "version": "1.0.0",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "lit": "^3.0.0",
+    "@lit/context": "^1.0.0"
+  }
+}
