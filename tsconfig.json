@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -10,7 +11,15 @@
     "baseUrl": ".",
     "paths": {
       "@project/framework/*": ["packages/framework/src/*"]
-    }
+    },
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
   },
-  "exclude": ["node_modules"]
+  "references": [
+    { "path": "packages/app" },
+    { "path": "packages/framework" },
+    { "path": "packages/playground" }
+  ],
+  "exclude": ["node_modules"],
+  "files": []
 }
