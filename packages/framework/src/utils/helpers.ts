@@ -56,7 +56,8 @@ export function getArrowStyles(pos: string) {
 }
 
 export function gridIndexToPos(index: number) {
-    const map: Record<number, string> = {
+    const map: Record<number, string | undefined> = {
+        0: undefined,
         1: 'top-center',
         2: 'top-right',
         3: 'middle-left',

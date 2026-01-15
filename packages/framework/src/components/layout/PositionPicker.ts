@@ -66,6 +66,13 @@ export class PositionPicker extends LitElement {
             cursor: pointer;
         }
 
+        .dot.invalid {
+            background-color: #111827;
+            border-color: #1f2937;
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+
      
     `;
 
@@ -83,14 +90,15 @@ export class PositionPicker extends LitElement {
                     ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => {
                         const pos = gridIndexToPos(i);
 
-                        if (i === 4 || i === 0) {
+                        if (i === 4) {
                             return html`<div class="spacer"></div>`;
                         }
 
-                        const { isCurrent, isOccupied, clickHandler } = this.handlers.getDotState(pos);
+                        const { isInvalid, isCurrent, isOccupied, clickHandler } = this.handlers.getDotState(pos);
 
                         let dotClass = 'dot';
-                        if (isCurrent) dotClass += ' current';
+                        if (isInvalid) dotClass += ' invalid';
+                        else if (isCurrent) dotClass += ' current';
                         else if (isOccupied) dotClass += ' occupied';
                         else dotClass += ' available';
 
@@ -98,7 +106,7 @@ export class PositionPicker extends LitElement {
                             <div 
                                 class="${dotClass}" 
                                 @click="${clickHandler}"
-                                title="${isOccupied ? 'Occupied' : pos}"
+                                title="${isInvalid ? 'Unavailable' : isOccupied ? 'Occupied' : pos}"
                             ></div>
                         `;
                     })}
