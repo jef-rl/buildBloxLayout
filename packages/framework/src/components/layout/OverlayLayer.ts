@@ -4,7 +4,7 @@ import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../state/context';
 import type { UiStateContextValue } from '../../state/ui-state';
-import '../../../features/panels/panel-view.ts';
+import './panel-view';
 
 export class OverlayExpander extends LitElement {
     @property({ type: String }) viewId: string | null = null;
