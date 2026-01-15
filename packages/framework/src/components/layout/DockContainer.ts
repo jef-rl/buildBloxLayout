@@ -111,14 +111,6 @@ export class DockContainer extends LitElement {
             border-radius: 0 16px 16px 0;
         }
 
-        .dock-container--top-left {
-            top: 0;
-            left: 0;
-            border-top: 0;
-            border-left: 0;
-            border-radius: 0 0 16px 0;
-        }
-
         /* Specific overrides for direction controls */
         :host([toolbarId="direction"]) .dock-container--bottom-left {
             left: calc((25vw - 48px) / 2);

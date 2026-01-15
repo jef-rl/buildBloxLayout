@@ -2,7 +2,7 @@ import { getPosClasses } from '../../utils/helpers';
 
 export type DockPosition =
     'top-center' | 'top-right' | 'middle-right' | 'bottom-right' |
-    'bottom-center' | 'bottom-left' | 'middle-left' | 'top-left';
+    'bottom-center' | 'bottom-left' | 'middle-left';
 
 export type DockManagerState = {
     positions: Record<string, DockPosition>;
@@ -57,6 +57,15 @@ export class DockManager extends EventTarget {
     }
 
     setPosition(toolbarId: string, position: DockPosition) {
+        const occupiedEntry = Object.entries(this.state.positions)
+            .find(([key, pos]) => key !== toolbarId && pos === position);
+        if (occupiedEntry) {
+            const [occupiedBy] = occupiedEntry;
+            this.dispatchEvent(new CustomEvent('position-error', {
+                detail: { toolbarId, position, occupiedBy }
+            }));
+            return;
+        }
         const positions = { ...this.state.positions, [toolbarId]: position };
         this.updateState({ positions, activePicker: null });
     }

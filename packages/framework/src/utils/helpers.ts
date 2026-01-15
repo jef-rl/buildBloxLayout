@@ -8,7 +8,6 @@ export function getPosClasses(pos: string) {
         case 'bottom-right':
         case 'bottom-left':
         case 'middle-left':
-        case 'top-left':
             orientation = 'column';
             break;
         default:
@@ -34,7 +33,6 @@ export function getPickerStyles(pos: string) {
         case 'middle-right':
         case 'bottom-right':
             return `${common} top: 50%; right: 100%; transform: translateY(-50%); margin-right: 12px;`;
-        case 'top-left':
         case 'middle-left':
         case 'bottom-left':
             return `${common} top: 50%; left: 100%; transform: translateY(-50%); margin-left: 12px;`;
@@ -51,7 +49,6 @@ export function getArrowStyles(pos: string) {
         case 'top-right':
         case 'middle-right':
         case 'bottom-right': return `${common} right: -5px; top: 50%; transform: translateY(-50%) rotate(45deg); border-left: none; border-bottom: none;`;
-        case 'top-left':
         case 'middle-left':
         case 'bottom-left': return `${common} left: -5px; top: 50%; transform: translateY(-50%) rotate(45deg); border-right: none; border-top: none;`;
         default: return `${common} bottom: -5px; left: 50%; transform: translateX(-50%) rotate(45deg); border-left: none; border-top: none;`;
@@ -66,8 +63,7 @@ export function gridIndexToPos(index: number) {
         5: 'middle-right',
         6: 'bottom-left',
         7: 'bottom-center',
-        8: 'bottom-right',
-        0: 'top-left'
+        8: 'bottom-right'
     };
     return map[index];
 }
