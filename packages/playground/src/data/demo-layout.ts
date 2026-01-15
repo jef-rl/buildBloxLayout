@@ -173,5 +173,9 @@ export const DEMO_LAYOUT: UIState = {
   },
   activeView: MAIN_VIEWS[0].id,
   dock: {},
-  theme: {}
+  theme: {},
+  auth: {
+    isLoggedIn: false,
+    user: null
+  }
 };

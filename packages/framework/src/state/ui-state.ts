@@ -33,6 +33,10 @@ export class UiState {
         },
         dock: {},
         theme: {},
+        auth: {
+            isLoggedIn: false,
+            user: null,
+        },
     };
     private listeners = new Set<(state: UIState) => void>();
 

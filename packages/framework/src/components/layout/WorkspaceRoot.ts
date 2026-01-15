@@ -182,8 +182,18 @@ export class WorkspaceRoot extends LitElement {
         };
     }
 
+    private ensureAuthState() {
+        const auth = typeof this.state?.auth === 'object' && this.state.auth ? this.state.auth : {};
+        this.state.auth = {
+            ...auth,
+            isLoggedIn: auth.isLoggedIn ?? false,
+            user: auth.user ?? null,
+        };
+    }
+
     private dispatch(payload: { type: string; [key: string]: unknown }) {
         this.ensureLayoutState();
+        this.ensureAuthState();
         const handledLayout = applyLayoutAction(this.state, payload);
 
         if (!handledLayout) {
@@ -231,6 +241,15 @@ export class WorkspaceRoot extends LitElement {
                     this.panelState.errors = {};
                     this.panelState.data = {};
                     break;
+                case 'auth/setUser': {
+                    const nextUser = payload.user as { uid: string; email?: string } | null | undefined;
+                    this.state.auth = {
+                        ...this.state.auth,
+                        user: nextUser ?? null,
+                        isLoggedIn: Boolean(nextUser),
+                    };
+                    break;
+                }
                 default:
                     break;
             }
