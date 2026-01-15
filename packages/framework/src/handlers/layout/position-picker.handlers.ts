@@ -5,13 +5,14 @@ export const createPositionPickerHandlers = (picker: PositionPicker) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
-    getDotState: (position: DockPosition) => {
+    getDotState: (position?: DockPosition) => {
+        const isInvalid = !position;
         const isCurrent = picker.currentPos === position;
         const isOccupied = (picker.occupiedPositions || []).includes(position);
 
         const clickHandler = (event: Event) => {
             event.stopPropagation();
-            if (isCurrent || isOccupied) return;
+            if (isInvalid || isCurrent || isOccupied) return;
             picker.dispatchEvent(new CustomEvent('position-selected', {
                 detail: { position },
                 bubbles: true,
@@ -19,6 +20,6 @@ export const createPositionPickerHandlers = (picker: PositionPicker) => ({
             }));
         };
 
-        return { isCurrent, isOccupied, clickHandler };
+        return { isInvalid, isCurrent, isOccupied, clickHandler };
     },
 });

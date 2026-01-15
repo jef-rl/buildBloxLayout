@@ -57,6 +57,11 @@ export class DockManager extends EventTarget {
     }
 
     setPosition(toolbarId: string, position: DockPosition) {
+        if (this.state.positions[toolbarId] === position) {
+            this.updateState({ activePicker: null });
+            return;
+        }
+
         const occupiedEntry = Object.entries(this.state.positions)
             .find(([key, pos]) => key !== toolbarId && pos === position);
         if (occupiedEntry) {
