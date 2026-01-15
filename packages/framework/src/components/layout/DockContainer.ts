@@ -175,11 +175,19 @@ export class DockContainer extends LitElement {
         }
     `;
 
+    connectedCallback() {
+        super.connectedCallback();
+        this.ensureFallbackPosition();
+    }
+
     updated(changedProps) {
         if (changedProps.has('manager')) {
             const oldManager = changedProps.get('manager');
             if (oldManager) oldManager.removeEventListener('change', this.handleManagerChange);
             if (this.manager) this.manager.addEventListener('change', this.handleManagerChange);
+        }
+        if (changedProps.has('manager') || changedProps.has('toolbarId') || changedProps.has('fallbackPosition')) {
+            this.ensureFallbackPosition();
         }
     }
 
@@ -189,6 +197,11 @@ export class DockContainer extends LitElement {
     }
 
     handleManagerChange = () => { this.requestUpdate(); };
+
+    ensureFallbackPosition() {
+        if (!this.manager || !this.toolbarId) return;
+        this.manager.ensurePosition(this.toolbarId, this.fallbackPosition);
+    }
 
     get layout() {
         if (this.layoutConfig) return this.layoutConfig;
