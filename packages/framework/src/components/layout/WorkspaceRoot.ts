@@ -67,7 +67,7 @@ export class WorkspaceRoot extends LitElement {
         }
 
         .expander-bottom {
-            grid-column: 1 / -1;
+            grid-column: 2;
             grid-row: 2;
             border-top: none;
         }
