@@ -1,6 +1,6 @@
-import { UIState } from '@project/framework';
+import type { MainAreaPanelCount, Panel, UIState, View } from '@project/framework';
 
-const MAIN_VIEWS = [
+const MAIN_VIEWS: View[] = [
   {
     id: 'view-main-1',
     name: 'Main Panel 1',
@@ -33,7 +33,7 @@ const MAIN_VIEWS = [
   }
 ];
 
-const EXTRA_VIEWS = [
+const EXTRA_VIEWS: View[] = [
   {
     id: 'view-extra-1',
     name: 'Extra View 1',
@@ -96,7 +96,7 @@ const EXTRA_VIEWS = [
   }
 ];
 
-const MAIN_PANELS = MAIN_VIEWS.map((view, index) => ({
+const MAIN_PANELS: Panel[] = MAIN_VIEWS.map((view, index) => ({
   id: `panel-main-${index + 1}`,
   name: `Main Panel ${index + 1}`,
   region: 'main',
@@ -104,26 +104,23 @@ const MAIN_PANELS = MAIN_VIEWS.map((view, index) => ({
   view
 }));
 
-const EXPANSION_PANELS = [
+const EXPANSION_PANELS: Panel[] = [
   {
     id: 'panel-expansion-left',
     name: 'Left Expansion Panel',
     region: 'left',
-    viewId: null,
     view: null
   },
   {
     id: 'panel-expansion-right',
     name: 'Right Expansion Panel',
     region: 'right',
-    viewId: null,
     view: null
   },
   {
     id: 'panel-expansion-bottom',
     name: 'Bottom Expansion Panel',
     region: 'bottom',
-    viewId: null,
     view: null
   }
 ];
@@ -165,7 +162,7 @@ export const DEMO_LAYOUT: UIState = {
     },
     overlayView: null,
     viewportWidthMode: 'auto',
-    mainAreaCount: MAIN_PANELS.length
+    mainAreaCount: MAIN_PANELS.length as MainAreaPanelCount
   },
   toolbars: {
     positions: {},
