@@ -8,8 +8,7 @@ export type ToolbarPos =
   | 'bottom-right'
   | 'bottom-center'
   | 'bottom-left'
-  | 'middle-left'
-  | 'top-left';
+  | 'middle-left';
 
 export type ViewId =
   | 'project-save'
