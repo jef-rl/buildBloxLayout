@@ -30,6 +30,13 @@ export class DockManager extends EventTarget {
         return this.state.positions[toolbarId] || fallback;
     }
 
+    ensurePosition(toolbarId: string, fallback: DockPosition = this.defaultPosition) {
+        if (!toolbarId) return;
+        if (Object.prototype.hasOwnProperty.call(this.state.positions, toolbarId)) return;
+        const positions = { ...this.state.positions, [toolbarId]: fallback };
+        this.updateState({ positions });
+    }
+
     getLayout(toolbarId: string, fallback: DockPosition = this.defaultPosition) {
         const position = this.getPosition(toolbarId, fallback);
         return { position, ...getPosClasses(position) };
