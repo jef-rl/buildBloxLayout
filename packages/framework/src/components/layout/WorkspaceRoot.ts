@@ -213,9 +213,9 @@ export class WorkspaceRoot extends LitElement {
     render() {
         const layout = this.state?.layout ?? {};
         const expansion = layout.expansion ?? { left: false, right: false, bottom: false };
-        const views = this.state?.views ?? [];
+        const panels = this.state?.panels ?? [];
 
-        const rawCount = Number(layout.mainAreaCount ?? views.length ?? 1);
+        const rawCount = Number(layout.mainAreaCount ?? 1);
         const mainPanelCount = clamp(Number.isFinite(rawCount) ? rawCount : 1, 1, 5);
 
         const leftWidth = expansion.left ? 'clamp(220px, 22vw, 360px)' : '0px';
@@ -223,6 +223,13 @@ export class WorkspaceRoot extends LitElement {
         const bottomHeight = expansion.bottom ? 'clamp(180px, 26vh, 320px)' : '0px';
 
         const overlayView = layout.overlayView ?? null;
+        const mainPanels = panels.filter((panel) => panel.region === 'main');
+        const leftPanel = panels.find((panel) => panel.region === 'left');
+        const rightPanel = panels.find((panel) => panel.region === 'right');
+        const bottomPanel = panels.find((panel) => panel.region === 'bottom');
+        const mainPanelsToRender = Array.from({ length: mainPanelCount }, (_, index) => mainPanels[index] ?? null);
+        const getPanelViewId = (panel: { viewId?: string; view?: unknown } | null) =>
+            panel?.viewId ?? this.resolveViewId(panel?.view);
 
         return html`
             <div class="workspace">
@@ -231,23 +238,23 @@ export class WorkspaceRoot extends LitElement {
                     style="--left-width: ${leftWidth}; --right-width: ${rightWidth}; --bottom-height: ${bottomHeight};"
                 >
                     <div class="expander expander-left ${expansion.left ? '' : 'collapsed'}">
-                        <panel-view .viewId="${this.resolveViewId(views[mainPanelCount])}"></panel-view>
+                        <panel-view .viewId="${getPanelViewId(leftPanel)}"></panel-view>
                     </div>
 
                     <div class="main-area">
-                        ${Array.from({ length: mainPanelCount }).map((_, index) => html`
+                        ${mainPanelsToRender.map((panel) => html`
                             <div class="main-panel">
-                                <panel-view .viewId="${this.resolveViewId(views[index])}"></panel-view>
+                                <panel-view .viewId="${getPanelViewId(panel)}"></panel-view>
                             </div>
                         `)}
                     </div>
 
                     <div class="expander expander-right ${expansion.right ? '' : 'collapsed'}">
-                        <panel-view .viewId="${this.resolveViewId(views[mainPanelCount + 1])}"></panel-view>
+                        <panel-view .viewId="${getPanelViewId(rightPanel)}"></panel-view>
                     </div>
 
                     <div class="expander expander-bottom ${expansion.bottom ? '' : 'collapsed'}">
-                        <panel-view .viewId="${this.resolveViewId(views[mainPanelCount + 2])}"></panel-view>
+                        <panel-view .viewId="${getPanelViewId(bottomPanel)}"></panel-view>
                     </div>
                 </div>
 

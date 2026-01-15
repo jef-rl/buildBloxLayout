@@ -1,7 +1,11 @@
+export type PanelRegion = 'main' | 'left' | 'right' | 'bottom' | 'overlay';
+
 export interface Panel {
   id: string;
   name: string;
+  region: PanelRegion;
   view: View | null;
+  viewId?: string;
   element?: HTMLElement | null;
   width?: number;
   height?: number;
@@ -17,6 +21,8 @@ export interface PanelContainer {
 
 export interface PanelState {
   view: View | null;
+  viewId?: string;
+  region?: PanelRegion;
   width?: number;
   height?: number;
   name?: string;
