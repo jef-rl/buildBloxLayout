@@ -26,18 +26,9 @@ const resolveExpansion = (
     side: keyof LayoutExpansion,
     expanded: boolean,
 ): LayoutExpansion => {
-    if (!expanded) {
-        return {
-            ...current,
-            [side]: false,
-        };
-    }
-
     return {
-        left: false,
-        right: false,
-        bottom: false,
-        [side]: true,
+        ...current,
+        [side]: expanded,
     };
 };
 
