@@ -22,6 +22,7 @@ export * from './utils/dispatcher';
 // Types & Interfaces
 export * from './types/core';
 export * from './types/events';
+export * from './types/panel';
 
 // Utilities
 export * from './utils/helpers';
