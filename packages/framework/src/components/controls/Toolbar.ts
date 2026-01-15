@@ -2,10 +2,10 @@
 import { LitElement, html, nothing, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../core/state/contexts.ts';
-import type { UiStateContextValue } from '../../../core/state/ui-state.js';
-import { createViewControlsHandlers } from '../../../handlers/layout/view-controls.handlers';
-import { viewsRegistry } from '../../../core/registry/views';
+import { uiStateContext } from '../../state/context';
+import type { UiStateContextValue } from '../../state/ui-state';
+import { createViewControlsHandlers } from '../../handlers/layout/view-controls.handlers';
+import { viewRegistry } from '../../registry/ViewRegistry';
 
 export class ViewControls extends LitElement {
     @property({ attribute: false }) panelStates = {};
@@ -212,9 +212,11 @@ export class ViewControls extends LitElement {
         const exportError = jsonError || renderError;
         const resolvedErrors = { jsonError, renderError, exportError };
 
+        const views = viewRegistry.getAllViews();
+
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click="${this.handlers.stopClickPropagation}">
-                ${viewsRegistry.filter((view) => view.controls && view.panelId).map((view) => {
+                ${views.filter((view) => view.controls && view.panelId).map((view) => {
                     const isOpen = openState[view.panelId] ?? fallback[`${view.panelId}Open`] ?? false;
                     const control = view.controls;
                     const statusKey = control?.statusKey;

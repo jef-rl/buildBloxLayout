@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { LitElement, html, nothing, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { DockManager } from './dock-manager';
-import { getPosClasses } from '../../../core/utils/ui-helpers';
+import { DockManager } from './DockManager';
+import { getPosClasses } from '../../utils/helpers';
 import './position-picker';
-import { createDockContainerHandlers } from '../../../handlers/layout/dock.handlers';
+import { createDockContainerHandlers } from '../../handlers/layout/dock.handlers';
 
 export class DockContainer extends LitElement {
     @property({ type: Object }) manager: DockManager | null = null;
