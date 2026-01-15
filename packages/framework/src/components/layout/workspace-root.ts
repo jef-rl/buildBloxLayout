@@ -8,6 +8,7 @@ import '../controls/Resizer';
 import '../controls/Expander';
 import './DockContainer';
 import './OverlayLayer';
+import { applyLayoutAction } from '../../handlers/workspace/layout';
 
 export class WorkspaceRoot extends LitElement {
     static styles = css`
@@ -55,37 +56,29 @@ export class WorkspaceRoot extends LitElement {
     });
 
     private dispatch(payload: { type: string; [key: string]: unknown }) {
-        switch (payload.type) {
-            case 'layout/setOverlayView':
-                this.state.layout.overlayView = payload.viewId ?? null;
-                break;
-            case 'layout/setExpansion':
-                this.state.layout.expansion = {
-                    ...this.state.layout.expansion,
-                    [payload.side]: payload.expanded,
-                };
-                break;
-            case 'layout/setViewportWidthMode':
-                this.state.layout.viewportWidthMode = payload.mode ?? 'auto';
-                break;
-            case 'panels/togglePanel':
-                if (payload.panelId || payload.viewId) {
-                    const panelId = payload.panelId ?? payload.viewId;
-                    this.state.panels.open[panelId] = !this.state.panels.open[panelId];
-                }
-                break;
-            case 'panels/setScopeMode':
-                this.state.panels.data = {
-                    ...this.state.panels.data,
-                    scope: { ...(this.state.panels.data?.scope ?? {}), mode: payload.mode },
-                };
-                break;
-            case 'session/reset':
-                this.state.panels.errors = {};
-                this.state.panels.data = {};
-                break;
-            default:
-                break;
+        const handledLayout = applyLayoutAction(this.state, payload);
+
+        if (!handledLayout) {
+            switch (payload.type) {
+                case 'panels/togglePanel':
+                    if (payload.panelId || payload.viewId) {
+                        const panelId = payload.panelId ?? payload.viewId;
+                        this.state.panels.open[panelId] = !this.state.panels.open[panelId];
+                    }
+                    break;
+                case 'panels/setScopeMode':
+                    this.state.panels.data = {
+                        ...this.state.panels.data,
+                        scope: { ...(this.state.panels.data?.scope ?? {}), mode: payload.mode },
+                    };
+                    break;
+                case 'session/reset':
+                    this.state.panels.errors = {};
+                    this.state.panels.data = {};
+                    break;
+                default:
+                    break;
+            }
         }
 
         this.provider.setValue({

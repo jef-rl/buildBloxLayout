@@ -57,6 +57,11 @@ export class ViewControls extends LitElement {
             background-color: rgba(17, 24, 39, 0.5);
         }
 
+        .icon-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
     
 
         .icon {
@@ -86,9 +91,17 @@ export class ViewControls extends LitElement {
         };
     }
 
+    get panelLimit() {
+        const mode = this.uiState?.layout?.viewportWidthMode ?? 'auto';
+        if (mode === 'auto') return 5;
+        const parsed = Number.parseInt(mode, 10);
+        return Number.isFinite(parsed) ? parsed : 5;
+    }
+
     render() {
         const isColumn = this.orientation === 'column';
         const { openState, fallback } = this.resolvedPanelStates;
+        const openCount = Object.values(openState).filter(Boolean).length;
 
         const views = viewRegistry.getAllViews();
 
@@ -98,12 +111,14 @@ export class ViewControls extends LitElement {
                     const label = view.title || view.name || view.id;
                     const isOpen = openState[view.id] ?? fallback[`${view.id}Open`] ?? false;
                     const iconLabel = label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || view.id.slice(0, 2);
+                    const isDisabled = !isOpen && openCount >= this.panelLimit;
                     return html`
                         <button
                             @click="${() => this.handlers.togglePanel(view.id)}"
                             class="icon-button ${isOpen ? 'active' : ''}"
                             title="${label}"
                             aria-label="${label}"
+                            ?disabled="${isDisabled}"
                         >
                             <span class="icon-label">${iconLabel}</span>
                         </button>
