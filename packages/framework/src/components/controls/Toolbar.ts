@@ -82,15 +82,6 @@ export class ViewControls extends LitElement {
         }
     `;
 
-    get resolvedPanelStates() {
-        const fallback = this.panelStates || {};
-        const openState = this.uiState?.panels?.open || {};
-        return {
-            openState,
-            fallback,
-        };
-    }
-
     get panelLimit() {
         const layout = this.uiState?.layout ?? {};
         const mode = layout.viewportWidthMode ?? 'auto';
@@ -101,24 +92,42 @@ export class ViewControls extends LitElement {
         return clamped;
     }
 
+    private getTargetPanelId() {
+        const panelsState = this.uiState?.panels;
+        const explicitTarget = panelsState?.data?.targetPanelId;
+        if (explicitTarget) {
+            return explicitTarget;
+        }
+
+        const panels = Array.isArray(panelsState) ? panelsState : this.uiState?.panels;
+        if (Array.isArray(panels)) {
+            const mainPanel = panels.find((panel) => panel.region === 'main');
+            return mainPanel?.id ?? panels[0]?.id;
+        }
+
+        return undefined;
+    }
+
     render() {
         const isColumn = this.orientation === 'column';
-        const { openState, fallback } = this.resolvedPanelStates;
-        const openCount = Object.values(openState).filter(Boolean).length;
-
         const views = ViewRegistry.getAllViews();
+        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
+        const assignedViews = new Set(
+            panels.map((panel) => panel?.activeViewId ?? panel?.viewId).filter(Boolean),
+        );
+        const targetPanelId = this.getTargetPanelId();
 
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click="${this.handlers.stopClickPropagation}">
                 ${views.map((view) => {
                     const label = view.title || view.name || view.id;
-                    const isOpen = openState[view.id] ?? fallback[`${view.id}Open`] ?? false;
+                    const isAssigned = assignedViews.has(view.id);
                     const iconLabel = label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || view.id.slice(0, 2);
-                    const isDisabled = !isOpen && openCount >= this.panelLimit;
+                    const isDisabled = !targetPanelId || panels.length === 0 || this.panelLimit < 1;
                     return html`
                         <button
-                            @click="${() => this.handlers.togglePanel(view.id)}"
-                            class="icon-button ${isOpen ? 'active' : ''}"
+                            @click="${() => this.handlers.assignView(view.id, targetPanelId)}"
+                            class="icon-button ${isAssigned ? 'active' : ''}"
                             title="${label}"
                             aria-label="${label}"
                             ?disabled="${isDisabled}"

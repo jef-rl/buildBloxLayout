@@ -11,6 +11,7 @@ import './DockContainer';
 import './OverlayLayer';
 import './PanelView';
 import { applyLayoutAction } from '../../handlers/workspace/layout';
+import { viewRegistry } from '../../registry/ViewRegistry';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -182,6 +183,33 @@ export class WorkspaceRoot extends LitElement {
 
         if (!handledLayout) {
             switch (payload.type) {
+                case 'panels/selectPanel':
+                    if (payload.panelId) {
+                        this.panelState.data = {
+                            ...this.panelState.data,
+                            targetPanelId: payload.panelId,
+                        };
+                    }
+                    break;
+                case 'panels/assignView': {
+                    const viewId = payload.viewId as string | undefined;
+                    const targetPanelId = payload.panelId ?? this.panelState.data?.targetPanelId;
+                    const panels = this.state?.panels ?? [];
+                    const fallbackPanel = panels.find((panel) => panel.region === 'main') ?? panels[0];
+                    const panelId = targetPanelId ?? fallbackPanel?.id;
+                    const panel = panels.find((item) => item.id === panelId);
+                    if (panel && viewId) {
+                        const view = viewRegistry.createView(viewId);
+                        if (view) {
+                            panel.view = view;
+                            panel.viewId = viewId;
+                            panel.activeViewId = viewId;
+                            this.state.views = this.state.views.filter((existing) => existing.id !== view.id).concat(view);
+                            this.state.activeView = view.id;
+                        }
+                    }
+                    break;
+                }
                 case 'panels/togglePanel':
                     if (payload.panelId || payload.viewId) {
                         const panelId = payload.panelId ?? payload.viewId;
@@ -231,8 +259,8 @@ export class WorkspaceRoot extends LitElement {
         const rightPanel = panels.find((panel) => panel.region === 'right');
         const bottomPanel = panels.find((panel) => panel.region === 'bottom');
         const mainPanelsToRender = Array.from({ length: mainPanelCount }, (_, index) => mainPanels[index] ?? null);
-        const getPanelViewId = (panel: { viewId?: string; view?: unknown } | null) =>
-            panel?.viewId ?? this.resolveViewId(panel?.view);
+        const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
+            panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
 
         return html`
             <div class="workspace">
@@ -240,23 +268,35 @@ export class WorkspaceRoot extends LitElement {
                     class="layout"
                     style="--left-width: ${leftWidth}; --right-width: ${rightWidth}; --bottom-height: ${bottomHeight};"
                 >
-                    <div class="expander expander-left ${expansion.left ? '' : 'collapsed'}">
+                    <div
+                        class="expander expander-left ${expansion.left ? '' : 'collapsed'}"
+                        @click="${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}"
+                    >
                         <panel-view .viewId="${getPanelViewId(leftPanel)}"></panel-view>
                     </div>
 
                     <div class="main-area">
                         ${mainPanelsToRender.map((panel) => html`
-                            <div class="main-panel">
+                            <div
+                                class="main-panel"
+                                @click="${() => panel && this.dispatch({ type: 'panels/selectPanel', panelId: panel.id })}"
+                            >
                                 <panel-view .viewId="${getPanelViewId(panel)}"></panel-view>
                             </div>
                         `)}
                     </div>
 
-                    <div class="expander expander-right ${expansion.right ? '' : 'collapsed'}">
+                    <div
+                        class="expander expander-right ${expansion.right ? '' : 'collapsed'}"
+                        @click="${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}"
+                    >
                         <panel-view .viewId="${getPanelViewId(rightPanel)}"></panel-view>
                     </div>
 
-                    <div class="expander expander-bottom ${expansion.bottom ? '' : 'collapsed'}">
+                    <div
+                        class="expander expander-bottom ${expansion.bottom ? '' : 'collapsed'}"
+                        @click="${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}"
+                    >
                         <panel-view .viewId="${getPanelViewId(bottomPanel)}"></panel-view>
                     </div>
                 </div>

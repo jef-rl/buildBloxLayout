@@ -5,8 +5,8 @@ export const createViewControlsHandlers = (_controls: ViewControls) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
-    togglePanel: (viewId: string, panelId?: string) => {
-        dispatchUiEvent(window, 'panels/togglePanel', { viewId, panelId });
+    assignView: (viewId: string, panelId?: string) => {
+        dispatchUiEvent(window, 'panels/assignView', { viewId, panelId });
     },
     setScopeMode: (mode: string) => {
         dispatchUiEvent(window, 'panels/setScopeMode', { mode });

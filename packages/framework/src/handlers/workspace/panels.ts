@@ -33,6 +33,25 @@ const applyEqualSizing = (container: PanelContainer) => {
 const canAddPanel = (container: PanelContainer) => container.panels.length < MAX_MAIN_PANELS;
 const canRemovePanel = (container: PanelContainer) => container.panels.length > MIN_MAIN_PANELS;
 
+const assignViewToPanel = (
+    uiState: UiState,
+    panel: Panel,
+    viewId: string,
+    data?: unknown,
+) => {
+    const view = viewRegistry.createView(viewId, data);
+    if (!view) {
+        return;
+    }
+
+    panel.view = view;
+    panel.viewId = viewId;
+    panel.activeViewId = viewId;
+    uiState.getState().views = uiState.views.filter((existing) => existing.id !== view.id).concat(view);
+    uiState.getState().activeView = view.id;
+    uiState.update(uiState.getState());
+};
+
 export const panelHandlers = (uiState: UiState) => ({
     ADD_PANEL: (payload: { containerId: string, position?: number }) => {
         const { containerId, position } = payload;
@@ -44,6 +63,7 @@ export const panelHandlers = (uiState: UiState) => ({
                 region: 'main',
                 view: null,
                 viewId: undefined,
+                activeViewId: undefined,
                 width: 0,
                 height: 0,
                 element: null,
@@ -85,14 +105,15 @@ export const panelHandlers = (uiState: UiState) => ({
         const { panelId, viewId, data } = payload;
         const panel = uiState.findPanel(panelId);
         if (panel) {
-            const view = viewRegistry.createView(viewId, data);
-            if (view) {
-                panel.view = view;
-                panel.viewId = viewId;
-                uiState.getState().views = uiState.views.filter((existing) => existing.id !== view.id).concat(view);
-                uiState.getState().activeView = view.id;
-                uiState.update(uiState.getState());
-            }
+            assignViewToPanel(uiState, panel, viewId, data);
+        }
+    },
+
+    ASSIGN_VIEW_TO_PANEL: (payload: { panelId: string, viewId: string, data?: unknown }) => {
+        const { panelId, viewId, data } = payload;
+        const panel = uiState.findPanel(panelId);
+        if (panel) {
+            assignViewToPanel(uiState, panel, viewId, data);
         }
     },
 
@@ -102,6 +123,7 @@ export const panelHandlers = (uiState: UiState) => ({
         if (panel && panel.view?.id === viewId) {
             panel.view = null;
             panel.viewId = undefined;
+            panel.activeViewId = undefined;
             uiState.getState().views = uiState.views.filter((v: View) => v.id !== viewId);
             if (uiState.getState().activeView === viewId) {
                 uiState.getState().activeView = null;
@@ -114,6 +136,7 @@ export const panelHandlers = (uiState: UiState) => ({
         const { panelId, viewId } = payload;
         const panel = uiState.findPanel(panelId);
         if (panel && panel.view?.id === viewId) {
+            panel.activeViewId = panel.viewId;
             uiState.getState().activeView = viewId;
             uiState.update(uiState.getState());
         }
