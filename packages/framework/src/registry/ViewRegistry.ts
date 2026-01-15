@@ -4,7 +4,7 @@ import type { View, ViewComponent, ViewDefinition } from '../types/index';
 
 class ViewRegistry {
     private readonly viewDefinitions: Map<string, ViewDefinition> = new Map();
-    private readonly componentCache: Map<string, ViewComponent> = new Map();
+    private readonly componentCache: Map<string, any> = new Map();
 
     register(definition: ViewDefinition): void {
         this.viewDefinitions.set(definition.id, definition);
@@ -14,7 +14,7 @@ class ViewRegistry {
         return this.viewDefinitions.get(id);
     }
 
-    async getComponent(id: string): Promise<ViewComponent | undefined> {
+    async getComponent(id: string): Promise<any | undefined> {
         if (this.componentCache.has(id)) {
             return this.componentCache.get(id);
         }
@@ -43,7 +43,7 @@ class ViewRegistry {
 
         return {
             id: `${viewId}-${Date.now()}`,
-            title: definition.title,
+            name: definition.title,
             component: viewId, // Store the component ID, not the loaded component
             data: data || {},
             element: document.createElement(definition.tag) as LitElement,

@@ -12,6 +12,7 @@ export * from './components/ui/Icons';
 export * from './registry/ViewRegistry';
 export * from './state/context';
 export * from './state/selectors';
+export * from './state/ui-state';
 
 // Event handling
 export * from './utils/dispatcher';

@@ -1,4 +1,4 @@
-import { ViewRegistry, uiState } from '@project/framework';
+import { viewRegistry, uiState } from '@project/framework';
 import './components/simple-view';
 import { DEMO_LAYOUT } from './data/demo-layout';
 
@@ -6,7 +6,6 @@ import { DEMO_LAYOUT } from './data/demo-layout';
 uiState.update(DEMO_LAYOUT);
 
 // 2. Register the component available in the playground
-const viewRegistry = new ViewRegistry();
 viewRegistry.register('simple-view', () => document.createElement('simple-view'));
 
 // 3. Mount the root workspace component to the DOM

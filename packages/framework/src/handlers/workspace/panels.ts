@@ -1,6 +1,6 @@
 import type { Panel, PanelContainer, PanelState, View } from '../../types/index';
 import { viewRegistry } from '../../registry/ViewRegistry';
-import type { UiState } from '../../core/state/ui-state';
+import type { UiState } from '../../state/ui-state';
 
 export const panelHandlers = (uiState: UiState) => ({
     ADD_PANEL: (payload: { containerId: string, position?: number }) => {
@@ -9,6 +9,7 @@ export const panelHandlers = (uiState: UiState) => ({
         if (container) {
             const newPanel: Panel = {
                 id: `panel-${Date.now()}`,
+                name: '',
                 views: [],
                 activeView: null,
                 width: 0,

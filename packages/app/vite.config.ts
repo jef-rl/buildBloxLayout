@@ -2,11 +2,6 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   server: {
-    port: 3001,
-  },
-  resolve: {
-    alias: {
-      '@project/framework': '../framework/src',
-    },
+    port: 3000,
   },
 });

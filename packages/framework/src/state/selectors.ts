@@ -1,4 +1,4 @@
-import { UiState } from '../types/core';
+import { UiState } from './ui-state';
 
 export const getPanels = (state: UiState) => state.panels;
 export const getViews = (state: UiState) => state.views;
