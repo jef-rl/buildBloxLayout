@@ -34,6 +34,7 @@ export class UiState {
         dock: {},
         theme: {},
     };
+    private listeners = new Set<(state: UIState) => void>();
 
     getState(): UIState {
         return this.state;
@@ -85,6 +86,14 @@ export class UiState {
 
     update(nextState: UIState): void {
         this.state = nextState;
+        this.listeners.forEach((listener) => listener(this.state));
+    }
+
+    subscribe(listener: (state: UIState) => void): () => void {
+        this.listeners.add(listener);
+        return () => {
+            this.listeners.delete(listener);
+        };
     }
 }
 
