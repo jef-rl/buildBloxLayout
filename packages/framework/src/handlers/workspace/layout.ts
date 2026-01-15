@@ -1,4 +1,4 @@
-import type { LayoutExpansion, LayoutState, ViewportWidthMode } from '../../state/ui-state';
+import type { LayoutExpansion, LayoutState, MainAreaPanelCount, ViewportWidthMode } from '../../state/ui-state';
 
 const VIEWPORT_WIDTH_MODES: ViewportWidthMode[] = ['auto', '1x', '2x', '3x', '4x', '5x'];
 
@@ -7,6 +7,19 @@ const isViewportWidthMode = (mode: unknown): mode is ViewportWidthMode =>
 
 const normalizeViewportWidthMode = (mode: unknown): ViewportWidthMode =>
     isViewportWidthMode(mode) ? mode : 'auto';
+
+const normalizeMainAreaCount = (
+    value: unknown,
+    fallback: MainAreaPanelCount = 1,
+): MainAreaPanelCount => {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+        return fallback;
+    }
+
+    const clamped = Math.min(5, Math.max(1, Math.round(parsed)));
+    return clamped as MainAreaPanelCount;
+};
 
 const resolveExpansion = (
     current: LayoutExpansion,
@@ -52,6 +65,13 @@ export const applyLayoutAction = (
         }
         case 'layout/setViewportWidthMode': {
             state.layout.viewportWidthMode = normalizeViewportWidthMode(payload.mode);
+            return true;
+        }
+        case 'layout/setMainAreaCount': {
+            state.layout.mainAreaCount = normalizeMainAreaCount(
+                payload.count ?? payload.mainAreaCount,
+                state.layout.mainAreaCount ?? 1,
+            );
             return true;
         }
         default:

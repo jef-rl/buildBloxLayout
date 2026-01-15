@@ -6,7 +6,7 @@ export * from './components/layout/DockContainer';
 export * from './components/layout/DockManager';
 export * from './components/layout/OverlayLayer';
 export * from './components/layout/PositionPicker';
-export * from './components/layout/workspace-root';
+export * from './components/layout/WorkspaceRoot';
 export * from './components/ui/Icons';
 
 // Core functionality & state management

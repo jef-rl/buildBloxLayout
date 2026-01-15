@@ -1,4 +1,4 @@
 import './styles/main.css';
 
 // Register custom elements
-import './components/layout/workspace-root';
+import './components/layout/WorkspaceRoot';
