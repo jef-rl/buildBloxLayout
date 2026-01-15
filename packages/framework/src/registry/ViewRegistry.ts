@@ -55,4 +55,12 @@ class ViewRegistry {
     }
 }
 
+export interface ViewRegistryApi {
+    register(definition: ViewDefinition): void;
+    get(id: string): ViewDefinition | undefined;
+    getComponent(id: string): Promise<any | undefined>;
+    createView(viewId: string, data?: unknown): View | undefined;
+    getAllViews(): ViewDefinition[];
+}
+
 export const viewRegistry = new ViewRegistry();
