@@ -41,7 +41,9 @@ export const panelHandlers = (uiState: UiState) => ({
             const newPanel: Panel = {
                 id: `panel-${Date.now()}`,
                 name: '',
+                region: 'main',
                 view: null,
+                viewId: undefined,
                 width: 0,
                 height: 0,
                 element: null,
@@ -86,6 +88,7 @@ export const panelHandlers = (uiState: UiState) => ({
             const view = viewRegistry.createView(viewId, data);
             if (view) {
                 panel.view = view;
+                panel.viewId = viewId;
                 uiState.getState().views = uiState.views.filter((existing) => existing.id !== view.id).concat(view);
                 uiState.getState().activeView = view.id;
                 uiState.update(uiState.getState());
@@ -98,6 +101,7 @@ export const panelHandlers = (uiState: UiState) => ({
         const panel = uiState.findPanel(panelId);
         if (panel && panel.view?.id === viewId) {
             panel.view = null;
+            panel.viewId = undefined;
             uiState.getState().views = uiState.views.filter((v: View) => v.id !== viewId);
             if (uiState.getState().activeView === viewId) {
                 uiState.getState().activeView = null;

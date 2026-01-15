@@ -99,6 +99,8 @@ const EXTRA_VIEWS = [
 const MAIN_PANELS = MAIN_VIEWS.map((view, index) => ({
   id: `panel-main-${index + 1}`,
   name: `Main Panel ${index + 1}`,
+  region: 'main',
+  viewId: view.component,
   view
 }));
 
