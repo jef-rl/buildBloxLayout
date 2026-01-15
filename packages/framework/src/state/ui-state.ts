@@ -1,9 +1,23 @@
 
 import type { Panel, PanelContainer, View } from '../types/index';
 
+export type LayoutExpansion = {
+    left: boolean;
+    right: boolean;
+    bottom: boolean;
+};
+
+export type ViewportWidthMode = 'auto' | '1x' | '2x' | '3x' | '4x' | '5x';
+
+export interface LayoutState {
+    expansion: LayoutExpansion;
+    overlayView: string | null;
+    viewportWidthMode: ViewportWidthMode;
+}
+
 export interface UiStateContextValue {
   state: UiState;
-  dispatch: (type: string, payload: any) => void;
+  dispatch: (payload: { type: string; [key: string]: unknown }) => void;
 }
 
 export class UiState {
@@ -14,6 +28,7 @@ export class UiState {
         activeView: string | null;
         dock: any; // Replace with a specific type if available
         theme: any; // Replace with a specific type if available
+        layout: LayoutState;
     } = {
         containers: [],
         panels: [],
@@ -21,6 +36,11 @@ export class UiState {
         activeView: null,
         dock: {},
         theme: {},
+        layout: {
+            expansion: { left: false, right: false, bottom: false },
+            overlayView: null,
+            viewportWidthMode: 'auto',
+        },
     };
 
     get panels(): Panel[] {
@@ -41,6 +61,10 @@ export class UiState {
 
     get theme(): any {
         return this.state.theme;
+    }
+
+    get layout(): LayoutState {
+        return this.state.layout;
     }
 
     getContainer(containerId: string): PanelContainer | undefined {

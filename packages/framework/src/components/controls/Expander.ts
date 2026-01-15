@@ -4,22 +4,22 @@ import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../state/context';
 import type { UiStateContextValue } from '../../state/ui-state';
+import { createExpanderControlsHandlers } from '../../handlers/layout/expander-controls.handlers';
 
 export class ExpanderControls extends LitElement {
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? this.uiState;
-            this.uiDispatch = value?.dispatch ?? this.uiDispatch;
             this.requestUpdate();
         },
     });
+    private handlers = createExpanderControlsHandlers(this);
 
     static styles = css`
         :host {
@@ -83,13 +83,13 @@ export class ExpanderControls extends LitElement {
 
     toggleSide(side: 'left' | 'right' | 'bottom') {
         const expanded = this.uiState?.layout?.expansion?.[side];
-        this.uiDispatch?.({ type: 'layout/setExpansion', side, expanded: !expanded });
+        this.handlers.setExpansion(side, !expanded);
     }
 
     toggleOverlay() {
         const currentOverlay = this.uiState?.layout?.overlayView;
         const nextOverlay = currentOverlay ? null : 'settings';
-        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: nextOverlay });
+        this.handlers.setOverlayView(nextOverlay);
     }
 
     render() {
