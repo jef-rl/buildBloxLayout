@@ -1,53 +1,133 @@
 import { UIState } from '@project/framework';
 
+const MAIN_VIEWS = [
+  {
+    id: 'view-main-1',
+    name: 'Main Panel 1',
+    component: 'view-main-1',
+    data: { label: 'Main Panel 1', color: '#ffcdd2' }
+  },
+  {
+    id: 'view-main-2',
+    name: 'Main Panel 2',
+    component: 'view-main-2',
+    data: { label: 'Main Panel 2', color: '#e1bee7' }
+  },
+  {
+    id: 'view-main-3',
+    name: 'Main Panel 3',
+    component: 'view-main-3',
+    data: { label: 'Main Panel 3', color: '#cfd8dc' }
+  },
+  {
+    id: 'view-main-4',
+    name: 'Main Panel 4',
+    component: 'view-main-4',
+    data: { label: 'Main Panel 4', color: '#c8e6c9' }
+  },
+  {
+    id: 'view-main-5',
+    name: 'Main Panel 5',
+    component: 'view-main-5',
+    data: { label: 'Main Panel 5', color: '#bbdefb' }
+  }
+];
+
+const EXTRA_VIEWS = [
+  {
+    id: 'view-extra-1',
+    name: 'Extra View 1',
+    component: 'view-extra-1',
+    data: { label: 'Extra View 1', color: '#fff9c4' }
+  },
+  {
+    id: 'view-extra-2',
+    name: 'Extra View 2',
+    component: 'view-extra-2',
+    data: { label: 'Extra View 2', color: '#d1c4e9' }
+  },
+  {
+    id: 'view-extra-3',
+    name: 'Extra View 3',
+    component: 'view-extra-3',
+    data: { label: 'Extra View 3', color: '#b2dfdb' }
+  },
+  {
+    id: 'view-extra-4',
+    name: 'Extra View 4',
+    component: 'view-extra-4',
+    data: { label: 'Extra View 4', color: '#ffccbc' }
+  },
+  {
+    id: 'view-extra-5',
+    name: 'Extra View 5',
+    component: 'view-extra-5',
+    data: { label: 'Extra View 5', color: '#f8bbd0' }
+  },
+  {
+    id: 'view-extra-6',
+    name: 'Extra View 6',
+    component: 'view-extra-6',
+    data: { label: 'Extra View 6', color: '#c5cae9' }
+  },
+  {
+    id: 'view-extra-7',
+    name: 'Extra View 7',
+    component: 'view-extra-7',
+    data: { label: 'Extra View 7', color: '#dcedc8' }
+  },
+  {
+    id: 'view-extra-8',
+    name: 'Extra View 8',
+    component: 'view-extra-8',
+    data: { label: 'Extra View 8', color: '#ffe0b2' }
+  },
+  {
+    id: 'view-extra-9',
+    name: 'Extra View 9',
+    component: 'view-extra-9',
+    data: { label: 'Extra View 9', color: '#b3e5fc' }
+  },
+  {
+    id: 'view-extra-10',
+    name: 'Extra View 10',
+    component: 'view-extra-10',
+    data: { label: 'Extra View 10', color: '#f0f4c3' }
+  }
+];
+
+const MAIN_PANELS = MAIN_VIEWS.map((view, index) => ({
+  id: `panel-main-${index + 1}`,
+  name: `Main Panel ${index + 1}`,
+  view
+}));
+
 export const DEMO_LAYOUT: UIState = {
-  views: [
-    { id: 'view-panel-a', viewType: 'simple-view', label: 'Label: Panel A', data: { label: 'Label: Panel A', color: '#ffcdd2' } },
-    { id: 'view-panel-b', viewType: 'simple-view', label: 'Label: Panel B', data: { label: 'Label: Panel B', color: '#e1bee7' } },
-    { id: 'view-panel-c', viewType: 'simple-view', label: 'Label: Panel C', data: { label: 'Label: Panel C', color: '#cfd8dc' } },
-    { id: 'view-panel-d', viewType: 'simple-view', label: 'Label: Panel D', data: { label: 'Label: Panel D', color: '#c8e6c9' } },
-    { id: 'view-unassigned-1', viewType: 'simple-view', label: 'Label: Unassigned 1', data: { label: 'Label: Unassigned 1', color: '#fff9c4' } },
-    { id: 'view-unassigned-2', viewType: 'simple-view', label: 'Label: Unassigned 2', data: { label: 'Label: Unassigned 2', color: '#d1c4e9' } },
-    { id: 'view-unassigned-3', viewType: 'simple-view', label: 'Label: Unassigned 3', data: { label: 'Label: Unassigned 3', color: '#b2dfdb' } },
-    { id: 'view-unassigned-4', viewType: 'simple-view', label: 'Label: Unassigned 4', data: { label: 'Label: Unassigned 4', color: '#ffccbc' } },
-    { id: 'view-unassigned-5', viewType: 'simple-view', label: 'Label: Unassigned 5', data: { label: 'Label: Unassigned 5', color: '#bbdefb' } },
-    { id: 'view-unassigned-6', viewType: 'simple-view', label: 'Label: Unassigned 6', data: { label: 'Label: Unassigned 6', color: '#f8bbd0' } },
-    { id: 'view-unassigned-7', viewType: 'simple-view', label: 'Label: Unassigned 7', data: { label: 'Label: Unassigned 7', color: '#c5cae9' } },
-    { id: 'view-unassigned-8', viewType: 'simple-view', label: 'Label: Unassigned 8', data: { label: 'Label: Unassigned 8', color: '#dcedc8' } },
-    { id: 'view-unassigned-9', viewType: 'simple-view', label: 'Label: Unassigned 9', data: { label: 'Label: Unassigned 9', color: '#ffe0b2' } },
-    { id: 'view-unassigned-10', viewType: 'simple-view', label: 'Label: Unassigned 10', data: { label: 'Label: Unassigned 10', color: '#b3e5fc' } }
-  ],
-  panels: {
-    'p1': { id: 'p1', viewId: 'view-panel-a', viewType: 'simple-view', title: 'Sidebar', data: { label: 'Label: Panel A', color: '#ffcdd2' } },
-    'p2': { id: 'p2', viewId: 'view-panel-b', viewType: 'simple-view', title: 'Main Editor', data: { label: 'Label: Panel B', color: '#e1bee7' } },
-    'p3': { id: 'p3', viewId: 'view-panel-c', viewType: 'simple-view', title: 'Console', data: { label: 'Label: Panel C', color: '#cfd8dc' } },
-    'p4': { id: 'p4', viewId: 'view-panel-d', viewType: 'simple-view', title: 'Tools', data: { label: 'Label: Panel D', color: '#c8e6c9' } }
-  },
-  layout: {
-    root: {
-      type: 'split',
-      direction: 'horizontal',
-      children: [
-        { type: 'leaf', panelId: 'p1', size: 20 },
-        {
-          type: 'split',
-          direction: 'vertical',
-          size: 80,
-          children: [
-            { type: 'leaf', panelId: 'p2', size: 75 },
-            {
-              type: 'split',
-              direction: 'horizontal',
-              size: 25,
-              children: [
-                { type: 'leaf', panelId: 'p3', size: 60 },
-                { type: 'leaf', panelId: 'p4', size: 40 }
-              ]
-            }
-          ]
-        }
-      ]
+  containers: [
+    {
+      id: 'container-main',
+      name: 'Main Area',
+      direction: 'row',
+      panels: MAIN_PANELS
     }
+  ],
+  panels: [...MAIN_PANELS],
+  views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
+  layout: {
+    expansion: {
+      left: false,
+      right: false,
+      bottom: false
+    },
+    overlayView: null,
+    viewportWidthMode: 'auto',
+    mainAreaCount: 5
   },
-  toolbars: {}
+  toolbars: {
+    positions: {},
+    activePicker: null
+  },
+  activeView: MAIN_VIEWS[0].id,
+  dock: {},
+  theme: {}
 };
