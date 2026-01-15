@@ -21,6 +21,16 @@ export type ToolbarState = {
   activePicker: string | null;
 };
 
+export type AuthUser = {
+  uid: string;
+  email?: string;
+};
+
+export type AuthState = {
+  isLoggedIn: boolean;
+  user?: AuthUser | null;
+};
+
 export type UIState = {
   containers: PanelContainer[];
   panels: Panel[];
@@ -30,4 +40,5 @@ export type UIState = {
   activeView: string | null;
   dock: unknown;
   theme: unknown;
+  auth: AuthState;
 };
