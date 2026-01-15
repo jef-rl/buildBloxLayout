@@ -41,15 +41,14 @@ export const panelHandlers = (uiState: UiState) => ({
             const newPanel: Panel = {
                 id: `panel-${Date.now()}`,
                 name: '',
-                views: [],
-                activeView: null,
+                view: null,
                 width: 0,
                 height: 0,
                 element: null,
             };
             container.panels.splice(position ?? container.panels.length, 0, newPanel);
             applyEqualSizing(container);
-            uiState.update();
+            uiState.update(uiState.getState());
         }
     },
 
@@ -59,7 +58,7 @@ export const panelHandlers = (uiState: UiState) => ({
         if (container && canRemovePanel(container)) {
             container.panels = container.panels.filter((p: Panel) => p.id !== panelId);
             applyEqualSizing(container);
-            uiState.update();
+            uiState.update(uiState.getState());
         }
     },
 
@@ -75,7 +74,7 @@ export const panelHandlers = (uiState: UiState) => ({
                 toContainer.panels.splice(position ?? toContainer.panels.length, 0, panel);
                 applyEqualSizing(fromContainer);
                 applyEqualSizing(toContainer);
-                uiState.update();
+                uiState.update(uiState.getState());
             }
         }
     },
@@ -86,9 +85,10 @@ export const panelHandlers = (uiState: UiState) => ({
         if (panel) {
             const view = viewRegistry.createView(viewId, data);
             if (view) {
-                panel.views = [view];
-                panel.activeView = view.id;
-                uiState.update();
+                panel.view = view;
+                uiState.getState().views = uiState.views.filter((existing) => existing.id !== view.id).concat(view);
+                uiState.getState().activeView = view.id;
+                uiState.update(uiState.getState());
             }
         }
     },
@@ -96,21 +96,22 @@ export const panelHandlers = (uiState: UiState) => ({
     REMOVE_VIEW_FROM_PANEL: (payload: { panelId: string, viewId: string }) => {
         const { panelId, viewId } = payload;
         const panel = uiState.findPanel(panelId);
-        if (panel) {
-            panel.views = panel.views.filter((v: View) => v.id !== viewId);
-            if (panel.activeView === viewId) {
-                panel.activeView = panel.views[0]?.id || null;
+        if (panel && panel.view?.id === viewId) {
+            panel.view = null;
+            uiState.getState().views = uiState.views.filter((v: View) => v.id !== viewId);
+            if (uiState.getState().activeView === viewId) {
+                uiState.getState().activeView = null;
             }
-            uiState.update();
+            uiState.update(uiState.getState());
         }
     },
 
     SET_ACTIVE_VIEW: (payload: { panelId: string, viewId: string }) => {
         const { panelId, viewId } = payload;
         const panel = uiState.findPanel(panelId);
-        if (panel && panel.views.some((v: View) => v.id === viewId)) {
-            panel.activeView = viewId;
-            uiState.update();
+        if (panel && panel.view?.id === viewId) {
+            uiState.getState().activeView = viewId;
+            uiState.update(uiState.getState());
         }
     },
 
@@ -119,7 +120,7 @@ export const panelHandlers = (uiState: UiState) => ({
         const panel = uiState.findPanel(panelId);
         if (panel) {
             Object.assign(panel, state);
-            uiState.update();
+            uiState.update(uiState.getState());
         }
     },
 });

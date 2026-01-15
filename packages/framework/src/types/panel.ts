@@ -1,9 +1,8 @@
 export interface Panel {
   id: string;
   name: string;
-  views: View[];
+  view: View | null;
   element?: HTMLElement | null;
-  activeView?: string | null;
   width?: number;
   height?: number;
 }
@@ -17,8 +16,10 @@ export interface PanelContainer {
 }
 
 export interface PanelState {
-  activePanel: string;
-  panels: Panel[];
+  view: View | null;
+  width?: number;
+  height?: number;
+  name?: string;
 }
 
 export interface View {
