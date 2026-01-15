@@ -216,7 +216,10 @@ export class WorkspaceRoot extends LitElement {
         const panels = this.state?.panels ?? [];
 
         const rawCount = Number(layout.mainAreaCount ?? 1);
-        const mainPanelCount = clamp(Number.isFinite(rawCount) ? rawCount : 1, 1, 5);
+        const viewportMode = layout.viewportWidthMode ?? 'auto';
+        const viewportCount = viewportMode === 'auto' ? NaN : Number.parseInt(viewportMode, 10);
+        const effectiveCount = Number.isFinite(viewportCount) ? viewportCount : rawCount;
+        const mainPanelCount = clamp(Number.isFinite(effectiveCount) ? effectiveCount : 1, 1, 5);
 
         const leftWidth = expansion.left ? 'clamp(220px, 22vw, 360px)' : '0px';
         const rightWidth = expansion.right ? 'clamp(220px, 22vw, 360px)' : '0px';

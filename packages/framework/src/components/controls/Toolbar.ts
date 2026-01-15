@@ -92,10 +92,13 @@ export class ViewControls extends LitElement {
     }
 
     get panelLimit() {
-        const mode = this.uiState?.layout?.viewportWidthMode ?? 'auto';
-        if (mode === 'auto') return 5;
-        const parsed = Number.parseInt(mode, 10);
-        return Number.isFinite(parsed) ? parsed : 5;
+        const layout = this.uiState?.layout ?? {};
+        const mode = layout.viewportWidthMode ?? 'auto';
+        const rawCount = Number(layout.mainAreaCount ?? 1);
+        const viewportCount = mode === 'auto' ? NaN : Number.parseInt(mode, 10);
+        const effectiveCount = Number.isFinite(viewportCount) ? viewportCount : rawCount;
+        const clamped = Math.min(5, Math.max(1, Number.isFinite(effectiveCount) ? effectiveCount : 1));
+        return clamped;
     }
 
     render() {
