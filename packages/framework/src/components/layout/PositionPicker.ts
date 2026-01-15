@@ -3,11 +3,12 @@ import { LitElement, html, nothing, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { getPickerStyles, getArrowStyles, gridIndexToPos } from '../../utils/helpers';
 import { createPositionPickerHandlers } from '../../handlers/layout/position-picker.handlers';
+import type { DockPosition } from './DockManager';
 
 export class PositionPicker extends LitElement {
     @property({ type: String }) currentPos = '';
     @property({ type: String }) toolbar = '';
-    @property({ type: Array }) occupiedPositions = [];
+    @property({ type: Array }) occupiedPositions: DockPosition[] = [];
     handlers = createPositionPickerHandlers(this);
 
     static styles = css`
