@@ -8,7 +8,7 @@ export const createPositionPickerHandlers = (picker: PositionPicker) => ({
     getDotState: (position?: DockPosition) => {
         const isInvalid = !position;
         const isCurrent = picker.currentPos === position;
-        const isOccupied = (picker.occupiedPositions || []).includes(position);
+        const isOccupied = !!position && (picker.occupiedPositions || []).includes(position);
 
         const clickHandler = (event: Event) => {
             event.stopPropagation();

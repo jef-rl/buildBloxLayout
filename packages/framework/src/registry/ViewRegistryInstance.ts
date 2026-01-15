@@ -1,3 +1,3 @@
-import { viewRegistry } from './ViewRegistry';
+import { viewRegistry, type ViewRegistryApi } from './ViewRegistry';
 
-export const ViewRegistry = viewRegistry;
+export const ViewRegistry: ViewRegistryApi = viewRegistry;
