@@ -100,9 +100,33 @@ const MAIN_PANELS = MAIN_VIEWS.map((view, index) => ({
   id: `panel-main-${index + 1}`,
   name: `Main Panel ${index + 1}`,
   region: 'main',
-  viewId: view.component,
+  viewId: view.id,
   view
 }));
+
+const EXPANSION_PANELS = [
+  {
+    id: 'panel-expansion-left',
+    name: 'Left Expansion Panel',
+    region: 'left',
+    viewId: null,
+    view: null
+  },
+  {
+    id: 'panel-expansion-right',
+    name: 'Right Expansion Panel',
+    region: 'right',
+    viewId: null,
+    view: null
+  },
+  {
+    id: 'panel-expansion-bottom',
+    name: 'Bottom Expansion Panel',
+    region: 'bottom',
+    viewId: null,
+    view: null
+  }
+];
 
 export const DEMO_LAYOUT: UIState = {
   containers: [
@@ -111,19 +135,37 @@ export const DEMO_LAYOUT: UIState = {
       name: 'Main Area',
       direction: 'row',
       panels: MAIN_PANELS
+    },
+    {
+      id: 'container-expansion-left',
+      name: 'Left Expansion Area',
+      direction: 'column',
+      panels: [EXPANSION_PANELS[0]]
+    },
+    {
+      id: 'container-expansion-right',
+      name: 'Right Expansion Area',
+      direction: 'column',
+      panels: [EXPANSION_PANELS[1]]
+    },
+    {
+      id: 'container-expansion-bottom',
+      name: 'Bottom Expansion Area',
+      direction: 'row',
+      panels: [EXPANSION_PANELS[2]]
     }
   ],
-  panels: [...MAIN_PANELS],
+  panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
   views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
   layout: {
     expansion: {
-      left: false,
-      right: false,
-      bottom: false
+      left: true,
+      right: true,
+      bottom: true
     },
     overlayView: null,
     viewportWidthMode: 'auto',
-    mainAreaCount: 5
+    mainAreaCount: MAIN_PANELS.length
   },
   toolbars: {
     positions: {},
