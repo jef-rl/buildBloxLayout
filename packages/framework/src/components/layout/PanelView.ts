@@ -1,10 +1,25 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ContextConsumer } from '@lit/context';
+import { uiStateContext } from '../../state/context';
+import type { UiStateContextValue } from '../../state/ui-state';
+import type { View } from '../../types/index';
 import { viewRegistry } from '../../registry/ViewRegistry';
 
 export class PanelView extends LitElement {
     @property({ type: String }) viewId: string | null = null;
     @state() private fallbackMessage: string | null = null;
+
+    private uiState: UiStateContextValue['state'] | null = null;
+
+    private _consumer = new ContextConsumer(this, {
+        context: uiStateContext,
+        subscribe: true,
+        callback: (value: UiStateContextValue | undefined) => {
+            this.uiState = value?.state ?? this.uiState;
+            this.updateElementData();
+        },
+    });
 
     static styles = css`
         :host {
@@ -60,7 +75,57 @@ export class PanelView extends LitElement {
 
         await viewRegistry.getComponent(this.viewId);
         const element = document.createElement(definition.tag);
+        this.applyViewData(element);
         container.appendChild(element);
+    }
+
+    private resolveViewData(): View | null {
+        if (!this.viewId || !this.uiState) {
+            return null;
+        }
+
+        const panels = this.uiState.panels ?? [];
+        const panelMatch = panels.find((panel) =>
+            panel?.viewId === this.viewId
+            || panel?.activeViewId === this.viewId
+            || panel?.view?.id === this.viewId
+            || panel?.view?.component === this.viewId,
+        );
+        const viewMatch = this.uiState.views?.find((view) =>
+            view.id === this.viewId || view.component === this.viewId,
+        );
+
+        return panelMatch?.view ?? viewMatch ?? null;
+    }
+
+    private applyViewData(element: HTMLElement) {
+        const view = this.resolveViewData();
+        if (!view) {
+            return;
+        }
+
+        const data = view.data;
+        if (data && typeof data === 'object') {
+            const viewData = data as { label?: unknown; color?: unknown };
+            if (typeof viewData.label === 'string') {
+                (element as { label?: string }).label = viewData.label;
+            }
+            if (typeof viewData.color === 'string') {
+                (element as { color?: string }).color = viewData.color;
+            }
+            (element as { data?: unknown }).data = data;
+        } else if (data !== undefined) {
+            (element as { data?: unknown }).data = data;
+        }
+    }
+
+    private updateElementData() {
+        const container = this.shadowRoot?.querySelector('.view-container');
+        const element = container?.firstElementChild as HTMLElement | null;
+        if (!element) {
+            return;
+        }
+        this.applyViewData(element);
     }
 
     render() {

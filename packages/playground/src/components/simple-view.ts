@@ -5,6 +5,7 @@ import { customElement, property } from 'lit/decorators.js';
 export class SimpleView extends LitElement {
   @property() label = 'Demo View';
   @property() color = '#eee';
+  @property({ type: Object }) data: { label?: string; color?: string } | null = null;
 
   static styles = css`
     :host {
@@ -28,9 +29,12 @@ export class SimpleView extends LitElement {
   `;
 
   render() {
+    const label = this.data?.label ?? this.label;
+    const color = this.data?.color ?? this.color;
+
     return html`
-      <div class="content" style="background-color: ${this.color}">
-        ${this.label}
+      <div class="content" style="background-color: ${color}">
+        ${label}
       </div>
     `;
   }
