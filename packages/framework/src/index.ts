@@ -11,6 +11,7 @@ export * from './components/ui/Icons';
 
 // Core functionality & state management
 export * from './registry/ViewRegistry';
+export * from './registry/ViewRegistryInstance';
 export * from './state/context';
 export * from './state/selectors';
 export * from './state/ui-state';

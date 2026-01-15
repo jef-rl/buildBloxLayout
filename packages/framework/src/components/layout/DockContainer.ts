@@ -3,7 +3,7 @@ import { LitElement, html, nothing, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { DockManager } from './DockManager';
 import { getPosClasses } from '../../utils/helpers';
-import './position-picker';
+import './PositionPicker';
 import { createDockContainerHandlers } from '../../handlers/layout/dock.handlers';
 
 export class DockContainer extends LitElement {
