@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { LitElement, html, nothing, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { getPickerStyles, getArrowStyles, gridIndexToPos } from '../../../core/utils/ui-helpers';
-import { createPositionPickerHandlers } from '../../../handlers/layout/position-picker.handlers';
+import { getPickerStyles, getArrowStyles, gridIndexToPos } from '../../utils/helpers';
+import { createPositionPickerHandlers } from '../../handlers/layout/position-picker.handlers';
 
 export class PositionPicker extends LitElement {
     @property({ type: String }) currentPos = '';

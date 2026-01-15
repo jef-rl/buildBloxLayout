@@ -2,8 +2,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../core/state/contexts.ts';
-import type { UiStateContextValue } from '../../../core/state/ui-state.js';
+import { uiStateContext } from '../../state/context';
+import type { UiStateContextValue } from '../../state/ui-state';
 import '../../../features/panels/panel-view.ts';
 
 export class OverlayExpander extends LitElement {

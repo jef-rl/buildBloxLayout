@@ -2,9 +2,9 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../core/state/contexts.ts';
-import type { UiStateContextValue } from '../../../core/state/ui-state.js';
-import { createSizeControlsHandlers } from '../../../handlers/layout/size-controls.handlers';
+import { uiStateContext } from '../../state/context';
+import type { UiStateContextValue } from '../../state/ui-state';
+import { createSizeControlsHandlers } from '../../handlers/layout/size-controls.handlers';
 
 export class SizeControls extends LitElement {
     @property({ attribute: false }) viewportWidthMode = 'auto'; // 'auto', '1x', etc
