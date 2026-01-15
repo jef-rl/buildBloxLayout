@@ -1,12 +1,21 @@
-import { viewRegistry, uiState } from '@project/framework';
-import './components/simple-view';
+import { uiState, viewRegistry as ViewRegistry } from '@project/framework';
 import { DEMO_LAYOUT } from './data/demo-layout';
 
-// 1. Initialize the UI State Store with the demo layout
-uiState.update(DEMO_LAYOUT);
+const loadSimpleView = () => import('./components/simple-view');
 
-// 2. Register the component available in the playground
-viewRegistry.register('simple-view', () => document.createElement('simple-view'));
+// 1. Register the component available in the playground
+DEMO_LAYOUT.views.forEach((view) => {
+  ViewRegistry.register({
+    id: view.id,
+    name: view.name,
+    title: view.name,
+    tag: 'simple-view',
+    component: loadSimpleView
+  });
+});
+
+// 2. Initialize the UI State Store with the demo layout
+uiState.update(DEMO_LAYOUT);
 
 // 3. Mount the root workspace component to the DOM
 const root = document.createElement('workspace-root');
