@@ -5,7 +5,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../state/context';
 import type { UiStateContextValue } from '../../state/ui-state';
 import { createViewControlsHandlers } from '../../handlers/layout/view-controls.handlers';
-import { viewRegistry } from '../../registry/ViewRegistry';
+import { ViewRegistry } from '../../registry/ViewRegistryInstance';
 
 export class ViewControls extends LitElement {
     @property({ attribute: false }) panelStates = {};
@@ -103,7 +103,7 @@ export class ViewControls extends LitElement {
         const { openState, fallback } = this.resolvedPanelStates;
         const openCount = Object.values(openState).filter(Boolean).length;
 
-        const views = viewRegistry.getAllViews();
+        const views = ViewRegistry.getAllViews();
 
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click="${this.handlers.stopClickPropagation}">
