@@ -96,6 +96,15 @@ const EXTRA_VIEWS: View[] = [
   }
 ];
 
+const OVERLAY_VIEWS: View[] = [
+  {
+    id: 'login-view',
+    name: 'Login Overlay',
+    component: 'login-view',
+    data: { label: 'Login Overlay' }
+  }
+];
+
 const MAIN_PANELS: Panel[] = MAIN_VIEWS.map((view, index) => ({
   id: `panel-main-${index + 1}`,
   name: `Main Panel ${index + 1}`,
@@ -156,7 +165,7 @@ export const DEMO_LAYOUT: UIState = {
     }
   ],
   panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
-  views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
+  views: [...MAIN_VIEWS, ...EXTRA_VIEWS, ...OVERLAY_VIEWS],
   layout: {
     expansion: {
       left: true,
