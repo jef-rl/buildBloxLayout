@@ -109,19 +109,22 @@ const EXPANSION_PANELS: Panel[] = [
     id: 'panel-expansion-left',
     name: 'Left Expansion Panel',
     region: 'left',
-    view: null
+    viewId: EXTRA_VIEWS[0].id,
+    view: EXTRA_VIEWS[0]
   },
   {
     id: 'panel-expansion-right',
     name: 'Right Expansion Panel',
     region: 'right',
-    view: null
+    viewId: EXTRA_VIEWS[1].id,
+    view: EXTRA_VIEWS[1]
   },
   {
     id: 'panel-expansion-bottom',
     name: 'Bottom Expansion Panel',
     region: 'bottom',
-    view: null
+    viewId: EXTRA_VIEWS[2].id,
+    view: EXTRA_VIEWS[2]
   }
 ];
 
