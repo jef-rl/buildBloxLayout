@@ -189,6 +189,7 @@ export class DockContainer extends LitElement {
         if (changedProps.has('manager') || changedProps.has('toolbarId') || changedProps.has('fallbackPosition')) {
             this.ensureFallbackPosition();
         }
+        this.syncSlottedOrientation();
     }
 
     disconnectedCallback() {
@@ -216,6 +217,21 @@ export class DockContainer extends LitElement {
 
     get isPickerOpen() {
         return this.manager ? this.manager.isPickerOpen(this.toolbarId) : false;
+    }
+
+    syncSlottedOrientation() {
+        const slot = this.shadowRoot?.querySelector('slot');
+        const layout = this.layout;
+        if (!slot || !layout?.orientation) return;
+
+        slot.assignedElements({ flatten: true }).forEach((element) => {
+            const tagName = element.tagName?.toLowerCase();
+            if (!['view-controls', 'size-controls', 'expander-controls'].includes(tagName)) {
+                return;
+            }
+            element.orientation = layout.orientation;
+            element.setAttribute('orientation', layout.orientation);
+        });
     }
 
     renderHandle(layout) {
@@ -246,7 +262,7 @@ export class DockContainer extends LitElement {
             <div class="${layout.container}" data-orientation="${layout.orientation}" @click="${this.handlers.stopClickPropagation}">
                 ${this.renderHandle(layout)}
                 ${!this.disablePositionPicker ? html`<div class="${layout.separator}"></div>` : nothing}
-                <slot></slot>
+                <slot @slotchange="${this.syncSlottedOrientation}"></slot>
             </div>
         `;
     }
