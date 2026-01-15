@@ -6,6 +6,7 @@ export interface Panel {
   region: PanelRegion;
   view: View | null;
   viewId?: string;
+  activeViewId?: string;
   element?: HTMLElement | null;
   width?: number;
   height?: number;
@@ -22,6 +23,7 @@ export interface PanelContainer {
 export interface PanelState {
   view: View | null;
   viewId?: string;
+  activeViewId?: string;
   region?: PanelRegion;
   width?: number;
   height?: number;
