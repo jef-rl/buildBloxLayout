@@ -324,7 +324,7 @@ export class WorkspaceRoot extends LitElement {
                     <size-controls></size-controls>
                 </dock-container>
 
-                <dock-container .manager=${this.dockManager} toolbarId="expander" fallbackPosition="bottom-left" disablePositionPicker>
+                <dock-container .manager=${this.dockManager} toolbarId="expander" fallbackPosition="bottom-left">
                     <expander-controls></expander-controls>
                 </dock-container>
 
