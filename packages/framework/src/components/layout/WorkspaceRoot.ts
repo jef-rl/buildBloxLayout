@@ -75,15 +75,20 @@ export class WorkspaceRoot extends LitElement {
         .main-area {
             grid-column: 2;
             grid-row: 1;
-            display: flex;
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: var(--main-panel-width);
+            grid-template-columns: repeat(var(--main-panel-count), var(--main-panel-width));
             height: 100%;
-            width: 100%;
-            overflow: hidden;
+            min-width: 100%;
+            width: max-content;
+            overflow-x: auto;
+            overflow-y: hidden;
             background-color: #0b1220;
         }
 
         .main-panel {
-            flex: 1 1 0;
+            min-height: 0;
             min-width: 0;
             border-left: 1px solid #1f2937;
         }
@@ -243,11 +248,8 @@ export class WorkspaceRoot extends LitElement {
         const expansion = layout.expansion ?? { left: false, right: false, bottom: false };
         const panels = this.state?.panels ?? [];
 
-        const rawCount = Number(layout.mainAreaCount ?? 1);
         const viewportMode = layout.viewportWidthMode ?? 'auto';
         const viewportCount = viewportMode === 'auto' ? NaN : Number.parseInt(viewportMode, 10);
-        const effectiveCount = Number.isFinite(viewportCount) ? viewportCount : rawCount;
-        const mainPanelCount = clamp(Number.isFinite(effectiveCount) ? effectiveCount : 1, 1, 5);
 
         const leftWidth = expansion.left ? 'clamp(220px, 22vw, 360px)' : '0px';
         const rightWidth = expansion.right ? 'clamp(220px, 22vw, 360px)' : '0px';
@@ -255,10 +257,17 @@ export class WorkspaceRoot extends LitElement {
 
         const overlayView = layout.overlayView ?? null;
         const mainPanels = panels.filter((panel) => panel.region === 'main');
+        const totalMainPanels = mainPanels.length;
+        const fallbackCount = totalMainPanels || clamp(Number(layout.mainAreaCount ?? 1), 1, 5);
+        const visibleCount = clamp(
+            Number.isFinite(viewportCount) ? viewportCount : fallbackCount,
+            1,
+            5,
+        );
         const leftPanel = panels.find((panel) => panel.region === 'left');
         const rightPanel = panels.find((panel) => panel.region === 'right');
         const bottomPanel = panels.find((panel) => panel.region === 'bottom');
-        const mainPanelsToRender = Array.from({ length: mainPanelCount }, (_, index) => mainPanels[index] ?? null);
+        const mainPanelsToRender = mainPanels;
         const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
             panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
 
@@ -266,7 +275,13 @@ export class WorkspaceRoot extends LitElement {
             <div class="workspace">
                 <div
                     class="layout"
-                    style="--left-width: ${leftWidth}; --right-width: ${rightWidth}; --bottom-height: ${bottomHeight};"
+                    style="
+                        --left-width: ${leftWidth};
+                        --right-width: ${rightWidth};
+                        --bottom-height: ${bottomHeight};
+                        --main-panel-count: ${Math.max(mainPanelsToRender.length, 1)};
+                        --main-panel-width: calc(100% / ${visibleCount});
+                    "
                 >
                     <div
                         class="expander expander-left ${expansion.left ? '' : 'collapsed'}"
