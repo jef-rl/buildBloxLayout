@@ -93,6 +93,15 @@ export class UiState {
         this.listeners.forEach((listener) => listener(this.state));
     }
 
+    hydrate(patch: Partial<UIState>): UIState {
+        this.state = {
+            ...this.state,
+            ...patch,
+        };
+        this.listeners.forEach((listener) => listener(this.state));
+        return this.state;
+    }
+
     subscribe(listener: (state: UIState) => void): () => void {
         this.listeners.add(listener);
         return () => {
