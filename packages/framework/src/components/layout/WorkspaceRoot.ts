@@ -1,7 +1,5 @@
 // @ts-nocheck
 import { LitElement, html, css, nothing } from 'lit';
-import { ContextProvider } from '@lit/context';
-import { uiStateContext } from '../../state/context';
 import { uiState } from '../../state/ui-state';
 import { DockManager } from './DockManager';
 import '../controls/Toolbar';
@@ -10,9 +8,8 @@ import '../controls/Expander';
 import './DockContainer';
 import './OverlayLayer';
 import './PanelView';
-import { applyLayoutAction } from '../../handlers/workspace/layout';
 import { viewRegistry } from '../../registry/ViewRegistry';
-import { applyContextUpdate } from '../../utils/context-update';
+import { dispatchUiEvent } from '../../utils/dispatcher';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -103,33 +100,19 @@ export class WorkspaceRoot extends LitElement {
 
     private state = uiState.getState();
 
-    private panelState = {
-        open: {},
-        data: {},
-        errors: {},
-    };
-
     private unsubscribe: (() => void) | null = null;
     private registryUnsubscribe: (() => void) | null = null;
-
-    private provider = new ContextProvider(this, {
-        context: uiStateContext,
-        initialValue: {
-            state: this.getContextState(),
-            dispatch: (payload: { type: string; [key: string]: unknown }) => this.dispatch(payload),
-        },
-    });
 
     connectedCallback() {
         super.connectedCallback();
         this.unsubscribe = uiState.subscribe((nextState) => {
             this.state = nextState;
-            this.refreshContext();
+            this.requestUpdate();
         });
         this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
             this.requestUpdate();
         });
-        this.refreshContext();
+        this.requestUpdate();
     }
 
     disconnectedCallback() {
@@ -144,121 +127,8 @@ export class WorkspaceRoot extends LitElement {
         super.disconnectedCallback();
     }
 
-    private getContextState() {
-        const snapshot = this.state ?? uiState.getState();
-        const panels = Array.isArray(snapshot.panels) ? [...snapshot.panels] : { ...(snapshot.panels ?? {}) };
-
-        if (panels && typeof panels === 'object') {
-            panels.open = this.panelState.open;
-            panels.data = this.panelState.data;
-            panels.errors = this.panelState.errors;
-        }
-
-        return {
-            ...snapshot,
-            panels,
-        };
-    }
-
-    private refreshContext() {
-        this.provider.setValue({
-            state: this.getContextState(),
-            dispatch: (payload: { type: string; [key: string]: unknown }) => this.dispatch(payload),
-        });
-        this.requestUpdate();
-    }
-
-    private ensureLayoutState() {
-        const layout = typeof this.state?.layout === 'object' && this.state.layout ? this.state.layout : {};
-        this.state.layout = {
-            ...layout,
-            expansion: layout.expansion ?? { left: false, right: false, bottom: false },
-            overlayView: layout.overlayView ?? null,
-            viewportWidthMode: layout.viewportWidthMode ?? 'auto',
-            mainAreaCount: layout.mainAreaCount ?? 1,
-        };
-    }
-
-    private ensureAuthState() {
-        const auth = typeof this.state?.auth === 'object' && this.state.auth ? this.state.auth : {};
-        this.state.auth = {
-            ...auth,
-            isLoggedIn: auth.isLoggedIn ?? false,
-            user: auth.user ?? null,
-        };
-    }
-
     private dispatch(payload: { type: string; [key: string]: unknown }) {
-        this.ensureLayoutState();
-        this.ensureAuthState();
-        const handledLayout = applyLayoutAction(this.state, payload);
-
-        if (!handledLayout) {
-            switch (payload.type) {
-                case 'context/update':
-                    this.state = applyContextUpdate(this.state, {
-                        path: payload.path as string | string[],
-                        value: payload.value,
-                    });
-                    break;
-                case 'panels/selectPanel':
-                    if (payload.panelId) {
-                        this.panelState.data = {
-                            ...this.panelState.data,
-                            targetPanelId: payload.panelId,
-                        };
-                    }
-                    break;
-                case 'panels/assignView': {
-                    const viewId = payload.viewId as string | undefined;
-                    const targetPanelId = payload.panelId ?? this.panelState.data?.targetPanelId;
-                    const panels = this.state?.panels ?? [];
-                    const fallbackPanel = panels.find((panel) => panel.region === 'main') ?? panels[0];
-                    const panelId = targetPanelId ?? fallbackPanel?.id;
-                    const panel = panels.find((item) => item.id === panelId);
-                    if (panel && viewId) {
-                        const view = viewRegistry.createView(viewId);
-                        if (view) {
-                            panel.view = view;
-                            panel.viewId = viewId;
-                            panel.activeViewId = viewId;
-                            this.state.views = this.state.views.filter((existing) => existing.id !== view.id).concat(view);
-                            this.state.activeView = view.id;
-                        }
-                    }
-                    break;
-                }
-                case 'panels/togglePanel':
-                    if (payload.panelId || payload.viewId) {
-                        const panelId = payload.panelId ?? payload.viewId;
-                        this.panelState.open[panelId] = !this.panelState.open[panelId];
-                    }
-                    break;
-                case 'panels/setScopeMode':
-                    this.panelState.data = {
-                        ...this.panelState.data,
-                        scope: { ...(this.panelState.data?.scope ?? {}), mode: payload.mode },
-                    };
-                    break;
-                case 'session/reset':
-                    this.panelState.errors = {};
-                    this.panelState.data = {};
-                    break;
-                case 'auth/setUser': {
-                    const nextUser = payload.user as { uid: string; email?: string } | null | undefined;
-                    this.state.auth = {
-                        ...this.state.auth,
-                        user: nextUser ?? null,
-                        isLoggedIn: Boolean(nextUser),
-                    };
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        uiState.update(this.state);
+        dispatchUiEvent(this, payload.type, payload);
     }
 
     private resolveViewId(view: any): string | null {
