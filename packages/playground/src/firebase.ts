@@ -8,20 +8,21 @@ export { signInWithEmailAndPassword } from "firebase/auth";
 // Get them from Firebase Console → Project settings → General → Your apps → Firebase SDK snippet (Config).
 // These values replace the placeholders below or are injected via import.meta.env at build time.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "FIREBASE_API_KEY_HERE",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "AIzaSyAAGokzPy3GoeebzwbykpXUqmQVZgf0DAI",
   authDomain:
     import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ??
-    "FIREBASE_AUTH_DOMAIN_HERE",
+    "lozzuck.firebaseapp.com",
   projectId:
     import.meta.env.VITE_FIREBASE_PROJECT_ID ??
-    "FIREBASE_PROJECT_ID_HERE",
+    "lozzuck",
   storageBucket:
     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ??
-    "FIREBASE_STORAGE_BUCKET_HERE",
+    "lozzuck.appspot.com",
   messagingSenderId:
     import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ??
-    "FIREBASE_MESSAGING_SENDER_ID_HERE",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID ?? "FIREBASE_APP_ID_HERE",
+    "1059829133797",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID ?? 
+    "1:1059829133797:web:35d339c1c1399c12efff0c",
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
