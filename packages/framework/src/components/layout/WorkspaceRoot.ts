@@ -12,6 +12,7 @@ import './OverlayLayer';
 import './PanelView';
 import { applyLayoutAction } from '../../handlers/workspace/layout';
 import { viewRegistry } from '../../registry/ViewRegistry';
+import { applyContextUpdate } from '../../utils/context-update';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -198,6 +199,12 @@ export class WorkspaceRoot extends LitElement {
 
         if (!handledLayout) {
             switch (payload.type) {
+                case 'context/update':
+                    this.state = applyContextUpdate(this.state, {
+                        path: payload.path as string | string[],
+                        value: payload.value,
+                    });
+                    break;
                 case 'panels/selectPanel':
                     if (payload.panelId) {
                         this.panelState.data = {
