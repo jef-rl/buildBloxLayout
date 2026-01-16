@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
+export { signInWithEmailAndPassword } from "firebase/auth";
+
 // Replace with real Firebase keys from your project settings.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "FIREBASE_API_KEY_HERE",
