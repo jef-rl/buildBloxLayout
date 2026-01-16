@@ -59,6 +59,27 @@ export interface UiEventDetail {
 
 Use the `type` string to route the UI action and include any structured data on `payload`.
 
+### Access state and dispatch via context
+
+Framework-rooted components can read the UI state and dispatch actions through the exported context. Use `uiStateContext` with a `ContextConsumer` to pull the latest `state` and `dispatch` values.
+
+```ts
+import { ContextConsumer } from '@project/framework';
+import { uiStateContext, type UiStateContextValue } from '@project/framework';
+
+const consumer = new ContextConsumer(host, {
+  context: uiStateContext,
+  subscribe: true,
+  callback: (value?: UiStateContextValue) => {
+    if (!value) return;
+    const { state, dispatch } = value;
+    dispatch({ type: 'layout/setOverlayView', viewId: state.activeView });
+  },
+});
+```
+
+The context payload always contains the current `state` snapshot plus a `dispatch` function that routes actions through the framework handler registry.
+
 #### Framework logging hook
 
 Integrators can supply a custom logging implementation for framework-level logging hooks.

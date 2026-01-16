@@ -16,6 +16,9 @@ export * from './registry/ViewRegistryInstance';
 export * from './state/context';
 export * from './state/selectors';
 export * from './state/ui-state';
+export { ContextConsumer, ContextProvider } from '@lit/context';
+export { uiStateContext } from './state/context';
+export type { UiStateContextValue } from './state/ui-state';
 
 // Event handling
 export * from './utils/dispatcher';
