@@ -307,7 +307,7 @@ export class WorkspaceRoot extends LitElement {
                 >
                     <div
                         class="expander expander-left ${expansion.left ? '' : 'collapsed'}"
-                        @click="${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}"
+                        @click=${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(leftPanel)}"></panel-view>
                     </div>
@@ -316,7 +316,7 @@ export class WorkspaceRoot extends LitElement {
                         ${mainPanelsToRender.map((panel) => html`
                             <div
                                 class="main-panel"
-                                @click="${() => panel && this.dispatch({ type: 'panels/selectPanel', panelId: panel.id })}"
+                                @click=${() => panel && this.dispatch({ type: 'panels/selectPanel', panelId: panel.id })}
                             >
                                 <panel-view .viewId="${getPanelViewId(panel)}"></panel-view>
                             </div>
@@ -325,14 +325,14 @@ export class WorkspaceRoot extends LitElement {
 
                     <div
                         class="expander expander-right ${expansion.right ? '' : 'collapsed'}"
-                        @click="${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}"
+                        @click=${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(rightPanel)}"></panel-view>
                     </div>
 
                     <div
                         class="expander expander-bottom ${expansion.bottom ? '' : 'collapsed'}"
-                        @click="${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}"
+                        @click=${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(bottomPanel)}"></panel-view>
                     </div>

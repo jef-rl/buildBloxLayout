@@ -83,14 +83,14 @@ export class SizeControls extends LitElement {
         const mainPanelCount = panels.filter((panel) => panel.region === 'main').length;
 
         return html`
-            <div class="controls ${isColumn ? 'column' : ''}" @click="${this.handlers.stopClickPropagation}">
+            <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
                 ${['1x', '2x', '3x', '4x', '5x', 'auto'].map(mode => {
                     const requiredCount = mode === 'auto' ? 0 : Number.parseInt(mode, 10);
                     const isEnabled = mode === 'auto' || mainPanelCount >= Math.max(requiredCount, 1);
 
                     return html`
                         <button 
-                            @click="${() => isEnabled && this.handlers.setViewport(mode)}"
+                            @click=${() => isEnabled && this.handlers.setViewport(mode)}
                             class="viewport-button ${this.activeViewportWidthMode === mode ? 'active' : ''}"
                             title="${mode === 'auto' ? 'Auto Width (Magic)' : `${mode} Viewport Width`}"
                             ?disabled="${!isEnabled}"

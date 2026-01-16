@@ -85,7 +85,7 @@ export class PositionPicker extends LitElement {
             <div 
                 class="picker" 
                 style="${pickerStyle} min-width: 90px; min-height: 90px;"
-                @click="${this.handlers.stopClickPropagation}"
+                @click=${this.handlers.stopClickPropagation}
             >
                 <div class="grid">
                     ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => {
@@ -106,7 +106,7 @@ export class PositionPicker extends LitElement {
                         return html`
                             <div 
                                 class="${dotClass}" 
-                                @click="${clickHandler}"
+                                @click=${clickHandler}
                                 title="${isInvalid ? 'Unavailable' : isOccupied ? 'Occupied' : pos}"
                             ></div>
                         `;
