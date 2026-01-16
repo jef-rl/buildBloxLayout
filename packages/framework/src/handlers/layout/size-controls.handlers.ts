@@ -1,11 +1,20 @@
-import { dispatchUiEvent } from '../../utils/dispatcher';
 import type { SizeControls } from '../../components/controls/Resizer';
+import type { UiStateContextValue } from '../../state/ui-state';
 
-export const createSizeControlsHandlers = (_controls: SizeControls) => ({
+type UiDispatch = UiStateContextValue['dispatch'];
+
+export const createSizeControlsHandlers = (
+    _controls: SizeControls,
+    getDispatch: () => UiDispatch | null,
+) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
     setViewport: (mode: string) => {
-        dispatchUiEvent(window, 'layout/setViewportWidthMode', { mode });
+        const dispatch = getDispatch();
+        if (!dispatch) {
+            return;
+        }
+        dispatch({ type: 'layout/setViewportWidthMode', mode });
     },
 });

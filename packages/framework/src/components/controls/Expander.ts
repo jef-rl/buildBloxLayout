@@ -10,16 +10,18 @@ export class ExpanderControls extends LitElement {
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
+    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? this.uiState;
+            this.uiDispatch = value?.dispatch ?? this.uiDispatch;
             this.requestUpdate();
         },
     });
-    private handlers = createExpanderControlsHandlers(this);
+    private handlers = createExpanderControlsHandlers(this, () => this.uiDispatch);
 
     static styles = css`
         :host {
