@@ -10,8 +10,20 @@ import type {
 export type { LayoutExpansion, LayoutState, MainAreaPanelCount, ToolbarState, UIState } from '../types/ui-state';
 export type { ViewportWidthMode } from '../types/core';
 
+export type PanelStateExtras = {
+    open: Record<string, boolean>;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+};
+
+export type PanelsWithState = Panel[] & PanelStateExtras;
+
+export type UiStateContextState = Omit<UIState, 'panels'> & {
+    panels: PanelsWithState;
+};
+
 export interface UiStateContextValue {
-  state: UIState;
+  state: UiStateContextState;
   dispatch: (payload: { type: string; [key: string]: unknown }) => void;
 }
 
