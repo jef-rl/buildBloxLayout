@@ -39,3 +39,4 @@ export * from './handlers/layout/size-controls.handlers';
 export * from './handlers/layout/views';
 export * from './handlers/layout/view-controls.handlers';
 export * from './handlers/workspace/panels';
+export * from './handlers/handler-registry';
