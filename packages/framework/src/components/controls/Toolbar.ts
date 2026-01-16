@@ -8,8 +8,6 @@ import { createViewControlsHandlers } from '../../handlers/layout/view-controls.
 import { ViewRegistry } from '../../registry/ViewRegistryInstance';
 
 export class ViewControls extends LitElement {
-    @property({ attribute: false }) panelStates = {};
-    @property({ attribute: false }) errors = {};
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
@@ -19,8 +17,8 @@ export class ViewControls extends LitElement {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? this.uiState;
-            this.uiDispatch = value?.dispatch ?? this.uiDispatch;
+            this.uiState = value?.state ?? null;
+            this.uiDispatch = value?.dispatch ?? null;
             this.requestUpdate();
         },
     });
