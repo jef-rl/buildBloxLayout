@@ -1,14 +1,27 @@
-import { dispatchUiEvent } from '../../utils/dispatcher';
 import type { ExpanderControls } from '../../components/controls/Expander';
+import type { UiStateContextValue } from '../../state/ui-state';
 
-export const createExpanderControlsHandlers = (_controls: ExpanderControls) => ({
+type UiDispatch = UiStateContextValue['dispatch'];
+
+export const createExpanderControlsHandlers = (
+    _controls: ExpanderControls,
+    getDispatch: () => UiDispatch | null,
+) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
     setExpansion: (side: 'left' | 'right' | 'bottom', expanded: boolean) => {
-        dispatchUiEvent(window, 'layout/setExpansion', { side, expanded });
+        const dispatch = getDispatch();
+        if (!dispatch) {
+            return;
+        }
+        dispatch({ type: 'layout/setExpansion', side, expanded });
     },
     setOverlayView: (viewId: string | null) => {
-        dispatchUiEvent(window, 'layout/setOverlayView', { viewId });
+        const dispatch = getDispatch();
+        if (!dispatch) {
+            return;
+        }
+        dispatch({ type: 'layout/setOverlayView', viewId });
     },
 });
