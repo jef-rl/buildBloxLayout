@@ -159,9 +159,9 @@ export const DEMO_LAYOUT: UIState = {
   views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
   layout: {
     expansion: {
-      left: true,
-      right: true,
-      bottom: true
+      left: false,
+      right: false,
+      bottom: false
     },
     overlayView: null,
     viewportWidthMode: 'auto',
