@@ -1,5 +1,13 @@
+# To learn more about how to use Nix to configure your environment
+# see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
-  packages = [ pkgs.nodejs_20 pkgs.npm ];
+  # Which nixpkgs channel to use.
+  channel = "stable-24.05"; # or "unstable"
+  # Use https://search.nixos.org/packages to find packages
+  packages = [
+    pkgs.nodejs_20
+  ];
+  # Sets environment variables in the workspace
   env = {
     VITE_FIREBASE_API_KEY = "AIzaSyAAGokzPy3GoeebzwbykpXUqmQVZgf0DAI";
     VITE_FIREBASE_AUTH_DOMAIN = "lozzuck.firebaseapp.com";
@@ -9,23 +17,28 @@
     VITE_FIREBASE_APP_ID = "1:1059829133797:web:35d339c1c1399c12efff0c";
   };
   idx = {
-    extensions = [ "dbaeumer.vscode-eslint"  "google.gemini-cli-vscode-ide-companion"];
+    # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
+    extensions = [
+      # "vscodevim.vim"
+    ];
     workspace = {
+      # Runs when a workspace is first created with this `dev.nix` file
       onCreate = {
-        npm-install = "npm install";
+        npm-install = "npm ci --no-audit --prefer-offline --no-progress --timing";
+        # Open editors for the following files by default, if they exist:
+        default.openFiles = [ "index.html" "src/my-element.js" "src/my-element.ts" ];
       };
-      onStart = {
-        dev-server = "npm run dev";
-      };
+      # To run something each time the workspace is (re)started, use the `onStart` hook
     };
-    previews = {
-      enable = true;
-      previews = {
-        web = {
-          command = ["npm" "run" "dev" "--" "--port" "$PORT"];
-          manager = "web";
-        };
-      };
-    };
+    # Enable previews and customize configuration
+    # previews = {
+    #   enable = true;
+    #   previews = {
+    #     web = {
+    #       command = [ "npm" "run" "dev" "--" "--port" "$PORT" "--host" "0.0.0.0" ];
+    #       manager = "web";
+    #     };
+    #   };
+    # };
   };
 }

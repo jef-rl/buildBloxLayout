@@ -81,7 +81,13 @@ export class LoginOverlay extends LitElement {
       this.isOpen = false;
     } catch (error) {
       console.error('Login failed', error);
-      this.errorMessage = 'Unable to sign in. Please check your details and try again.';
+      if (error.code === 'auth/wrong-password') {
+        this.errorMessage = 'Incorrect password. Please try again.';
+      } else if (error.code === 'auth/user-not-found') {
+        this.errorMessage = 'User with this email does not exist.';
+      } else {
+        this.errorMessage = 'Unable to sign in. Please check your details and try again.';
+      }
       this.isOpen = true;
     }
   }
