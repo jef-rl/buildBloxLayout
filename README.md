@@ -42,7 +42,7 @@ Views and controls dispatch workspace actions through the shared `ui-event` chan
 ```ts
 // packages/framework/src/utils/dispatcher.ts
 export const dispatchUiEvent = <TPayload>(target: UiEventTarget, type: string, payload?: TPayload) => {
-  const detail: HandlerMessage<TPayload | undefined> = { type, payload };
+  const detail: UiEventDetail = { type, payload };
   target.dispatchEvent(new CustomEvent('ui-event', { detail, bubbles: true, composed: true }));
 };
 ```
@@ -52,6 +52,33 @@ The root workspace listens for `ui-event` messages and routes them into the layo
 ```ts
 // packages/framework/src/components/layout/WorkspaceRoot.ts
 window.addEventListener('ui-event', this.handleUiEvent as EventListener);
+```
+
+#### UI event contract
+
+`ui-event` messages always emit a `detail` payload that conforms to the framework's contract:
+
+```ts
+export interface UiEventDetail {
+  type: string;
+  payload: any;
+}
+```
+
+Use the `type` string to route the UI action and include any structured data on `payload`.
+
+#### Framework logging hook
+
+Integrators can supply a custom logging implementation for framework-level logging hooks.
+
+```ts
+import { setFrameworkLogger } from '@project/framework';
+
+setFrameworkLogger({
+  info: (message, context) => {
+    console.log('[framework]', message, context);
+  }
+});
 ```
 
 ### Enable overlay views with `layout/setOverlayView`
