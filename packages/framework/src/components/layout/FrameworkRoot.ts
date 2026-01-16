@@ -2,7 +2,7 @@ import { LitElement, css, html } from 'lit';
 import { ContextProvider } from '@lit/context';
 import { coreHandlers, createHandlerRegistry, type HandlerAction } from '../../handlers/handler-registry';
 import type { UIState } from '../../types/ui-state';
-import { uiState } from '../../state/ui-state';
+import { uiState, type UiStateContextState } from '../../state/ui-state';
 import { uiStateContext } from '../../state/context';
 import { getFrameworkLogger } from '../../utils/logger';
 import { applyLayoutAction } from '../../handlers/workspace/layout';
@@ -117,17 +117,13 @@ export class FrameworkRoot extends LitElement {
     super.disconnectedCallback();
   }
 
-  private getContextState() {
+  private getContextState(): UiStateContextState {
     const snapshot = this.state ?? uiState.getState();
-    const panels = Array.isArray(snapshot.panels)
-      ? [...snapshot.panels]
-      : { ...((snapshot.panels ?? {}) as Record<string, unknown>) };
+    const panels = (Array.isArray(snapshot.panels) ? [...snapshot.panels] : []) as UiStateContextState['panels'];
 
-    if (panels && typeof panels === 'object') {
-      panels.open = this.panelState.open;
-      panels.data = this.panelState.data;
-      panels.errors = this.panelState.errors;
-    }
+    panels.open = this.panelState.open;
+    panels.data = this.panelState.data;
+    panels.errors = this.panelState.errors;
 
     return {
       ...snapshot,
