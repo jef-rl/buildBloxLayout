@@ -121,7 +121,9 @@ export class FrameworkRoot extends LitElement {
 
         logger?.info?.('FrameworkRoot state action.', {
           actionType: action.type,
-          summary: summarizeState(action.type === 'state/replace' ? nextState : payload?.patch ?? payload?.changes),
+          summary: summarizeState(
+            action.type === 'state/replace' ? nextState : payload?.patch ?? payload?.changes ?? payload?.value ?? null,
+          ),
           update: summarizeUpdate(previousState, nextState),
         });
 
