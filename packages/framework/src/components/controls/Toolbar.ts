@@ -11,18 +11,16 @@ export class ViewControls extends LitElement {
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
             this.requestUpdate();
         },
     });
-    private handlers = createViewControlsHandlers(this, () => this.uiDispatch);
+    private handlers = createViewControlsHandlers(this, () => null);
 
     static styles = css`
         :host {
@@ -31,13 +29,119 @@ export class ViewControls extends LitElement {
 
         .controls {
             display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .controls.column {
             flex-direction: column;
             gap: 12px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            min-width: 240px;
+        }
+
+        .controls.row {
+            flex-direction: row;
+            align-items: center;
+            min-width: unset;
+        }
+
+        .slot-strip {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.6);
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .slot--active {
+            border-style: solid;
+            border-color: rgba(59, 130, 246, 0.7);
+            background: rgba(30, 64, 175, 0.35);
+            color: #e2e8f0;
+        }
+
+        .slot--disabled {
+            border-color: transparent;
+            background: rgba(15, 23, 42, 0.3);
+            color: rgba(148, 163, 184, 0.4);
+            cursor: not-allowed;
+        }
+
+        .slot__label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.12);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .slot__title {
+            font-size: 10px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .token-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .token {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.6);
+            color: #cbd5f5;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: grab;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .token:active {
+            cursor: grabbing;
+        }
+
+        .token--active {
+            border-color: rgba(59, 130, 246, 0.8);
+            background: rgba(30, 64, 175, 0.4);
+            color: #ffffff;
+        }
+
+        .token__icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.2);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .icon-button {
@@ -51,35 +155,14 @@ export class ViewControls extends LitElement {
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
-  
-
-        .icon-button.active {
+        .icon-button:hover {
             color: #ffffff;
             background-color: rgba(17, 24, 39, 0.5);
         }
 
-        .icon-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-    
-
         .icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .icon-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: currentColor;
+            width: 18px;
+            height: 18px;
         }
     `;
 
@@ -100,63 +183,170 @@ export class ViewControls extends LitElement {
 
     get panelLimit() {
         const layout = this.uiState?.layout ?? {};
-        const mode = layout.viewportWidthMode ?? 'auto';
         const rawCount = Number(layout.mainAreaCount ?? 1);
-        const viewportCount = mode === 'auto' ? NaN : Number.parseInt(mode, 10);
-        const effectiveCount = Number.isFinite(viewportCount) ? viewportCount : rawCount;
-        const clamped = Math.min(5, Math.max(1, Number.isFinite(effectiveCount) ? effectiveCount : 1));
+        const clamped = Math.min(5, Math.max(1, Number.isFinite(rawCount) ? rawCount : 1));
         return clamped;
     }
 
-    private getTargetPanelId() {
-        const panelsState = this.uiState?.panels;
-        const explicitTarget = panelsState?.data?.targetPanelId;
-        if (explicitTarget) {
-            return explicitTarget;
+    private getViewLabel(view: { title?: string; name?: string; id?: string }) {
+        return view.title || view.name || view.id || '';
+    }
+
+    private getIconLabel(label: string, fallback: string) {
+        return label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || fallback.slice(0, 2);
+    }
+
+    private resolveMainViewOrder() {
+        const layout = this.uiState?.layout ?? {};
+        const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
+        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
+        const panelOrder = panels
+            .filter((panel) => panel.region === 'main')
+            .map((panel) => panel.activeViewId ?? panel.viewId ?? panel.view?.component)
+            .filter(Boolean);
+        const mergedOrder = [...layoutOrder];
+        panelOrder.forEach((viewId) => {
+            if (!mergedOrder.includes(viewId)) {
+                mergedOrder.push(viewId);
+            }
+        });
+        const viewIds = new Set(ViewRegistry.getAllViews().map((view) => view.id));
+        const deduped = mergedOrder.filter((viewId, index) =>
+            mergedOrder.indexOf(viewId) === index && viewIds.has(viewId),
+        );
+        return deduped;
+    }
+
+    private handleSlotDrop(event: DragEvent, slotIndex: number) {
+        event.preventDefault();
+        const viewId =
+            event.dataTransfer?.getData('application/x-view-id') ||
+            event.dataTransfer?.getData('text/plain');
+        if (!viewId) {
+            return;
         }
 
-        const panels = Array.isArray(panelsState) ? panelsState : this.uiState?.panels;
-        if (Array.isArray(panels)) {
-            const mainPanel = panels.find((panel) => panel.region === 'main');
-            return mainPanel?.id ?? panels[0]?.id;
+        const currentOrder = this.resolveMainViewOrder();
+        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        nextOrder.splice(slotIndex, 0, viewId);
+        const limitedOrder = nextOrder.slice(0, this.panelLimit);
+        this.handlers.setMainViewOrder(limitedOrder);
+    }
+
+    private handleSlotDragOver(event: DragEvent, isEnabled: boolean) {
+        if (!isEnabled) {
+            return;
+        }
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+
+    private handleSlotClick(slotIndex: number, viewId: string | null, isEnabled: boolean) {
+        const capacity = this.panelLimit;
+        if (viewId) {
+            const nextOrder = this.resolveMainViewOrder().filter((id) => id !== viewId);
+            this.handlers.setMainViewOrder(nextOrder);
+            return;
         }
 
-        return undefined;
+        const slotNumber = slotIndex + 1;
+
+        if (!isEnabled) {
+            if (slotNumber === 5 && capacity < 4) {
+                return;
+            }
+            this.handlers.setMainAreaCount(slotNumber);
+            return;
+        }
+
+        if (slotNumber === capacity && capacity > 1) {
+            this.handlers.setMainAreaCount(slotNumber - 1);
+        }
     }
 
     render() {
-        const isColumn = this.orientation === 'column';
+        const isRow = this.orientation === 'row';
         const views = ViewRegistry.getAllViews();
-        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
-        const assignedViews = new Set(
-            panels.map((panel) => panel?.activeViewId ?? panel?.viewId).filter(Boolean),
-        );
-        const targetPanelId = this.getTargetPanelId();
+        const activeOrder = this.resolveMainViewOrder();
+        const activeSet = new Set(activeOrder);
+        const capacity = this.panelLimit;
 
         return html`
-            <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
-                ${views.map((view) => {
-                    const label = view.title || view.name || view.id;
-                    const isAssigned = assignedViews.has(view.id);
-                    const iconLabel = label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || view.id.slice(0, 2);
-                    const isDisabled = !targetPanelId || panels.length === 0 || this.panelLimit < 1;
-                    return html`
-                        <button
-                            @click=${() => this.handlers.assignView(view.id, targetPanelId)}
-                            class="icon-button ${isAssigned ? 'active' : ''}"
-                            title="${label}"
-                            aria-label="${label}"
-                            ?disabled="${isDisabled}"
-                        >
-                            <span class="icon-label">${iconLabel}</span>
-                        </button>
-                    `;
-                })}
-                
-                <!-- Reset/New Session Button -->
-                    <button @click=${this.handlers.resetSession} class="icon-button reset" title="New Session / Reset">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
+            <div class="controls ${isRow ? 'row' : ''}" @click=${this.handlers.stopClickPropagation}>
+                <div class="slot-strip">
+                    ${Array.from({ length: 5 }).map((_, index) => {
+                        const viewId = activeOrder[index] ?? null;
+                        const view = viewId ? views.find((item) => item.id === viewId) : null;
+                        const label = view ? this.getViewLabel(view) : '';
+                        const iconLabel = viewId ? this.getIconLabel(label, viewId) : `${index + 1}`;
+                        const isEnabled = index < capacity;
+                        const isActive = Boolean(viewId);
+                        const slotClass = [
+                            'slot',
+                            isActive ? 'slot--active' : '',
+                            !isEnabled ? 'slot--disabled' : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ');
+
+                        return html`
+                            <button
+                                class="${slotClass}"
+                                aria-disabled=${!isEnabled}
+                                @dragover=${(event: DragEvent) => this.handleSlotDragOver(event, isEnabled)}
+                                @drop=${(event: DragEvent) => isEnabled && this.handleSlotDrop(event, index)}
+                                @click=${() => this.handleSlotClick(index, viewId, isEnabled)}
+                                title=${view ? `Slot ${index + 1}: ${label}` : `Slot ${index + 1}`}
+                            >
+                                <span class="slot__label">${iconLabel}</span>
+                                <span class="slot__title">
+                                    ${view ? label : isEnabled ? `Slot ${index + 1}` : 'Disabled'}
+                                </span>
+                            </button>
+                        `;
+                    })}
+                </div>
+
+                <div class="token-pool">
+                    ${views.map((view) => {
+                        const label = this.getViewLabel(view);
+                        const iconLabel = this.getIconLabel(label, view.id);
+                        const isActive = activeSet.has(view.id);
+                        return html`
+                            <div
+                                class="token ${isActive ? 'token--active' : ''}"
+                                draggable="true"
+                                @dragstart=${(event: DragEvent) => {
+                                    event.dataTransfer?.setData('application/x-view-id', view.id);
+                                    event.dataTransfer?.setData('text/plain', view.id);
+                                    if (event.dataTransfer) {
+                                        event.dataTransfer.effectAllowed = 'move';
+                                    }
+                                }}
+                            >
+                                <span class="token__icon">${iconLabel}</span>
+                                <span>${label}</span>
+                            </div>
+                        `;
+                    })}
+
+                    <button
+                        @click=${this.handlers.resetSession}
+                        class="icon-button"
+                        title="New Session / Reset"
+                    >
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         `;
     }

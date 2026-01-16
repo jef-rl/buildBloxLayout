@@ -38,6 +38,7 @@ export class UiState {
             overlayView: null,
             viewportWidthMode: 'auto',
             mainAreaCount: 1,
+            mainViewOrder: [],
         },
         toolbars: {
             positions: {},
