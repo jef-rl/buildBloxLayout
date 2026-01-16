@@ -4,6 +4,7 @@ export * from './components/controls/Resizer';
 export * from './components/controls/Toolbar';
 export * from './components/layout/DockContainer';
 export * from './components/layout/DockManager';
+export * from './components/layout/FrameworkRoot';
 export * from './components/layout/OverlayLayer';
 export * from './components/layout/PositionPicker';
 export * from './components/layout/WorkspaceRoot';

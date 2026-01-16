@@ -125,12 +125,10 @@ export class WorkspaceRoot extends LitElement {
             this.state = nextState;
             this.refreshContext();
         });
-        window.addEventListener('ui-event', this.handleUiEvent as EventListener);
         this.refreshContext();
     }
 
     disconnectedCallback() {
-        window.removeEventListener('ui-event', this.handleUiEvent as EventListener);
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
@@ -161,16 +159,6 @@ export class WorkspaceRoot extends LitElement {
         });
         this.requestUpdate();
     }
-
-    private handleUiEvent = (event: Event) => {
-        const detail = (event as CustomEvent).detail;
-        if (!detail?.type) {
-            return;
-        }
-
-        const payload = detail.payload ?? {};
-        this.dispatch({ type: detail.type, ...payload });
-    };
 
     private ensureLayoutState() {
         const layout = typeof this.state?.layout === 'object' && this.state.layout ? this.state.layout : {};
