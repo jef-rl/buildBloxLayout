@@ -18,6 +18,7 @@ export * from './state/ui-state';
 
 // Event handling
 export * from './utils/dispatcher';
+export * from './utils/logger';
 
 // Types & Interfaces
 export * from './types/core';
