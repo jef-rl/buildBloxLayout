@@ -1,5 +1,6 @@
 import { bootstrapFramework } from '@project/framework';
 import { DEMO_LAYOUT } from './data/demo-layout';
+import './components/login-overlay';
 
 const loadSimpleView = () => import('./components/simple-view');
 
@@ -13,3 +14,7 @@ bootstrapFramework({
   })),
   state: DEMO_LAYOUT
 });
+
+if (!document.querySelector('login-overlay')) {
+  document.body.appendChild(document.createElement('login-overlay'));
+}
