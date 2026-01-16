@@ -1,13 +1,34 @@
 import { LitElement } from 'lit';
-import { uiState, type UiState } from '../state/ui-state';
-import type { View, ViewComponent, ViewDefinition } from '../types/index';
+import type { View, ViewDefinition } from '../types/index';
+import { getFrameworkLogger } from '../utils/logger';
 
-class ViewRegistry {
+export type ViewRegistryChangeDetail = {
+    type: 'register';
+    viewId: string;
+    definition: ViewDefinition;
+    total: number;
+};
+
+class ViewRegistry extends EventTarget {
     private readonly viewDefinitions: Map<string, ViewDefinition> = new Map();
     private readonly componentCache: Map<string, any> = new Map();
 
     register(definition: ViewDefinition): void {
+        const logger = getFrameworkLogger();
+        const wasRegistered = this.viewDefinitions.has(definition.id);
         this.viewDefinitions.set(definition.id, definition);
+        logger?.info?.('ViewRegistry registered view.', {
+            viewId: definition.id,
+            title: definition.title,
+            tag: definition.tag,
+            existed: wasRegistered,
+        });
+        this.emitRegistryChange({
+            type: 'register',
+            viewId: definition.id,
+            definition,
+            total: this.viewDefinitions.size,
+        });
     }
 
     get(id: string): ViewDefinition | undefined {
@@ -53,6 +74,20 @@ class ViewRegistry {
     getAllViews(): ViewDefinition[] {
         return Array.from(this.viewDefinitions.values());
     }
+
+    onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void {
+        const handler = listener as EventListener;
+        this.addEventListener('registry-change', handler);
+        return () => {
+            this.removeEventListener('registry-change', handler);
+        };
+    }
+
+    private emitRegistryChange(detail: ViewRegistryChangeDetail) {
+        const logger = getFrameworkLogger();
+        this.dispatchEvent(new CustomEvent<ViewRegistryChangeDetail>('registry-change', { detail }));
+        logger?.info?.('ViewRegistry registry change.', detail);
+    }
 }
 
 export interface ViewRegistryApi {
@@ -61,6 +96,7 @@ export interface ViewRegistryApi {
     getComponent(id: string): Promise<any | undefined>;
     createView(viewId: string, data?: unknown): View | undefined;
     getAllViews(): ViewDefinition[];
+    onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void;
 }
 
 export const viewRegistry = new ViewRegistry();

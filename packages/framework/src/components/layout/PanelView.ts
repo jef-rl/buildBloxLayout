@@ -11,6 +11,7 @@ export class PanelView extends LitElement {
     @state() private fallbackMessage: string | null = null;
 
     private uiState: UiStateContextValue['state'] | null = null;
+    private registryUnsubscribe: (() => void) | null = null;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
@@ -41,6 +42,23 @@ export class PanelView extends LitElement {
             font-size: 0.9rem;
         }
     `;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
+            if (this.viewId) {
+                void this.loadView();
+            }
+        });
+    }
+
+    disconnectedCallback() {
+        if (this.registryUnsubscribe) {
+            this.registryUnsubscribe();
+            this.registryUnsubscribe = null;
+        }
+        super.disconnectedCallback();
+    }
 
     updated(changedProps: Map<string, unknown>) {
         if (changedProps.has('viewId')) {
