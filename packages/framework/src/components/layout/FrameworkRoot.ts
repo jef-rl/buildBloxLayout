@@ -7,6 +7,7 @@ import { uiStateContext } from '../../state/context';
 import { getFrameworkLogger } from '../../utils/logger';
 import { applyLayoutAction } from '../../handlers/workspace/layout';
 import { viewRegistry } from '../../registry/ViewRegistry';
+import { applyMainViewOrder, deriveMainViewOrderFromPanels } from '../../handlers/workspace/panels';
 import './WorkspaceRoot';
 
 type StateActionPayload = {
@@ -163,6 +164,7 @@ export class FrameworkRoot extends LitElement {
         overlayView: layout.overlayView ?? null,
         viewportWidthMode: layout.viewportWidthMode ?? 'auto',
         mainAreaCount: layout.mainAreaCount ?? 1,
+        mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
       },
     };
   }
@@ -200,7 +202,14 @@ export class FrameworkRoot extends LitElement {
           },
         };
         handled = applyLayoutAction(draftState, { ...payload, type: action.type });
-        nextState = handled ? draftState : previousState;
+        if (handled) {
+          const fallbackOrder = draftState.layout.mainViewOrder?.length
+            ? draftState.layout.mainViewOrder
+            : deriveMainViewOrderFromPanels(draftState.panels);
+          nextState = applyMainViewOrder(draftState, fallbackOrder);
+        } else {
+          nextState = previousState;
+        }
         break;
       }
       case 'panels/selectPanel':
@@ -240,9 +249,18 @@ export class FrameworkRoot extends LitElement {
               panels: nextPanels,
               views: nextViews,
               activeView: view.id,
+              layout: {
+                ...previousState.layout,
+                mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+              },
             };
           }
         }
+        break;
+      }
+      case 'panels/setMainViewOrder': {
+        const viewOrder = Array.isArray(payload.viewOrder) ? payload.viewOrder : [];
+        nextState = applyMainViewOrder(previousState, viewOrder);
         break;
       }
       case 'panels/togglePanel':

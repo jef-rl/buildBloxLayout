@@ -14,6 +14,7 @@ export type LayoutState = {
   overlayView: string | null;
   viewportWidthMode: ViewportWidthMode;
   mainAreaCount: MainAreaPanelCount;
+  mainViewOrder: string[];
 };
 
 export type ToolbarState = {

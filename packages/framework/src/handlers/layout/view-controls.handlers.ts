@@ -1,34 +1,26 @@
 import type { ViewControls } from '../../components/controls/Toolbar';
-import type { UiStateContextValue } from '../../state/ui-state';
-
-type UiDispatch = UiStateContextValue['dispatch'];
+import { dispatchUiEvent } from '../../utils/dispatcher';
 
 export const createViewControlsHandlers = (
-    _controls: ViewControls,
-    getDispatch: () => UiDispatch | null,
+    controls: ViewControls,
+    _getDispatch: () => unknown,
 ) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
     assignView: (viewId: string, panelId?: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
-            return;
-        }
-        dispatch({ type: 'panels/assignView', viewId, panelId });
+        dispatchUiEvent(controls, 'panels/assignView', { viewId, panelId });
+    },
+    setMainViewOrder: (viewOrder: string[]) => {
+        dispatchUiEvent(controls, 'panels/setMainViewOrder', { viewOrder });
+    },
+    setMainAreaCount: (count: number) => {
+        dispatchUiEvent(controls, 'layout/setMainAreaCount', { count });
     },
     setScopeMode: (mode: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
-            return;
-        }
-        dispatch({ type: 'panels/setScopeMode', mode });
+        dispatchUiEvent(controls, 'panels/setScopeMode', { mode });
     },
     resetSession: () => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
-            return;
-        }
-        dispatch({ type: 'session/reset' });
+        dispatchUiEvent(controls, 'session/reset');
     },
 });
