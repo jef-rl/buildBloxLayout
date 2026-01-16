@@ -240,7 +240,7 @@ export class DockContainer extends LitElement {
         const isActive = this.isPickerOpen;
         return html`
             <div class="handle">
-                <button @click="${this.handlers.togglePicker}" class="picker-toggle ${isActive ? 'active' : ''}">
+                <button @click=${this.handlers.togglePicker} class="picker-toggle ${isActive ? 'active' : ''}">
                     <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"></circle><circle cx="19" cy="5" r="2"></circle><circle cx="5" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle></svg>
                 </button>
                 ${isActive ? html`
@@ -259,7 +259,7 @@ export class DockContainer extends LitElement {
         const layout = this.layout;
 
         return html`
-            <div class="${layout.container}" data-orientation="${layout.orientation}" @click="${this.handlers.stopClickPropagation}">
+            <div class="${layout.container}" data-orientation="${layout.orientation}" @click=${this.handlers.stopClickPropagation}>
                 ${this.renderHandle(layout)}
                 ${!this.disablePositionPicker ? html`<div class="${layout.separator}"></div>` : nothing}
                 <slot @slotchange="${this.syncSlottedOrientation}"></slot>

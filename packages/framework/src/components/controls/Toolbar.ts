@@ -136,7 +136,7 @@ export class ViewControls extends LitElement {
         const targetPanelId = this.getTargetPanelId();
 
         return html`
-            <div class="controls ${isColumn ? 'column' : ''}" @click="${this.handlers.stopClickPropagation}">
+            <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
                 ${views.map((view) => {
                     const label = view.title || view.name || view.id;
                     const isAssigned = assignedViews.has(view.id);
@@ -144,7 +144,7 @@ export class ViewControls extends LitElement {
                     const isDisabled = !targetPanelId || panels.length === 0 || this.panelLimit < 1;
                     return html`
                         <button
-                            @click="${() => this.handlers.assignView(view.id, targetPanelId)}"
+                            @click=${() => this.handlers.assignView(view.id, targetPanelId)}
                             class="icon-button ${isAssigned ? 'active' : ''}"
                             title="${label}"
                             aria-label="${label}"
@@ -156,7 +156,7 @@ export class ViewControls extends LitElement {
                 })}
                 
                 <!-- Reset/New Session Button -->
-                    <button @click="${this.handlers.resetSession}" class="icon-button reset" title="New Session / Reset">
+                    <button @click=${this.handlers.resetSession} class="icon-button reset" title="New Session / Reset">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
             </div>

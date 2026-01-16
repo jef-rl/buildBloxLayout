@@ -1,4 +1,4 @@
-import { bootstrapFramework, dispatchUiEvent } from '@project/framework';
+import { bootstrapFramework } from '@project/framework';
 import { DEMO_LAYOUT } from './data/demo-layout';
 
 const loadSimpleView = () => import('./components/simple-view');
@@ -18,6 +18,21 @@ const hasFirebaseConfig = REQUIRED_FIREBASE_ENV.every((key) => {
   return Boolean(value && value.trim().length > 0);
 });
 
+const shouldShowLoginOverlay = hasFirebaseConfig && !DEMO_LAYOUT.auth?.isLoggedIn;
+const initialState = {
+  ...DEMO_LAYOUT,
+  auth: hasFirebaseConfig
+    ? DEMO_LAYOUT.auth
+    : {
+        isLoggedIn: true,
+        user: { uid: 'demo-user', email: 'demo@local' }
+      },
+  layout: {
+    ...DEMO_LAYOUT.layout,
+    overlayView: shouldShowLoginOverlay ? LOGIN_VIEW_ID : DEMO_LAYOUT.layout.overlayView
+  }
+};
+
 bootstrapFramework({
   views: [
     ...DEMO_LAYOUT.views.map((view) => ({
@@ -35,13 +50,5 @@ bootstrapFramework({
       component: loadLoginOverlay
     }
   ],
-  state: DEMO_LAYOUT
+  state: initialState
 });
-
-if (!hasFirebaseConfig) {
-  dispatchUiEvent(window, 'auth/setUser', {
-    user: { uid: 'demo-user', email: 'demo@local' }
-  });
-} else if (!DEMO_LAYOUT.auth?.isLoggedIn) {
-  dispatchUiEvent(window, 'layout/setOverlayView', { viewId: LOGIN_VIEW_ID });
-}
