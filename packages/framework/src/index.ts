@@ -29,6 +29,7 @@ export * from './types/panel';
 
 // Utilities
 export * from './utils/helpers';
+export * from './bootstrap';
 
 // Handlers
 export * from './handlers/layout/dock';

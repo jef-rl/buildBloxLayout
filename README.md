@@ -4,35 +4,27 @@
 
 Use the framework package to register view components, hydrate layout state, and wire UI actions into the layout system.
 
-### Register views with `viewRegistry.register`
+### Bootstrap with `bootstrapFramework`
 
-The playground registers each view (id, name, tag, and lazy-loaded component) before any layout state is loaded. This ensures the registry can resolve view ids as panels render.
+The playground registers each view (id, name, tag, and lazy-loaded component), hydrates the layout state, and mounts the framework root in one call. This ensures the registry can resolve view ids as panels render.
 
 ```ts
 // packages/playground/src/main.ts
-import { uiState, viewRegistry as ViewRegistry } from '@project/framework';
+import { bootstrapFramework } from '@project/framework';
 import { DEMO_LAYOUT } from './data/demo-layout';
 
 const loadSimpleView = () => import('./components/simple-view');
 
-DEMO_LAYOUT.views.forEach((view) => {
-  ViewRegistry.register({
+bootstrapFramework({
+  views: DEMO_LAYOUT.views.map((view) => ({
     id: view.id,
     name: view.name,
     title: view.name,
     tag: 'simple-view',
     component: loadSimpleView
-  });
+  })),
+  state: DEMO_LAYOUT
 });
-```
-
-### Provide layout data via `uiState.update`
-
-Once the views are registered, initialize the UI store with layout data (panels, layout regions, view ids, and metadata).
-
-```ts
-// packages/playground/src/main.ts
-uiState.update(DEMO_LAYOUT);
 ```
 
 ### Dispatch UI actions with `dispatchUiEvent`
