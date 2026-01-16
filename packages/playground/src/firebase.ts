@@ -2,6 +2,9 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 // Replace with real Firebase keys from your project settings.
+// For real values, add a .env file (or environment variables) with VITE_FIREBASE_* keys.
+// Get them from Firebase Console → Project settings → General → Your apps → Firebase SDK snippet (Config).
+// These values replace the placeholders below or are injected via import.meta.env at build time.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "FIREBASE_API_KEY_HERE",
   authDomain:
