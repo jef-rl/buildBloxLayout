@@ -119,7 +119,9 @@ export class FrameworkRoot extends LitElement {
 
   private getContextState() {
     const snapshot = this.state ?? uiState.getState();
-    const panels = Array.isArray(snapshot.panels) ? [...snapshot.panels] : { ...(snapshot.panels ?? {}) };
+    const panels = Array.isArray(snapshot.panels)
+      ? [...snapshot.panels]
+      : { ...((snapshot.panels ?? {}) as Record<string, unknown>) };
 
     if (panels && typeof panels === 'object') {
       panels.open = this.panelState.open;
