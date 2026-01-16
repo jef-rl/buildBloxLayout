@@ -110,6 +110,7 @@ export class WorkspaceRoot extends LitElement {
     };
 
     private unsubscribe: (() => void) | null = null;
+    private registryUnsubscribe: (() => void) | null = null;
 
     private provider = new ContextProvider(this, {
         context: uiStateContext,
@@ -125,6 +126,9 @@ export class WorkspaceRoot extends LitElement {
             this.state = nextState;
             this.refreshContext();
         });
+        this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
+            this.requestUpdate();
+        });
         this.refreshContext();
     }
 
@@ -132,6 +136,10 @@ export class WorkspaceRoot extends LitElement {
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
+        }
+        if (this.registryUnsubscribe) {
+            this.registryUnsubscribe();
+            this.registryUnsubscribe = null;
         }
         super.disconnectedCallback();
     }

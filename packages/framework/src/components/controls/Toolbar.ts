@@ -13,6 +13,7 @@ export class ViewControls extends LitElement {
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
+    private registryUnsubscribe: (() => void) | null = null;
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
@@ -81,6 +82,21 @@ export class ViewControls extends LitElement {
             color: currentColor;
         }
     `;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.registryUnsubscribe = ViewRegistry.onRegistryChange(() => {
+            this.requestUpdate();
+        });
+    }
+
+    disconnectedCallback() {
+        if (this.registryUnsubscribe) {
+            this.registryUnsubscribe();
+            this.registryUnsubscribe = null;
+        }
+        super.disconnectedCallback();
+    }
 
     get panelLimit() {
         const layout = this.uiState?.layout ?? {};
