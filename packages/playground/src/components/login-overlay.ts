@@ -77,6 +77,7 @@ export class LoginOverlay extends LitElement {
       );
       const { uid, email } = credentials.user;
       dispatchUiEvent(window, 'auth/setUser', { user: { uid, email } });
+      dispatchUiEvent(window, 'layout/setOverlayView', { viewId: null });
       this.isOpen = false;
     } catch (error) {
       console.error('Login failed', error);
