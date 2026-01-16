@@ -1,29 +1,14 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { dispatchUiEvent } from '@project/framework';
-
-type AuthUser = {
-  uid: string;
-  email?: string;
-};
-
-const signInWithEmailAndPassword = async (
-  email: string,
-  _password: string
-): Promise<{ user: AuthUser }> => {
-  return {
-    user: {
-      uid: `demo-${Date.now()}`,
-      email
-    }
-  };
-};
+import { firebaseAuth, signInWithEmailAndPassword } from '../firebase';
 
 @customElement('login-overlay')
 export class LoginOverlay extends LitElement {
   @state() private isOpen = true;
   @state() private email = '';
   @state() private password = '';
+  @state() private errorMessage = '';
 
   static styles = css`
     :host {
@@ -72,14 +57,32 @@ export class LoginOverlay extends LitElement {
       font-weight: 600;
       cursor: pointer;
     }
+
+    .error {
+      margin-top: 12px;
+      color: #fca5a5;
+      font-size: 0.85rem;
+    }
   `;
 
   private async handleSubmit(event: Event) {
     event.preventDefault();
-    const credentials = await signInWithEmailAndPassword(this.email, this.password);
-    const { uid, email } = credentials.user;
-    dispatchUiEvent(window, 'auth/setUser', { user: { uid, email } });
-    this.isOpen = false;
+    this.errorMessage = '';
+
+    try {
+      const credentials = await signInWithEmailAndPassword(
+        firebaseAuth,
+        this.email,
+        this.password
+      );
+      const { uid, email } = credentials.user;
+      dispatchUiEvent(window, 'auth/setUser', { user: { uid, email } });
+      this.isOpen = false;
+    } catch (error) {
+      console.error('Login failed', error);
+      this.errorMessage = 'Unable to sign in. Please check your details and try again.';
+      this.isOpen = true;
+    }
   }
 
   render() {
@@ -107,6 +110,7 @@ export class LoginOverlay extends LitElement {
             }}
           />
           <button type="submit">Log in</button>
+          ${this.errorMessage ? html`<div class="error">${this.errorMessage}</div>` : ''}
         </form>
       </div>
     `;
