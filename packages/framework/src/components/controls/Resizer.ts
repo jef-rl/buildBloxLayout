@@ -16,8 +16,8 @@ export class SizeControls extends LitElement {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? this.uiState;
-            this.uiDispatch = value?.dispatch ?? this.uiDispatch;
+            this.uiState = value?.state ?? null;
+            this.uiDispatch = value?.dispatch ?? null;
             this.requestUpdate();
         },
     });

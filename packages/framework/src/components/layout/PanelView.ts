@@ -17,7 +17,7 @@ export class PanelView extends LitElement {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? this.uiState;
+            this.uiState = value?.state ?? null;
             this.updateElementData();
         },
     });
