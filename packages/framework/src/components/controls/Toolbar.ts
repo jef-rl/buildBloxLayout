@@ -39,6 +39,9 @@ export class ViewControls extends LitElement {
             border: none;
             border-radius: 0;
             min-width: unset;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .controls.row {
@@ -48,11 +51,20 @@ export class ViewControls extends LitElement {
             flex-wrap: nowrap;
         }
 
+        .controls.column {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
+        }
+
         .slot-strip {
             display: flex;
             flex-wrap: nowrap;
             align-items: center;
             gap: 4px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .slot {
@@ -112,6 +124,9 @@ export class ViewControls extends LitElement {
             flex-wrap: wrap;
             align-items: center;
             gap: 6px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .token {
@@ -175,14 +190,36 @@ export class ViewControls extends LitElement {
 
         .slot-strip--column {
             flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
         }
 
         .slot-strip--column .slot {
-            width: 72px;
-            height: auto;
-            padding: 6px 8px;
+            width: 100%;
+            min-width: 0;
+            height: 28px;
+            padding: 4px 8px;
             flex-direction: column;
             gap: 4px;
+        }
+
+        .token-pool--column {
+            flex-direction: column;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            gap: 4px;
+        }
+
+        .token-pool--column .token {
+            width: 100%;
+            justify-content: space-between;
+            padding: 2px 6px;
+        }
+
+        .token-pool--column .token__icon {
+            height: 14px;
+            min-width: 14px;
+            font-size: 8px;
         }
 
         .slot-strip--row .slot__title {
@@ -338,9 +375,11 @@ export class ViewControls extends LitElement {
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
         const slotStripClass = `slot-strip ${isRow ? 'slot-strip--row' : 'slot-strip--column'}`;
+        const tokenPoolClass = `token-pool ${isRow ? 'token-pool--row' : 'token-pool--column'}`;
+        const controlsClass = `controls ${isRow ? 'row' : 'column'}`;
 
         return html`
-            <div class="controls ${isRow ? 'row' : ''}" @click=${this.handlers.stopClickPropagation}>
+            <div class="${controlsClass}" @click=${this.handlers.stopClickPropagation}>
                 <div class="${slotStripClass}">
                     ${Array.from({ length: 5 }).map((_, index) => {
                         const viewId = activeOrder[index] ?? null;
@@ -376,7 +415,7 @@ export class ViewControls extends LitElement {
                     })}
                 </div>
 
-                <div class="token-pool">
+                <div class="${tokenPoolClass}">
                     ${views.map((view) => {
                         const label = this.getViewLabel(view);
                         const iconLabel = this.getIconLabel(label, view.id);
