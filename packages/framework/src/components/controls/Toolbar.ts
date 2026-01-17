@@ -11,16 +11,18 @@ export class ViewControls extends LitElement {
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
+    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? null;
+            this.uiDispatch = value?.dispatch ?? null;
             this.requestUpdate();
         },
     });
-    private handlers = createViewControlsHandlers(this, () => null);
+    private handlers = createViewControlsHandlers(this, () => this.uiDispatch);
 
     static styles = css`
         :host {
@@ -30,7 +32,8 @@ export class ViewControls extends LitElement {
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            align-items: stretch;
+            gap: 10px;
             padding: 12px;
             background: rgba(15, 23, 42, 0.92);
             border: 1px solid rgba(30, 41, 59, 0.8);
@@ -39,14 +42,13 @@ export class ViewControls extends LitElement {
         }
 
         .controls.row {
-            flex-direction: row;
-            align-items: center;
+            flex-direction: column;
             min-width: unset;
         }
 
         .slot-strip {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            display: flex;
+            flex-wrap: nowrap;
             gap: 6px;
         }
 
@@ -56,7 +58,9 @@ export class ViewControls extends LitElement {
             align-items: center;
             justify-content: center;
             gap: 4px;
-            padding: 8px 6px;
+            width: 44px;
+            height: 44px;
+            padding: 4px;
             border-radius: 10px;
             border: 1px dashed rgba(148, 163, 184, 0.4);
             background: rgba(15, 23, 42, 0.6);
@@ -85,8 +89,8 @@ export class ViewControls extends LitElement {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             border-radius: 999px;
             background: rgba(148, 163, 184, 0.12);
             font-size: 11px;
@@ -164,6 +168,20 @@ export class ViewControls extends LitElement {
             width: 18px;
             height: 18px;
         }
+
+        .slot-strip--column {
+            flex-direction: column;
+        }
+
+        .slot-strip--column .slot {
+            width: 72px;
+            height: auto;
+            padding: 8px 6px;
+        }
+
+        .slot-strip--row .slot__title {
+            display: none;
+        }
     `;
 
     connectedCallback() {
@@ -196,6 +214,14 @@ export class ViewControls extends LitElement {
         return label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || fallback.slice(0, 2);
     }
 
+    private canEnableSlot(slotNumber: number, capacity: number) {
+        return slotNumber === capacity + 1;
+    }
+
+    private canDisableSlot(slotNumber: number, capacity: number) {
+        return slotNumber === capacity && capacity > 1;
+    }
+
     private resolveMainViewOrder() {
         const layout = this.uiState?.layout ?? {};
         const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
@@ -217,7 +243,7 @@ export class ViewControls extends LitElement {
         return deduped;
     }
 
-    private handleSlotDrop(event: DragEvent, slotIndex: number) {
+    private handleSlotDrop(event: DragEvent, slotIndex: number, isEnabled: boolean) {
         event.preventDefault();
         const viewId =
             event.dataTransfer?.getData('application/x-view-id') ||
@@ -226,15 +252,26 @@ export class ViewControls extends LitElement {
             return;
         }
 
+        const capacity = this.panelLimit;
+        const slotNumber = slotIndex + 1;
+        if (!isEnabled && !this.canEnableSlot(slotNumber, capacity)) {
+            return;
+        }
+
         const currentOrder = this.resolveMainViewOrder();
         const nextOrder = currentOrder.filter((id) => id !== viewId);
         nextOrder.splice(slotIndex, 0, viewId);
-        const limitedOrder = nextOrder.slice(0, this.panelLimit);
+        const nextCapacity = isEnabled ? capacity : slotNumber;
+        const limitedOrder = nextOrder.slice(0, nextCapacity);
+        if (!isEnabled) {
+            this.handlers.setMainAreaCount(slotNumber);
+        }
         this.handlers.setMainViewOrder(limitedOrder);
     }
 
-    private handleSlotDragOver(event: DragEvent, isEnabled: boolean) {
-        if (!isEnabled) {
+    private handleSlotDragOver(event: DragEvent, isEnabled: boolean, slotNumber: number) {
+        const capacity = this.panelLimit;
+        if (!isEnabled && !this.canEnableSlot(slotNumber, capacity)) {
             return;
         }
         event.preventDefault();
@@ -245,24 +282,31 @@ export class ViewControls extends LitElement {
 
     private handleSlotClick(slotIndex: number, viewId: string | null, isEnabled: boolean) {
         const capacity = this.panelLimit;
-        if (viewId) {
-            const nextOrder = this.resolveMainViewOrder().filter((id) => id !== viewId);
-            this.handlers.setMainViewOrder(nextOrder);
-            return;
-        }
-
         const slotNumber = slotIndex + 1;
 
         if (!isEnabled) {
-            if (slotNumber === 5 && capacity < 4) {
-                return;
+            if (this.canEnableSlot(slotNumber, capacity)) {
+                this.handlers.setMainAreaCount(slotNumber);
             }
-            this.handlers.setMainAreaCount(slotNumber);
             return;
         }
 
-        if (slotNumber === capacity && capacity > 1) {
+        if (this.canDisableSlot(slotNumber, capacity)) {
             this.handlers.setMainAreaCount(slotNumber - 1);
+            return;
+        }
+
+        if (viewId) {
+            const nextOrder = this.resolveMainViewOrder().filter((id) => id !== viewId);
+            this.handlers.setMainViewOrder(nextOrder);
+        }
+    }
+
+    private handleTokenDragStart(event: DragEvent, viewId: string) {
+        event.dataTransfer?.setData('application/x-view-id', viewId);
+        event.dataTransfer?.setData('text/plain', viewId);
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
         }
     }
 
@@ -272,10 +316,11 @@ export class ViewControls extends LitElement {
         const activeOrder = this.resolveMainViewOrder();
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
+        const slotStripClass = `slot-strip ${isRow ? 'slot-strip--row' : 'slot-strip--column'}`;
 
         return html`
             <div class="controls ${isRow ? 'row' : ''}" @click=${this.handlers.stopClickPropagation}>
-                <div class="slot-strip">
+                <div class="${slotStripClass}">
                     ${Array.from({ length: 5 }).map((_, index) => {
                         const viewId = activeOrder[index] ?? null;
                         const view = viewId ? views.find((item) => item.id === viewId) : null;
@@ -295,8 +340,9 @@ export class ViewControls extends LitElement {
                             <button
                                 class="${slotClass}"
                                 aria-disabled=${!isEnabled}
-                                @dragover=${(event: DragEvent) => this.handleSlotDragOver(event, isEnabled)}
-                                @drop=${(event: DragEvent) => isEnabled && this.handleSlotDrop(event, index)}
+                                @dragover=${(event: DragEvent) =>
+                                    this.handleSlotDragOver(event, isEnabled, index + 1)}
+                                @drop=${(event: DragEvent) => this.handleSlotDrop(event, index, isEnabled)}
                                 @click=${() => this.handleSlotClick(index, viewId, isEnabled)}
                                 title=${view ? `Slot ${index + 1}: ${label}` : `Slot ${index + 1}`}
                             >
@@ -318,13 +364,7 @@ export class ViewControls extends LitElement {
                             <div
                                 class="token ${isActive ? 'token--active' : ''}"
                                 draggable="true"
-                                @dragstart=${(event: DragEvent) => {
-                                    event.dataTransfer?.setData('application/x-view-id', view.id);
-                                    event.dataTransfer?.setData('text/plain', view.id);
-                                    if (event.dataTransfer) {
-                                        event.dataTransfer.effectAllowed = 'move';
-                                    }
-                                }}
+                                @dragstart=${(event: DragEvent) => this.handleTokenDragStart(event, view.id)}
                             >
                                 <span class="token__icon">${iconLabel}</span>
                                 <span>${label}</span>
