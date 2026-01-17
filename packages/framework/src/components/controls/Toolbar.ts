@@ -31,56 +31,58 @@ export class ViewControls extends LitElement {
 
         .controls {
             display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-            padding: 12px;
-            background: rgba(15, 23, 42, 0.92);
-            border: 1px solid rgba(30, 41, 59, 0.8);
-            border-radius: 12px;
-            min-width: 240px;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            min-width: unset;
         }
 
         .controls.row {
-            flex-direction: column;
-            min-width: unset;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
         }
 
         .slot-strip {
             display: flex;
             flex-wrap: nowrap;
-            gap: 6px;
+            align-items: center;
+            gap: 4px;
         }
 
         .slot {
-            display: flex;
-            flex-direction: column;
+            display: inline-flex;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            width: 44px;
-            height: 44px;
-            padding: 4px;
-            border-radius: 10px;
-            border: 1px dashed rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.6);
+            gap: 2px;
+            height: 22px;
+            min-width: 22px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: transparent;
             color: #94a3b8;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
         }
 
         .slot--active {
-            border-style: solid;
-            border-color: rgba(59, 130, 246, 0.7);
-            background: rgba(30, 64, 175, 0.35);
-            color: #e2e8f0;
+            border-color: rgba(34, 197, 94, 0.9);
+            background: rgba(34, 197, 94, 0.12);
+            color: #d1fae5;
         }
 
         .slot--disabled {
-            border-color: transparent;
-            background: rgba(15, 23, 42, 0.3);
+            border-color: rgba(148, 163, 184, 0.2);
+            background: transparent;
             color: rgba(148, 163, 184, 0.4);
             cursor: not-allowed;
         }
@@ -89,17 +91,18 @@ export class ViewControls extends LitElement {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 26px;
-            height: 26px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
             border-radius: 999px;
-            background: rgba(148, 163, 184, 0.12);
-            font-size: 11px;
+            background: rgba(148, 163, 184, 0.18);
+            font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
         }
 
         .slot__title {
-            font-size: 10px;
+            font-size: 9px;
             text-align: center;
             line-height: 1.2;
         }
@@ -107,19 +110,20 @@ export class ViewControls extends LitElement {
         .token-pool {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            align-items: center;
+            gap: 6px;
         }
 
         .token {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
+            gap: 4px;
+            padding: 4px 8px;
             border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.4);
             color: #cbd5f5;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             cursor: grab;
             transition: border-color 0.2s ease, background-color 0.2s ease;
@@ -130,8 +134,8 @@ export class ViewControls extends LitElement {
         }
 
         .token--active {
-            border-color: rgba(59, 130, 246, 0.8);
-            background: rgba(30, 64, 175, 0.4);
+            border-color: rgba(34, 197, 94, 0.9);
+            background: rgba(34, 197, 94, 0.16);
             color: #ffffff;
         }
 
@@ -139,11 +143,11 @@ export class ViewControls extends LitElement {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            min-width: 16px;
+            height: 16px;
             border-radius: 999px;
-            background: rgba(148, 163, 184, 0.2);
-            font-size: 10px;
+            background: rgba(148, 163, 184, 0.22);
+            font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
         }
@@ -176,10 +180,27 @@ export class ViewControls extends LitElement {
         .slot-strip--column .slot {
             width: 72px;
             height: auto;
-            padding: 8px 6px;
+            padding: 6px 8px;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .slot-strip--row .slot__title {
+            display: none;
+        }
+
+        .controls.row .token {
+            padding: 2px 6px;
+            font-size: 9px;
+        }
+
+        .controls.row .token__icon {
+            height: 14px;
+            min-width: 14px;
+            font-size: 8px;
+        }
+
+        .controls.row .token span:last-child {
             display: none;
         }
     `;
