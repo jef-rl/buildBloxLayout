@@ -104,6 +104,8 @@ const MAIN_PANELS: Panel[] = MAIN_VIEWS.map((view, index) => ({
   view
 }));
 
+const REGISTERED_VIEWS = [...MAIN_VIEWS, ...EXTRA_VIEWS];
+
 const EXPANSION_PANELS: Panel[] = [
   {
     id: 'panel-expansion-left',
@@ -157,6 +159,14 @@ export const DEMO_LAYOUT: UIState = {
   ],
   panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
   views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
+  viewTokens: {
+    registered: REGISTERED_VIEWS.map((view) => ({
+      id: view.id,
+      label: view.name
+    })),
+    activeSlots: MAIN_VIEWS.map((view) => view.id),
+    tokenOrder: REGISTERED_VIEWS.map((view) => view.id)
+  },
   layout: {
     expansion: {
       left: false,

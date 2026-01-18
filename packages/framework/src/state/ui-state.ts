@@ -32,6 +32,11 @@ export class UiState {
         containers: [],
         panels: [],
         views: [],
+        viewTokens: {
+            registered: [],
+            activeSlots: [null, null, null, null, null],
+            tokenOrder: [],
+        },
         activeView: null,
         layout: {
             expansion: { left: false, right: false, bottom: false },

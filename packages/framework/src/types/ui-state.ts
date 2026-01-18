@@ -17,6 +17,17 @@ export type LayoutState = {
   mainViewOrder: string[];
 };
 
+export type RegisteredViewSummary = {
+  id: string;
+  label: string;
+};
+
+export type ViewTokenState = {
+  registered: RegisteredViewSummary[];
+  activeSlots: Array<string | null>;
+  tokenOrder: string[];
+};
+
 export type ToolbarState = {
   positions: Record<string, ToolbarPos>;
   activePicker: string | null;
@@ -36,6 +47,7 @@ export type UIState = {
   containers: PanelContainer[];
   panels: Panel[];
   views: View[];
+  viewTokens: ViewTokenState;
   layout: LayoutState;
   toolbars: ToolbarState;
   activeView: string | null;
