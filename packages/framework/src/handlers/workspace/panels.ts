@@ -57,7 +57,8 @@ export const deriveMainViewOrderFromPanels = (panels: Panel[]) =>
 
 export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState => {
     const capacity = Math.min(5, Math.max(1, Number(state.layout.mainAreaCount ?? 1)));
-    const nextOrder = uniqueViewIds(viewOrder).slice(0, capacity);
+    const uniqueOrder = uniqueViewIds(viewOrder);
+    const nextOrder = uniqueOrder.slice(0, capacity);
     const mainPanels = state.panels.filter((panel) => panel.region === 'main');
     const mainPanelIds = mainPanels.map((panel) => panel.id);
     const nextPanels = state.panels.map((panel) => {
@@ -112,7 +113,7 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         activeView: nextActiveView,
         layout: {
             ...state.layout,
-            mainViewOrder: nextOrder,
+            mainViewOrder: uniqueOrder,
         },
     };
 };
