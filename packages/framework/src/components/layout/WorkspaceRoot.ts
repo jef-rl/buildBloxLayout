@@ -1,15 +1,14 @@
 // @ts-nocheck
 import { LitElement, html, css, nothing } from 'lit';
-import { uiState } from '../../state/ui-state';
-import { DockManager } from './DockManager';
-import '../controls/Toolbar';
-import '../controls/Resizer';
-import '../controls/Expander';
-import './DockContainer';
-import './OverlayLayer';
-import './PanelView';
-import { viewRegistry } from '../../registry/ViewRegistry';
-import { dispatchUiEvent } from '../../utils/dispatcher';
+import { uiState } from '../../state/ui-state.js';
+import { DockManager } from './DockManager.js';
+import '../controls/Resizer.js';
+import '../controls/Expander.js';
+import './DockContainer.js';
+import './OverlayLayer.js';
+import './PanelView.js';
+import { viewRegistry } from '../../registry/ViewRegistry.js';
+import { dispatchUiEvent } from '../../utils/dispatcher.js';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 

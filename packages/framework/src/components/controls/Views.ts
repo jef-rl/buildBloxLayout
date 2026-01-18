@@ -554,7 +554,7 @@ export class ViewControls extends LitElement {
                                             ? html`<i class="codicon codicon-${iconName}"></i>`
                                             : ''}
                                     </span>
-                                    <span>${label}</span>
+                              
                                     <span class="token__actions">
                                         <button
                                             class="token__move"
