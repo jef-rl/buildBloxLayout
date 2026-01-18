@@ -199,6 +199,8 @@ Overlay panels are **in scope** and are **feature-driven**.
 - An overlay panel is **only visible when at least one view is associated with it**.
 - If no view is attached, the overlay panel does **not exist in the rendered layout**.
 
+---
+
 ### Characteristics
 
 - Visually layered above all docked regions.
@@ -209,7 +211,40 @@ Overlay panels are **in scope** and are **feature-driven**.
 
 ---
 
-## 7. Panel‑Bound Toolbars (Structural Scope Only)
+## 7. View Token State Schema
+
+The following schema defines the view-token state used by the main view toolbar:
+
+```ts
+type ViewTokenState = {
+  // Registered views (stable identifiers + labels).
+  registered: Array<{
+    id: string; // stable view definition id
+    label: string; // human-friendly label shown in the UI
+  }>;
+
+  // Active view slots (fixed length 5). Each slot references a registered view id or is empty.
+  activeSlots: Array<string | null>; // length === 5
+
+  // Registered view token order (independent from active slots).
+  tokenOrder: string[]; // list of registered view ids
+};
+```
+
+### Storage
+
+- The schema is stored on the application UI state (`UIState.viewTokens`) and lives with the rest of the layout state in `packages/framework/src/state/ui-state.ts`.
+- Registered view metadata originates from the view registry (`packages/framework/src/registry/ViewRegistry.ts`) and is mirrored into `UIState.viewTokens.registered` so that the toolbar can render stable labels.
+
+### Update Flow
+
+- **Registered views list (`registered`)**: refreshed whenever views are registered (via `bootstrapFramework` view registration or other registry updates) so the UI always has the latest stable identifiers and labels.
+- **Active slots (`activeSlots`)**: maintained by layout/panel logic when the main view order is applied or when panels are assigned/unassigned (e.g., `panels/setMainViewOrder`, `panels/assignView`).
+- **Token order (`tokenOrder`)**: updated by the view controls drag/drop handlers to preserve the user’s preferred token ordering, independent from which views are active in the five slots.
+
+---
+
+## 8. Panel‑Bound Toolbars (Structural Scope Only)
 
 This analysis includes **only toolbars that directly mutate panel structure**. Any toolbar that does not reference a panel via `toolbarId` is out of scope.
 
@@ -237,7 +272,7 @@ This analysis includes **only toolbars that directly mutate panel structure**. A
 
 ---
 
-## 8. View Attachment Model
+## 9. View Attachment Model
 
 Views are never attached directly to the screen.
 
@@ -253,7 +288,7 @@ View → Panel → Layout
 
 ---
 
-## 9. Summary Table
+## 10. Summary Table
 
 | Element               | Docked | Affects Layout | Overlaps | Hosts Views |
 | --------------------- | ------ | -------------- | -------- | ----------- |
@@ -266,7 +301,7 @@ View → Panel → Layout
 
 ---
 
-## 10. Panel Roles (Common Usage)
+## 11. Panel Roles (Common Usage)
 
 While the layout model is **view‑agnostic**, panels tend to converge on consistent *roles* based on their position. These roles are **conventional, not enforced**, but provide useful guidance for design and implementation.
 
@@ -326,4 +361,3 @@ While the layout model is **view‑agnostic**, panels tend to converge on consis
 > **Views provide content.**  \
 > **Toolbars mutate structure.**  \
 > **Overlays are view‑driven and ephemeral.**
-
