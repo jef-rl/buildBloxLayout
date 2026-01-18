@@ -10,7 +10,8 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@project/framework/*": ["packages/framework/src/*"]
+      "@project/framework": ["packages/framework/dist"],
+      "@project/framework/*": ["packages/framework/dist/*"]
     },
     "experimentalDecorators": true,
     "useDefineForClassFields": false
