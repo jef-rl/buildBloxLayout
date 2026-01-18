@@ -308,13 +308,25 @@ export class ViewControls extends LitElement {
         return slotNumber === capacity && capacity > 1;
     }
 
+    private resolvePanelViewId(panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) {
+        return panel?.activeViewId ?? panel?.viewId ?? (panel as any)?.view?.component ?? null;
+    }
+
+    private resolveActiveMainViews() {
+        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
+        return panels
+            .filter((panel) => panel.region === 'main')
+            .map((panel) => this.resolvePanelViewId(panel))
+            .filter(Boolean);
+    }
+
     private resolveMainViewOrder() {
         const layout = this.uiState?.layout ?? {};
         const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
         const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
         const panelOrder = panels
             .filter((panel) => panel.region === 'main')
-            .map((panel) => panel.activeViewId ?? panel.viewId ?? panel.view?.component)
+            .map((panel) => this.resolvePanelViewId(panel))
             .filter(Boolean);
         const mergedOrder = [...layoutOrder];
         panelOrder.forEach((viewId) => {
@@ -474,7 +486,7 @@ export class ViewControls extends LitElement {
         const isRow = this.orientation === 'row';
         const views = ViewRegistry.getAllViews();
         const viewMap = new Map(views.map((view) => [view.id, view]));
-        const activeOrder = this.resolveMainViewOrder();
+        const activeOrder = this.resolveActiveMainViews();
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
         const slotStripClass = `slot-strip ${isRow ? 'slot-strip--row' : 'slot-strip--column'}`;
