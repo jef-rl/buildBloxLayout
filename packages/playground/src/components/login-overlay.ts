@@ -79,7 +79,7 @@ export class LoginOverlay extends LitElement {
       dispatchUiEvent(window, 'auth/setUser', { user: { uid, email } });
       dispatchUiEvent(window, 'layout/setOverlayView', { viewId: null });
       this.isOpen = false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed', error);
       if (error.code === 'auth/wrong-password') {
         this.errorMessage = 'Incorrect password. Please try again.';

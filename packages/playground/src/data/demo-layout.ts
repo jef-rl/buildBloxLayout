@@ -165,7 +165,8 @@ export const DEMO_LAYOUT: UIState = {
     },
     overlayView: null,
     viewportWidthMode: 'auto',
-    mainAreaCount: MAIN_PANELS.length as MainAreaPanelCount
+    mainAreaCount: MAIN_PANELS.length as MainAreaPanelCount,
+    mainViewOrder: MAIN_VIEWS.map(v => v.id)
   },
   toolbars: {
     positions: {},
@@ -175,7 +176,7 @@ export const DEMO_LAYOUT: UIState = {
   dock: {},
   theme: {},
   auth: {
-    isLoggedIn: false,
+    isLoggedIn: true,
     user: null
   }
 };
