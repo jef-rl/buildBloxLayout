@@ -1,4 +1,4 @@
-import type { UIState, ViewDefinition } from './types/index';
+import type { UIState, ViewDefinition, ViewTokenState } from './types/index';
 import { viewRegistry } from './registry/ViewRegistry';
 import { uiState } from './state/ui-state';
 import { getFrameworkLogger } from './utils/logger';
