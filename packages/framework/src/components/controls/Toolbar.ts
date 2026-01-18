@@ -388,6 +388,10 @@ export class ViewControls extends LitElement {
                         const iconLabel = viewId ? this.getIconLabel(label, viewId) : `${index + 1}`;
                         const isEnabled = index < capacity;
                         const isActive = Boolean(viewId);
+                        const slotStatus = isActive ? 'active' : 'inactive';
+                        const slotLabel = `Slot ${index + 1}: ${slotStatus}${
+                            label ? `, view ${label}` : ', no view assigned'
+                        }`;
                         const slotClass = [
                             'slot',
                             isActive ? 'slot--active' : '',
@@ -400,11 +404,12 @@ export class ViewControls extends LitElement {
                             <button
                                 class="${slotClass}"
                                 aria-disabled=${!isEnabled}
+                                aria-label=${slotLabel}
                                 @dragover=${(event: DragEvent) =>
                                     this.handleSlotDragOver(event, isEnabled, index + 1)}
                                 @drop=${(event: DragEvent) => this.handleSlotDrop(event, index, isEnabled)}
                                 @click=${() => this.handleSlotClick(index, viewId, isEnabled)}
-                                title=${view ? `Slot ${index + 1}: ${label}` : `Slot ${index + 1}`}
+                                title=${slotLabel}
                             >
                                 <span class="slot__label">${iconLabel}</span>
                                 <span class="slot__title">
