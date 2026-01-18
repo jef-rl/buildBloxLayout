@@ -6,6 +6,7 @@ ViewRegistry.register({
   name: 'Demo View',
   title: 'Demo View',
   tag: 'demo-view',
+  icon: '🧩',
   component: () => import('./demo-view'),
 });
 

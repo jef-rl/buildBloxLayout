@@ -87,10 +87,6 @@ export const applyLayoutAction = (
                 payload.count ?? payload.mainAreaCount,
                 state.layout.mainAreaCount ?? 1,
             );
-            state.layout.mainViewOrder = (state.layout.mainViewOrder ?? []).slice(
-                0,
-                state.layout.mainAreaCount ?? 1,
-            );
             return true;
         }
         default:

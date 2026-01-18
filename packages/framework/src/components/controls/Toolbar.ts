@@ -132,8 +132,8 @@ export class ViewControls extends LitElement {
         .token {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
+            gap: 2px;
+            padding: 2px 4px;
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.35);
             background: rgba(15, 23, 42, 0.4);
@@ -158,13 +158,41 @@ export class ViewControls extends LitElement {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 16px;
-            height: 16px;
+            min-width: 18px;
+            height: 18px;
             border-radius: 999px;
             background: rgba(148, 163, 184, 0.22);
             font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
+        }
+
+        .token__actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .token:focus-within .token__actions,
+        .token:hover .token__actions {
+            opacity: 1;
+        }
+
+        .token__move {
+            border: none;
+            background: transparent;
+            color: rgba(203, 213, 245, 0.7);
+            font-size: 10px;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+        }
+
+        .token__move:focus-visible {
+            outline: 1px solid rgba(148, 163, 184, 0.6);
+            border-radius: 4px;
         }
 
         .icon-button {
@@ -227,7 +255,7 @@ export class ViewControls extends LitElement {
         }
 
         .controls.row .token {
-            padding: 2px 6px;
+            padding: 2px 4px;
             font-size: 9px;
         }
 
@@ -235,10 +263,6 @@ export class ViewControls extends LitElement {
             height: 14px;
             min-width: 14px;
             font-size: 8px;
-        }
-
-        .controls.row .token span:last-child {
-            display: none;
         }
     `;
 
@@ -268,8 +292,12 @@ export class ViewControls extends LitElement {
         return view.title || view.name || view.id || '';
     }
 
-    private getIconLabel(label: string, fallback: string) {
-        return label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || fallback.slice(0, 2);
+    private getViewIcon(view: { icon?: string; title?: string; name?: string; id?: string }) {
+        if (view.icon) {
+            return view.icon;
+        }
+        const label = this.getViewLabel(view);
+        return label.replace(/[^a-z0-9]/gi, '').slice(0, 2) || view.id?.slice(0, 2) || '';
     }
 
     private canEnableSlot(slotNumber: number, capacity: number) {
@@ -299,6 +327,20 @@ export class ViewControls extends LitElement {
             mergedOrder.indexOf(viewId) === index && viewIds.has(viewId),
         );
         return deduped;
+    }
+
+    private resolveTokenViewOrder() {
+        const layout = this.uiState?.layout ?? {};
+        const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
+        const views = ViewRegistry.getAllViews();
+        const viewIds = views.map((view) => view.id);
+        const ordered = layoutOrder.filter((viewId) => viewIds.includes(viewId));
+        viewIds.forEach((viewId) => {
+            if (!ordered.includes(viewId)) {
+                ordered.push(viewId);
+            }
+        });
+        return ordered;
     }
 
     private handleSlotDrop(event: DragEvent, slotIndex: number, isEnabled: boolean) {
@@ -368,15 +410,77 @@ export class ViewControls extends LitElement {
         }
     }
 
+    private handleTokenDragOver(event: DragEvent) {
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+
+    private handleTokenDrop(event: DragEvent, targetViewId: string) {
+        event.preventDefault();
+        const viewId =
+            event.dataTransfer?.getData('application/x-view-id') ||
+            event.dataTransfer?.getData('text/plain');
+        if (!viewId || viewId === targetViewId) {
+            return;
+        }
+        const currentOrder = this.resolveTokenViewOrder();
+        const fromIndex = currentOrder.indexOf(viewId);
+        const toIndex = currentOrder.indexOf(targetViewId);
+        if (fromIndex === -1 || toIndex === -1) {
+            return;
+        }
+        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        nextOrder.splice(toIndex, 0, viewId);
+        this.handlers.setMainViewOrder(nextOrder);
+    }
+
+    private handleTokenDropOnList(event: DragEvent) {
+        event.preventDefault();
+        const viewId =
+            event.dataTransfer?.getData('application/x-view-id') ||
+            event.dataTransfer?.getData('text/plain');
+        if (!viewId) {
+            return;
+        }
+        const currentOrder = this.resolveTokenViewOrder();
+        if (!currentOrder.includes(viewId)) {
+            return;
+        }
+        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        nextOrder.push(viewId);
+        this.handlers.setMainViewOrder(nextOrder);
+    }
+
+    private moveToken(viewId: string, direction: 'up' | 'down') {
+        const currentOrder = this.resolveTokenViewOrder();
+        const index = currentOrder.indexOf(viewId);
+        if (index === -1) {
+            return;
+        }
+        const offset = direction === 'up' ? -1 : 1;
+        const nextIndex = index + offset;
+        if (nextIndex < 0 || nextIndex >= currentOrder.length) {
+            return;
+        }
+        const nextOrder = currentOrder.slice();
+        nextOrder.splice(index, 1);
+        nextOrder.splice(nextIndex, 0, viewId);
+        this.handlers.setMainViewOrder(nextOrder);
+    }
+
     render() {
         const isRow = this.orientation === 'row';
         const views = ViewRegistry.getAllViews();
+        const viewMap = new Map(views.map((view) => [view.id, view]));
         const activeOrder = this.resolveMainViewOrder();
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
         const slotStripClass = `slot-strip ${isRow ? 'slot-strip--row' : 'slot-strip--column'}`;
         const tokenPoolClass = `token-pool ${isRow ? 'token-pool--row' : 'token-pool--column'}`;
         const controlsClass = `controls ${isRow ? 'row' : 'column'}`;
+        const tokenOrder = this.resolveTokenViewOrder();
 
         return html`
             <div class="${controlsClass}" @click=${this.handlers.stopClickPropagation}>
@@ -385,7 +489,11 @@ export class ViewControls extends LitElement {
                         const viewId = activeOrder[index] ?? null;
                         const view = viewId ? views.find((item) => item.id === viewId) : null;
                         const label = view ? this.getViewLabel(view) : '';
-                        const iconLabel = viewId ? this.getIconLabel(label, viewId) : `${index + 1}`;
+                        const iconLabel = view
+                            ? this.getViewIcon(view)
+                            : viewId
+                              ? this.getViewIcon({ id: viewId })
+                              : `${index + 1}`;
                         const isEnabled = index < capacity;
                         const isActive = Boolean(viewId);
                         const slotStatus = isActive ? 'active' : 'inactive';
@@ -420,22 +528,54 @@ export class ViewControls extends LitElement {
                     })}
                 </div>
 
-                <div class="${tokenPoolClass}">
-                    ${views.map((view) => {
-                        const label = this.getViewLabel(view);
-                        const iconLabel = this.getIconLabel(label, view.id);
-                        const isActive = activeSet.has(view.id);
-                        return html`
-                            <div
-                                class="token ${isActive ? 'token--active' : ''}"
-                                draggable="true"
-                                @dragstart=${(event: DragEvent) => this.handleTokenDragStart(event, view.id)}
-                            >
-                                <span class="token__icon">${iconLabel}</span>
-                                <span>${label}</span>
-                            </div>
-                        `;
-                    })}
+                <div
+                    class="${tokenPoolClass}"
+                    role="list"
+                    aria-label="View tokens"
+                    @dragover=${this.handleTokenDragOver}
+                    @drop=${this.handleTokenDropOnList}
+                >
+                    ${tokenOrder
+                        .map((viewId) => viewMap.get(viewId))
+                        .filter(Boolean)
+                        .map((view) => {
+                            const label = this.getViewLabel(view);
+                            const iconLabel = this.getViewIcon(view);
+                            const isActive = activeSet.has(view.id);
+                            return html`
+                                <div
+                                    class="token ${isActive ? 'token--active' : ''}"
+                                    draggable="true"
+                                    role="listitem"
+                                    title=${label}
+                                    aria-label=${label}
+                                    @dragstart=${(event: DragEvent) =>
+                                        this.handleTokenDragStart(event, view.id)}
+                                    @dragover=${this.handleTokenDragOver}
+                                    @drop=${(event: DragEvent) => this.handleTokenDrop(event, view.id)}
+                                >
+                                    <span class="token__icon">${iconLabel}</span>
+                                    <span class="token__actions">
+                                        <button
+                                            class="token__move"
+                                            type="button"
+                                            aria-label="Move ${label} up"
+                                            @click=${() => this.moveToken(view.id, 'up')}
+                                        >
+                                            ↑
+                                        </button>
+                                        <button
+                                            class="token__move"
+                                            type="button"
+                                            aria-label="Move ${label} down"
+                                            @click=${() => this.moveToken(view.id, 'down')}
+                                        >
+                                            ↓
+                                        </button>
+                                    </span>
+                                </div>
+                            `;
+                        })}
 
                     <button
                         @click=${this.handlers.resetSession}
