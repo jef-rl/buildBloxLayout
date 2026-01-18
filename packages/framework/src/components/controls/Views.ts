@@ -1,11 +1,11 @@
-// @ts-nocheck
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../state/context';
-import type { UiStateContextValue } from '../../state/ui-state';
+import type { UiState, UiStateContextValue } from '../../state/ui-state';
 import { createViewControlsHandlers } from '../../handlers/layout/view-controls.handlers';
 import { ViewRegistry } from '../../registry/ViewRegistryInstance';
+import type { ViewDefinition } from '../../types';
 
 export class ViewControls extends LitElement {
     @property({ type: String }) orientation = 'row';
@@ -75,7 +75,7 @@ export class ViewControls extends LitElement {
             gap: 2px;
             height: 22px;
             min-width: 22px;
-            padding: 2px 6px;
+            padding: 2px;
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.35);
             background: transparent;
@@ -105,18 +105,13 @@ export class ViewControls extends LitElement {
             justify-content: center;
             min-width: 16px;
             height: 16px;
-            padding: 0 4px;
+            padding: 0;
             border-radius: 999px;
-            background: rgba(148, 163, 184, 0.18);
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
+            font-size: 14px;
         }
 
         .slot__title {
-            font-size: 9px;
-            text-align: center;
-            line-height: 1.2;
+            display: none;
         }
 
         .token-pool {
@@ -158,13 +153,9 @@ export class ViewControls extends LitElement {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 999px;
-            background: rgba(148, 163, 184, 0.22);
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
+            min-width: 14px;
+            height: 14px;
+            font-size: 14px;
         }
 
         .token__actions {
@@ -247,22 +238,12 @@ export class ViewControls extends LitElement {
         .token-pool--column .token__icon {
             height: 14px;
             min-width: 14px;
-            font-size: 8px;
-        }
-
-        .slot-strip--row .slot__title {
-            display: none;
+            font-size: 12px;
         }
 
         .controls.row .token {
             padding: 2px 4px;
             font-size: 9px;
-        }
-
-        .controls.row .token__icon {
-            height: 14px;
-            min-width: 14px;
-            font-size: 8px;
         }
     `;
 
@@ -282,7 +263,7 @@ export class ViewControls extends LitElement {
     }
 
     get panelLimit() {
-        const layout = this.uiState?.layout ?? {};
+        const layout = this.uiState?.layout ?? { mainAreaCount: 1, mainViewOrder: [] };
         const rawCount = Number(layout.mainAreaCount ?? 1);
         const clamped = Math.min(5, Math.max(1, Number.isFinite(rawCount) ? rawCount : 1));
         return clamped;
@@ -320,34 +301,34 @@ export class ViewControls extends LitElement {
             .filter(Boolean);
     }
 
-    private resolveMainViewOrder() {
-        const layout = this.uiState?.layout ?? {};
+    private resolveMainViewOrder(): string[] {
+        const layout = this.uiState?.layout ?? { mainAreaCount: 1, mainViewOrder: [] };
         const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
         const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
-        const panelOrder = panels
+        const panelOrder: string[] = panels
             .filter((panel) => panel.region === 'main')
             .map((panel) => this.resolvePanelViewId(panel))
             .filter(Boolean);
-        const mergedOrder = [...layoutOrder];
-        panelOrder.forEach((viewId) => {
+        const mergedOrder: string[] = [...layoutOrder];
+        panelOrder.forEach((viewId: string) => {
             if (!mergedOrder.includes(viewId)) {
                 mergedOrder.push(viewId);
             }
         });
-        const viewIds = new Set(ViewRegistry.getAllViews().map((view) => view.id));
-        const deduped = mergedOrder.filter((viewId, index) =>
+        const viewIds = new Set(ViewRegistry.getAllViews().map((view: ViewDefinition) => view.id));
+        const deduped: string[] = mergedOrder.filter((viewId: string, index: number) =>
             mergedOrder.indexOf(viewId) === index && viewIds.has(viewId),
         );
         return deduped;
     }
 
-    private resolveTokenViewOrder() {
-        const layout = this.uiState?.layout ?? {};
+    private resolveTokenViewOrder(): string[] {
+        const layout = this.uiState?.layout ?? { mainAreaCount: 1, mainViewOrder: [] };
         const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
         const views = ViewRegistry.getAllViews();
-        const viewIds = views.map((view) => view.id);
-        const ordered = layoutOrder.filter((viewId) => viewIds.includes(viewId));
-        viewIds.forEach((viewId) => {
+        const viewIds: string[] = views.map((view: ViewDefinition) => view.id);
+        const ordered: string[] = layoutOrder.filter((viewId: string) => viewIds.includes(viewId));
+        viewIds.forEach((viewId: string) => {
             if (!ordered.includes(viewId)) {
                 ordered.push(viewId);
             }
@@ -371,7 +352,7 @@ export class ViewControls extends LitElement {
         }
 
         const currentOrder = this.resolveMainViewOrder();
-        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        const nextOrder: string[] = currentOrder.filter((id: string) => id !== viewId);
         nextOrder.splice(slotIndex, 0, viewId);
         const nextCapacity = isEnabled ? capacity : slotNumber;
         const limitedOrder = nextOrder.slice(0, nextCapacity);
@@ -409,7 +390,7 @@ export class ViewControls extends LitElement {
         }
 
         if (viewId) {
-            const nextOrder = this.resolveMainViewOrder().filter((id) => id !== viewId);
+            const nextOrder = this.resolveMainViewOrder().filter((id: string) => id !== viewId);
             this.handlers.setMainViewOrder(nextOrder);
         }
     }
@@ -443,7 +424,7 @@ export class ViewControls extends LitElement {
         if (fromIndex === -1 || toIndex === -1) {
             return;
         }
-        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        const nextOrder: string[] = currentOrder.filter((id: string) => id !== viewId);
         nextOrder.splice(toIndex, 0, viewId);
         this.handlers.setMainViewOrder(nextOrder);
     }
@@ -460,7 +441,7 @@ export class ViewControls extends LitElement {
         if (!currentOrder.includes(viewId)) {
             return;
         }
-        const nextOrder = currentOrder.filter((id) => id !== viewId);
+        const nextOrder: string[] = currentOrder.filter((id: string) => id !== viewId);
         nextOrder.push(viewId);
         this.handlers.setMainViewOrder(nextOrder);
     }
@@ -476,7 +457,7 @@ export class ViewControls extends LitElement {
         if (nextIndex < 0 || nextIndex >= currentOrder.length) {
             return;
         }
-        const nextOrder = currentOrder.slice();
+        const nextOrder = [...currentOrder];
         nextOrder.splice(index, 1);
         nextOrder.splice(nextIndex, 0, viewId);
         this.handlers.setMainViewOrder(nextOrder);
@@ -485,7 +466,7 @@ export class ViewControls extends LitElement {
     render() {
         const isRow = this.orientation === 'row';
         const views = ViewRegistry.getAllViews();
-        const viewMap = new Map(views.map((view) => [view.id, view]));
+        const viewMap = new Map(views.map((view: ViewDefinition) => [view.id, view]));
         const activeOrder = this.resolveActiveMainViews();
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
@@ -495,23 +476,21 @@ export class ViewControls extends LitElement {
         const tokenOrder = this.resolveTokenViewOrder();
 
         return html`
-            <div class="${controlsClass}" @click=${this.handlers.stopClickPropagation}>
+            <div class="controls" @click=${this.handlers.stopClickPropagation}>
                 <div class="${slotStripClass}">
                     ${Array.from({ length: 5 }).map((_, index) => {
                         const viewId = activeOrder[index] ?? null;
                         const view = viewId ? views.find((item) => item.id === viewId) : null;
                         const label = view ? this.getViewLabel(view) : '';
-                        const iconLabel = view
+                        const iconName = view
                             ? this.getViewIcon(view)
                             : viewId
                               ? this.getViewIcon({ id: viewId })
-                              : `${index + 1}`;
+                              : '';
                         const isEnabled = index < capacity;
                         const isActive = Boolean(viewId);
                         const slotStatus = isActive ? 'active' : 'inactive';
-                        const slotLabel = `Slot ${index + 1}: ${slotStatus}${
-                            label ? `, view ${label}` : ', no view assigned'
-                        }`;
+                        const slotLabel = isActive ? label : `Slot ${index + 1}`;
                         const slotClass = [
                             'slot',
                             isActive ? 'slot--active' : '',
@@ -531,7 +510,11 @@ export class ViewControls extends LitElement {
                                 @click=${() => this.handleSlotClick(index, viewId, isEnabled)}
                                 title=${slotLabel}
                             >
-                                <span class="slot__label">${iconLabel}</span>
+                                <span class="slot__label">
+                                    ${iconName
+                                        ? html`<i class="codicon codicon-${iconName}"></i>`
+                                        : html`${index + 1}`}
+                                </span>
                                 <span class="slot__title">
                                     ${view ? label : isEnabled ? `Slot ${index + 1}` : 'Disabled'}
                                 </span>
@@ -548,11 +531,11 @@ export class ViewControls extends LitElement {
                     @drop=${this.handleTokenDropOnList}
                 >
                     ${tokenOrder
-                        .map((viewId) => viewMap.get(viewId))
-                        .filter(Boolean)
-                        .map((view) => {
+                        .map((viewId: string) => viewMap.get(viewId))
+                        .filter((view?: ViewDefinition): view is ViewDefinition => !!view)
+                        .map((view: ViewDefinition) => {
                             const label = this.getViewLabel(view);
-                            const iconLabel = this.getViewIcon(view);
+                            const iconName = this.getViewIcon(view);
                             const isActive = activeSet.has(view.id);
                             return html`
                                 <div
@@ -566,7 +549,12 @@ export class ViewControls extends LitElement {
                                     @dragover=${this.handleTokenDragOver}
                                     @drop=${(event: DragEvent) => this.handleTokenDrop(event, view.id)}
                                 >
-                                    <span class="token__icon">${iconLabel}</span>
+                                    <span class="token__icon">
+                                        ${iconName
+                                            ? html`<i class="codicon codicon-${iconName}"></i>`
+                                            : ''}
+                                    </span>
+                                    <span>${label}</span>
                                     <span class="token__actions">
                                         <button
                                             class="token__move"
@@ -574,7 +562,7 @@ export class ViewControls extends LitElement {
                                             aria-label="Move ${label} up"
                                             @click=${() => this.moveToken(view.id, 'up')}
                                         >
-                                            ↑
+                                            <i class="codicon codicon-arrow-up"></i>
                                         </button>
                                         <button
                                             class="token__move"
@@ -582,7 +570,7 @@ export class ViewControls extends LitElement {
                                             aria-label="Move ${label} down"
                                             @click=${() => this.moveToken(view.id, 'down')}
                                         >
-                                            ↓
+                                            <i class="codicon codicon-arrow-down"></i>
                                         </button>
                                     </span>
                                 </div>
@@ -594,18 +582,12 @@ export class ViewControls extends LitElement {
                         class="icon-button"
                         title="New Session / Reset"
                     >
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            ></path>
-                        </svg>
+                        <i class="icon codicon codicon-refresh"></i>
                     </button>
                 </div>
             </div>
         `;
     }
 }
+
 customElements.define('view-controls', ViewControls);

@@ -1,7 +1,7 @@
 // Public components
 export * from './components/controls/Expander';
 export * from './components/controls/Resizer';
-export * from './components/controls/Toolbar';
+export * from './components/controls/Views';
 export * from './components/layout/DockContainer';
 export * from './components/layout/DockManager';
 export * from './components/layout/FrameworkRoot';

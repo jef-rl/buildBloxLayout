@@ -1,4 +1,4 @@
-import type { ViewControls } from '../../components/controls/Toolbar';
+import type { ViewControls } from '../../components/controls/Views';
 import { dispatchUiEvent } from '../../utils/dispatcher';
 
 export const createViewControlsHandlers = (

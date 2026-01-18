@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import type { View, ViewDefinition } from '../types/index';
 import { getFrameworkLogger } from '../utils/logger';
+import { Icons } from '../components/ui/Icons';
 
 export type ViewRegistryChangeDetail = {
     type: 'register';
@@ -16,11 +17,25 @@ class ViewRegistry extends EventTarget {
     register(definition: ViewDefinition): void {
         const logger = getFrameworkLogger();
         const wasRegistered = this.viewDefinitions.has(definition.id);
+
+        if (!definition.icon) {
+            const registeredIcons = this.getAllViews()
+                .map((view) => view.icon)
+                .filter(Boolean);
+            const availableIcons = Icons.filter((icon) => !registeredIcons.includes(icon as string));
+            if (availableIcons.length > 0) {
+                definition.icon = availableIcons[Math.floor(Math.random() * availableIcons.length)];
+            } else {
+                definition.icon = Icons[Math.floor(Math.random() * Icons.length)];
+            }
+        }
+
         this.viewDefinitions.set(definition.id, definition);
         logger?.info?.('ViewRegistry registered view.', {
             viewId: definition.id,
             title: definition.title,
             tag: definition.tag,
+            icon: definition.icon,
             existed: wasRegistered,
         });
         this.emitRegistryChange({
