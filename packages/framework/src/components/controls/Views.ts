@@ -419,9 +419,7 @@ export class ViewControls extends LitElement {
                                 title=${slotLabel}
                             >
                                 <span class="slot__label">
-                                    ${iconName
-                                        ? html`<i class="codicon codicon-${iconName}"></i>`
-                                        : html`${index + 1}`}
+                                    ${index + 1}
                                 </span>
                                 <span class="slot__title">
                                     ${view ? label : `Slot ${index + 1}`}
