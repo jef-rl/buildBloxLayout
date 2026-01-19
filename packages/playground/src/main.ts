@@ -40,6 +40,7 @@ bootstrapFramework({
       name: view.name,
       title: view.name,
       tag: 'simple-view',
+      icon: 'code',
       component: loadSimpleView
     })),
     {
@@ -47,6 +48,7 @@ bootstrapFramework({
       name: 'Login',
       title: 'Login',
       tag: 'login-overlay',
+      icon: 'lock',
       component: loadLoginOverlay
     }
   ],
