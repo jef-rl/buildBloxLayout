@@ -1,4 +1,4 @@
-import { bootstrapFramework } from '@project/framework';
+import { bootstrapFramework, Icons } from '@project/framework';
 import { DEMO_LAYOUT } from './data/demo-layout';
 
 const loadSimpleView = () => import('./components/simple-view');
@@ -35,12 +35,12 @@ const initialState = {
 
 bootstrapFramework({
   views: [
-    ...DEMO_LAYOUT.views.map((view) => ({
+    ...DEMO_LAYOUT.views.map((view, index) => ({
       id: view.id,
       name: view.name,
       title: view.name,
       tag: 'simple-view',
-      icon: 'code',
+      icon: Icons[index % Icons.length],
       component: loadSimpleView
     })),
     {
