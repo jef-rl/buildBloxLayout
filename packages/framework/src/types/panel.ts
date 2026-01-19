@@ -46,5 +46,5 @@ export interface ViewDefinition {
   component: ViewComponent;
   title: string;
   tag: string;
-  icon?: string;
+  icon: string;
 }
