@@ -1,56 +1,268 @@
-import { bootstrapFramework, Icons } from '@project/framework';
-import { DEMO_LAYOUT } from './data/demo-layout';
+import { bootstrapFramework, setFrameworkLogger } from '@project/framework';
+import { IMPROVED_DEMO_LAYOUT, VIEW_REGISTRATIONS } from './data/demo-layout';
 
-const loadSimpleView = () => import('./components/simple-view');
-const loadLoginOverlay = () => import('./components/login-overlay');
-const LOGIN_VIEW_ID = 'login-overlay';
-const REQUIRED_FIREBASE_ENV = [
-  'VITE_FIREBASE_API_KEY',
-  'VITE_FIREBASE_AUTH_DOMAIN',
-  'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_STORAGE_BUCKET',
-  'VITE_FIREBASE_MESSAGING_SENDER_ID',
-  'VITE_FIREBASE_APP_ID'
-] as const;
+/**
+ * Improved Demo Bootstrap
+ * 
+ * This demonstrates:
+ * 1. Proper framework initialization
+ * 2. View registration with metadata
+ * 3. State hydration
+ * 4. Optional logging configuration
+ */
 
-const hasFirebaseConfig = REQUIRED_FIREBASE_ENV.every((key) => {
-  const value = (import.meta.env as Record<string, string | undefined>)[key];
-  return Boolean(value && value.trim().length > 0);
+// ====================
+// LOGGING SETUP
+// ====================
+
+/**
+ * Configure framework logging for development
+ * This helps understand the event flow and state changes
+ */
+setFrameworkLogger({
+  info: (message: string, context?: unknown) => {
+    console.log(`[Framework Info] ${message}`, context);
+  },
+  warn: (message: string, context?: unknown) => {
+    console.warn(`[Framework Warn] ${message}`, context);
+  },
+  error: (message: string, context?: unknown) => {
+    console.error(`[Framework Error] ${message}`, context);
+  },
+  debug: (message: string, context?: unknown) => {
+    if (import.meta.env.DEV) {
+      console.debug(`[Framework Debug] ${message}`, context);
+    }
+  }
 });
 
-const shouldShowLoginOverlay = hasFirebaseConfig && !DEMO_LAYOUT.auth?.isLoggedIn;
-const initialState = {
-  ...DEMO_LAYOUT,
-  auth: hasFirebaseConfig
-    ? DEMO_LAYOUT.auth
-    : {
-        isLoggedIn: true,
-        user: { uid: 'demo-user', email: 'demo@local' }
-      },
-  layout: {
-    ...DEMO_LAYOUT.layout,
-    overlayView: shouldShowLoginOverlay ? LOGIN_VIEW_ID : DEMO_LAYOUT.layout.overlayView
+// ====================
+// VIEW COMPONENT LOADER
+// ====================
+
+/**
+ * Unified component loader for demo views
+ * In a real app, each view type would have its own component
+ */
+const loadDemoView = () => import('./components/demo-view');
+
+// ====================
+// FRAMEWORK BOOTSTRAP
+// ====================
+
+/**
+ * Initialize the framework with:
+ * - View definitions (registry)
+ * - Initial UI state
+ * - Optional mount point
+ */
+const root = bootstrapFramework({
+  // Register all views with their metadata
+  views: VIEW_REGISTRATIONS.map(reg => ({
+    ...reg,
+    component: loadDemoView  // Use unified demo component
+  })),
+  
+  // Hydrate initial state
+  state: IMPROVED_DEMO_LAYOUT,
+  
+  // Optional: specify mount point (defaults to document.body)
+  // mount: document.getElementById('app')
+});
+
+// ====================
+// DEVELOPMENT HELPERS
+// ====================
+
+if (import.meta.env.DEV) {
+  // Expose framework root for debugging
+  (window as any).__frameworkRoot = root;
+  
+  // Log initialization complete
+  console.log('%c Framework Initialized ', 'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;');
+  console.log('Framework root:', root);
+  console.log('Initial state:', IMPROVED_DEMO_LAYOUT);
+  console.log('Registered views:', VIEW_REGISTRATIONS.length);
+  
+  // Provide helpful debugging commands
+  console.log(`
+%c🎯 Debugging Commands %c
+
+// Access framework root
+__frameworkRoot
+
+// Dispatch custom action
+import { dispatchUiEvent } from '@project/framework';
+dispatchUiEvent(window, 'your/action', { payload: 'data' });
+
+// Check current state
+__frameworkRoot.querySelector('framework-root').state
+
+  `, 
+    'background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px;',
+    'color: #9ca3af; font-size: 0.9em;'
+  );
+}
+
+// ====================
+// EXAMPLE EVENT LISTENERS
+// ====================
+
+/**
+ * Example: Listen to custom events
+ * (Optional - for advanced use cases)
+ */
+window.addEventListener('ui-event', ((event: CustomEvent) => {
+  if (import.meta.env.DEV) {
+    console.log('UI Event:', event.detail);
   }
+}) as EventListener);
+
+/**
+ * Example: Handle specific actions
+ */
+window.addEventListener('ui-event', ((event: CustomEvent) => {
+  const { type, payload } = event.detail;
+  
+  // Example: Track analytics on certain actions
+  if (type === 'panels/assignView') {
+    console.log('View assigned:', payload);
+    // trackEvent('view_assigned', payload);
+  }
+  
+  // Example: Persist state changes
+  if (type.startsWith('layout/')) {
+    console.log('Layout changed:', { type, payload });
+    // saveToLocalStorage('layout', currentState);
+  }
+}) as EventListener);
+
+/**
+ * Example: Auto-save functionality
+ */
+let saveTimeout: number;
+window.addEventListener('ui-event', ((event: CustomEvent) => {
+  clearTimeout(saveTimeout);
+  saveTimeout = window.setTimeout(() => {
+    // Auto-save logic here
+    console.log('Auto-save triggered');
+  }, 1000);
+}) as EventListener);
+
+// ====================
+// KEYBOARD SHORTCUTS
+// ====================
+
+/**
+ * Example: Global keyboard shortcuts
+ */
+document.addEventListener('keydown', (event) => {
+  // Cmd/Ctrl + B: Toggle left panel
+  if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
+    event.preventDefault();
+    const frameworkRoot = document.querySelector('framework-root');
+    if (frameworkRoot) {
+      import('@project/framework').then(({ dispatchUiEvent }) => {
+        const state = (frameworkRoot as any).state;
+        const currentLeft = state?.layout?.expansion?.left ?? false;
+        dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
+          side: 'left',
+          expanded: !currentLeft
+        });
+      });
+    }
+  }
+  
+  // Cmd/Ctrl + Shift + P: Open settings overlay
+  if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === 'p') {
+    event.preventDefault();
+    const frameworkRoot = document.querySelector('framework-root');
+    if (frameworkRoot) {
+      import('@project/framework').then(({ dispatchUiEvent }) => {
+        dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
+          viewId: 'project-settings'
+        });
+      });
+    }
+  }
+  
+  // Escape: Close overlay
+  if (event.key === 'Escape') {
+    const frameworkRoot = document.querySelector('framework-root');
+    if (frameworkRoot) {
+      import('@project/framework').then(({ dispatchUiEvent }) => {
+        const state = (frameworkRoot as any).state;
+        if (state?.layout?.overlayView) {
+          dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
+            viewId: null
+          });
+        }
+      });
+    }
+  }
+});
+
+// ====================
+// RESPONSIVE HANDLING
+// ====================
+
+/**
+ * Example: Responsive layout adjustments
+ */
+const handleResize = () => {
+  const width = window.innerWidth;
+  const frameworkRoot = document.querySelector('framework-root');
+  
+  if (!frameworkRoot) return;
+  
+  import('@project/framework').then(({ dispatchUiEvent }) => {
+    // Auto-collapse panels on small screens
+    if (width < 768) {
+      dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
+        side: 'left',
+        expanded: false
+      });
+      dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
+        side: 'right',
+        expanded: false
+      });
+      dispatchUiEvent(frameworkRoot, 'layout/setViewportWidthMode', {
+        mode: '1x'
+      });
+    }
+  });
 };
 
-bootstrapFramework({
-  views: [
-    ...DEMO_LAYOUT.views.map((view, index) => ({
-      id: view.id,
-      name: view.name,
-      title: view.name,
-      tag: 'simple-view',
-      icon: Icons[index % Icons.length],
-      component: loadSimpleView
-    })),
-    {
-      id: LOGIN_VIEW_ID,
-      name: 'Login',
-      title: 'Login',
-      tag: 'login-overlay',
-      icon: 'lock',
-      component: loadLoginOverlay
-    }
-  ],
-  state: initialState
-});
+window.addEventListener('resize', handleResize);
+handleResize(); // Run on init
+
+/**
+ * Framework initialized successfully
+ * 
+ * Key takeaways:
+ * 
+ * 1. CONTEXT PATTERN:
+ *    - Views consume context via ContextConsumer
+ *    - Context is read-only in views
+ *    - No direct mutations allowed
+ * 
+ * 2. STATE UPDATES:
+ *    - All changes via dispatchUiEvent
+ *    - Actions flow through handler registry
+ *    - Centralized state management
+ * 
+ * 3. VIEW LIFECYCLE:
+ *    - Views register with ViewRegistry
+ *    - Lazy loading via component functions
+ *    - Automatic cleanup and disposal
+ * 
+ * 4. PANEL MANAGEMENT:
+ *    - Panels are structural containers
+ *    - Views attach to panels via assignments
+ *    - Layout adapts to expansion states
+ * 
+ * 5. EXTENSIBILITY:
+ *    - Custom handlers via handler registry
+ *    - Custom context properties
+ *    - Event-driven architecture
+ */

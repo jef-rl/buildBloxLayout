@@ -1,102 +1,183 @@
 import type { MainAreaPanelCount, Panel, UIState, View } from '@project/framework';
 
+/**
+ * Improved Demo Layout for BuildBlox Framework
+ * 
+ * This demo showcases:
+ * 1. Proper view definitions with clear responsibilities
+ * 2. Correct context consumer patterns
+ * 3. Handler dispatch patterns for state updates
+ * 4. Panel-view relationships
+ * 5. Realistic data flow patterns
+ */
+
+// ====================
+// VIEW DEFINITIONS
+// ====================
+
+/**
+ * Main area views - Primary workspace views
+ * Each view demonstrates a different aspect of the framework
+ */
 const MAIN_VIEWS: View[] = [
   {
-    id: 'view-main-1',
-    name: 'Main Panel 1',
-    component: 'view-main-1',
-    data: { label: 'Main Panel 1', color: '#ffcdd2' }
+    id: 'canvas-editor',
+    name: 'Canvas Editor',
+    component: 'canvas-editor',
+    data: { 
+      label: 'Canvas Editor',
+      color: '#1e40af',
+      description: 'Interactive design canvas with tools'
+    }
   },
   {
-    id: 'view-main-2',
-    name: 'Main Panel 2',
-    component: 'view-main-2',
-    data: { label: 'Main Panel 2', color: '#e1bee7' }
+    id: 'code-editor',
+    name: 'Code Editor',
+    component: 'code-editor',
+    data: { 
+      label: 'Code Editor',
+      color: '#7c3aed',
+      description: 'Code editing with syntax highlighting'
+    }
   },
   {
-    id: 'view-main-3',
-    name: 'Main Panel 3',
-    component: 'view-main-3',
-    data: { label: 'Main Panel 3', color: '#cfd8dc' }
+    id: 'preview-panel',
+    name: 'Live Preview',
+    component: 'preview-panel',
+    data: { 
+      label: 'Live Preview',
+      color: '#0891b2',
+      description: 'Real-time preview of changes'
+    }
   },
   {
-    id: 'view-main-4',
-    name: 'Main Panel 4',
-    component: 'view-main-4',
-    data: { label: 'Main Panel 4', color: '#c8e6c9' }
+    id: 'data-inspector',
+    name: 'Data Inspector',
+    component: 'data-inspector',
+    data: { 
+      label: 'Data Inspector',
+      color: '#059669',
+      description: 'Inspect and modify data structures'
+    }
   },
   {
-    id: 'view-main-5',
-    name: 'Main Panel 5',
-    component: 'view-main-5',
-    data: { label: 'Main Panel 5', color: '#bbdefb' }
+    id: 'timeline-view',
+    name: 'Timeline',
+    component: 'timeline-view',
+    data: { 
+      label: 'Timeline',
+      color: '#dc2626',
+      description: 'History and version control'
+    }
   }
 ];
 
-const EXTRA_VIEWS: View[] = [
+/**
+ * Expansion panel views - Secondary context views
+ */
+const LEFT_PANEL_VIEWS: View[] = [
   {
-    id: 'view-extra-1',
-    name: 'Extra View 1',
-    component: 'view-extra-1',
-    data: { label: 'Extra View 1', color: '#fff9c4' }
+    id: 'project-explorer',
+    name: 'Project Explorer',
+    component: 'project-explorer',
+    data: {
+      label: 'Project Explorer',
+      color: '#475569',
+      description: 'File tree and project structure'
+    }
   },
   {
-    id: 'view-extra-2',
-    name: 'Extra View 2',
-    component: 'view-extra-2',
-    data: { label: 'Extra View 2', color: '#d1c4e9' }
-  },
-  {
-    id: 'view-extra-3',
-    name: 'Extra View 3',
-    component: 'view-extra-3',
-    data: { label: 'Extra View 3', color: '#b2dfdb' }
-  },
-  {
-    id: 'view-extra-4',
-    name: 'Extra View 4',
-    component: 'view-extra-4',
-    data: { label: 'Extra View 4', color: '#ffccbc' }
-  },
-  {
-    id: 'view-extra-5',
-    name: 'Extra View 5',
-    component: 'view-extra-5',
-    data: { label: 'Extra View 5', color: '#f8bbd0' }
-  },
-  {
-    id: 'view-extra-6',
-    name: 'Extra View 6',
-    component: 'view-extra-6',
-    data: { label: 'Extra View 6', color: '#c5cae9' }
-  },
-  {
-    id: 'view-extra-7',
-    name: 'Extra View 7',
-    component: 'view-extra-7',
-    data: { label: 'Extra View 7', color: '#dcedc8' }
-  },
-  {
-    id: 'view-extra-8',
-    name: 'Extra View 8',
-    component: 'view-extra-8',
-    data: { label: 'Extra View 8', color: '#ffe0b2' }
-  },
-  {
-    id: 'view-extra-9',
-    name: 'Extra View 9',
-    component: 'view-extra-9',
-    data: { label: 'Extra View 9', color: '#b3e5fc' }
-  },
-  {
-    id: 'view-extra-10',
-    name: 'Extra View 10',
-    component: 'view-extra-10',
-    data: { label: 'Extra View 10', color: '#f0f4c3' }
+    id: 'asset-library',
+    name: 'Asset Library',
+    component: 'asset-library',
+    data: {
+      label: 'Asset Library',
+      color: '#64748b',
+      description: 'Reusable assets and components'
+    }
   }
 ];
 
-const MAIN_PANELS: Panel[] = MAIN_VIEWS.map((view, index) => ({
+const RIGHT_PANEL_VIEWS: View[] = [
+  {
+    id: 'properties-panel',
+    name: 'Properties',
+    component: 'properties-panel',
+    data: {
+      label: 'Properties',
+      color: '#334155',
+      description: 'Selected element properties'
+    }
+  },
+  {
+    id: 'style-editor',
+    name: 'Style Editor',
+    component: 'style-editor',
+    data: {
+      label: 'Style Editor',
+      color: '#1e293b',
+      description: 'CSS and styling controls'
+    }
+  }
+];
+
+const BOTTOM_PANEL_VIEWS: View[] = [
+  {
+    id: 'console-output',
+    name: 'Console',
+    component: 'console-output',
+    data: {
+      label: 'Console',
+      color: '#0f172a',
+      description: 'Logs and debugging output'
+    }
+  },
+  {
+    id: 'ai-assistant',
+    name: 'AI Assistant',
+    component: 'ai-assistant',
+    data: {
+      label: 'AI Assistant',
+      color: '#18181b',
+      description: 'AI-powered help and generation'
+    }
+  }
+];
+
+/**
+ * Overlay views - Modal/overlay contexts
+ */
+const OVERLAY_VIEWS: View[] = [
+  {
+    id: 'project-settings',
+    name: 'Project Settings',
+    component: 'project-settings',
+    data: {
+      label: 'Project Settings',
+      color: '#1f2937',
+      description: 'Configure project options'
+    }
+  },
+  {
+    id: 'export-dialog',
+    name: 'Export',
+    component: 'export-dialog',
+    data: {
+      label: 'Export',
+      color: '#111827',
+      description: 'Export and publish options'
+    }
+  }
+];
+
+// ====================
+// PANEL DEFINITIONS
+// ====================
+
+/**
+ * Main area panels - equal-width horizontal layout
+ */
+const MAIN_PANELS: Panel[] = MAIN_VIEWS.slice(0, 3).map((view, index) => ({
   id: `panel-main-${index + 1}`,
   name: `Main Panel ${index + 1}`,
   region: 'main',
@@ -104,33 +185,50 @@ const MAIN_PANELS: Panel[] = MAIN_VIEWS.map((view, index) => ({
   view
 }));
 
-const REGISTERED_VIEWS = [...MAIN_VIEWS, ...EXTRA_VIEWS];
-
+/**
+ * Expansion panels - docked secondary areas
+ */
 const EXPANSION_PANELS: Panel[] = [
   {
-    id: 'panel-expansion-left',
-    name: 'Left Expansion Panel',
+    id: 'panel-left',
+    name: 'Left Panel',
     region: 'left',
-    viewId: EXTRA_VIEWS[0].id,
-    view: EXTRA_VIEWS[0]
+    viewId: LEFT_PANEL_VIEWS[0].id,
+    view: LEFT_PANEL_VIEWS[0]
   },
   {
-    id: 'panel-expansion-right',
-    name: 'Right Expansion Panel',
+    id: 'panel-right',
+    name: 'Right Panel',
     region: 'right',
-    viewId: EXTRA_VIEWS[1].id,
-    view: EXTRA_VIEWS[1]
+    viewId: RIGHT_PANEL_VIEWS[0].id,
+    view: RIGHT_PANEL_VIEWS[0]
   },
   {
-    id: 'panel-expansion-bottom',
-    name: 'Bottom Expansion Panel',
+    id: 'panel-bottom',
+    name: 'Bottom Panel',
     region: 'bottom',
-    viewId: EXTRA_VIEWS[2].id,
-    view: EXTRA_VIEWS[2]
+    viewId: BOTTOM_PANEL_VIEWS[0].id,
+    view: BOTTOM_PANEL_VIEWS[0]
   }
 ];
 
-export const DEMO_LAYOUT: UIState = {
+/**
+ * Collect all views for registration
+ */
+const ALL_VIEWS = [
+  ...MAIN_VIEWS,
+  ...LEFT_PANEL_VIEWS,
+  ...RIGHT_PANEL_VIEWS,
+  ...BOTTOM_PANEL_VIEWS,
+  ...OVERLAY_VIEWS
+];
+
+// ====================
+// COMPLETE UI STATE
+// ====================
+
+export const IMPROVED_DEMO_LAYOUT: UIState = {
+  // Panel containers define layout structure
   containers: [
     {
       id: 'container-main',
@@ -139,54 +237,157 @@ export const DEMO_LAYOUT: UIState = {
       panels: MAIN_PANELS
     },
     {
-      id: 'container-expansion-left',
-      name: 'Left Expansion Area',
+      id: 'container-left',
+      name: 'Left Sidebar',
       direction: 'column',
       panels: [EXPANSION_PANELS[0]]
     },
     {
-      id: 'container-expansion-right',
-      name: 'Right Expansion Area',
+      id: 'container-right',
+      name: 'Right Sidebar',
       direction: 'column',
       panels: [EXPANSION_PANELS[1]]
     },
     {
-      id: 'container-expansion-bottom',
-      name: 'Bottom Expansion Area',
+      id: 'container-bottom',
+      name: 'Bottom Panel',
       direction: 'row',
       panels: [EXPANSION_PANELS[2]]
     }
   ],
+
+  // All panels (main + expansion)
   panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
-  views: [...MAIN_VIEWS, ...EXTRA_VIEWS],
+
+  // All available views
+  views: ALL_VIEWS,
+
+  // View token state for the view controls toolbar
   viewTokens: {
-    registered: REGISTERED_VIEWS.map((view) => ({
+    registered: ALL_VIEWS.map((view) => ({
       id: view.id,
       label: view.name
     })),
-    activeSlots: MAIN_VIEWS.map((view) => view.id),
-    tokenOrder: REGISTERED_VIEWS.map((view) => view.id)
+    activeSlots: MAIN_VIEWS.slice(0, 5).map((view) => view.id),
+    tokenOrder: ALL_VIEWS.map((view) => view.id)
   },
+
+  // Layout configuration
   layout: {
     expansion: {
-      left: false,
-      right: false,
-      bottom: false
+      left: false,   // Start collapsed
+      right: false,  // Start collapsed
+      bottom: false  // Start collapsed
     },
-    overlayView: null,
-    viewportWidthMode: 'auto',
-    mainAreaCount: MAIN_PANELS.length as MainAreaPanelCount,
-    mainViewOrder: MAIN_VIEWS.map(v => v.id)
+    overlayView: null,  // No overlay initially
+    viewportWidthMode: '3x',  // Show 3 main panels by default
+    mainAreaCount: 3 as MainAreaPanelCount,
+    mainViewOrder: MAIN_VIEWS.slice(0, 3).map(v => v.id)
   },
+
+  // Toolbar positioning
   toolbars: {
-    positions: {},
+    positions: {
+      'views': 'bottom-center',
+      'viewport': 'bottom-right',
+      'expander': 'bottom-left'
+    },
     activePicker: null
   },
+
+  // Active view state
   activeView: MAIN_VIEWS[0].id,
-  dock: {},
-  theme: {},
+
+  // Dock configuration (extensible)
+  dock: {
+    theme: 'dark',
+    snapToGrid: true,
+    gridSize: 8
+  },
+
+  // Theme configuration (extensible)
+  theme: {
+    mode: 'dark',
+    primaryColor: '#3b82f6',
+    accentColor: '#8b5cf6'
+  },
+
+  // Authentication state
   auth: {
-    isLoggedIn: true,
+    isLoggedIn: false,
     user: null
   }
 };
+
+/**
+ * View registration configurations
+ * Maps view IDs to their component loaders and metadata
+ */
+export const VIEW_REGISTRATIONS = ALL_VIEWS.map((view) => ({
+  id: view.id,
+  name: view.name,
+  title: view.name,
+  tag: view.component,
+  icon: getIconForView(view.id),
+  component: getComponentLoader(view.id)
+}));
+
+/**
+ * Map view IDs to appropriate icons
+ */
+function getIconForView(viewId: string): string {
+  const iconMap: Record<string, string> = {
+    'canvas-editor': 'edit',
+    'code-editor': 'code',
+    'preview-panel': 'device_hub',
+    'data-inspector': 'storage',
+    'timeline-view': 'schedule',
+    'project-explorer': 'folder',
+    'asset-library': 'collections',
+    'properties-panel': 'tune',
+    'style-editor': 'palette',
+    'console-output': 'terminal',
+    'ai-assistant': 'psychology',
+    'project-settings': 'settings',
+    'export-dialog': 'file_download'
+  };
+  return iconMap[viewId] || 'apps';
+}
+
+/**
+ * Map view IDs to their component loaders
+ */
+function getComponentLoader(viewId: string): () => Promise<any> {
+  // In a real app, these would load actual component modules
+  // For the demo, we'll use a unified component that adapts based on data
+  return () => import('../components/demo-view');
+}
+
+/**
+ * Example use cases for the improved demo:
+ * 
+ * 1. CONTEXT CONSUMPTION:
+ *    - Views read layout state via ContextConsumer
+ *    - Views never mutate context directly
+ *    - All state is derived from UIState
+ * 
+ * 2. HANDLER DISPATCH:
+ *    - Use dispatchUiEvent to trigger state changes
+ *    - Actions flow through handler registry
+ *    - State updates are centralized
+ * 
+ * 3. VIEW COMMUNICATION:
+ *    - Views communicate via shared context state
+ *    - Selection state flows through panels
+ *    - No direct view-to-view coupling
+ * 
+ * 4. PANEL MANAGEMENT:
+ *    - Panels are structural containers
+ *    - Views can be swapped within panels
+ *    - Layout adapts to expansion states
+ * 
+ * 5. EXTENSIBILITY:
+ *    - New views register with ViewRegistry
+ *    - Custom handlers extend behavior
+ *    - Theme and dock properties are open
+ */
