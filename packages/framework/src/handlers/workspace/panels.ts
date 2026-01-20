@@ -89,7 +89,10 @@ const assignViewToPanel = (
 
     if (viewInstance) {
         if (data && typeof data === 'object') {
-            viewInstance.data = { ...(viewInstance.data || {}), ...data };
+            viewInstance = {
+                ...viewInstance,
+                data: { ...(viewInstance.data || {}), ...data },
+            };
             viewNeedsUpdate = true;
         }
     } else {
