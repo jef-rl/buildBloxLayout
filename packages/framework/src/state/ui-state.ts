@@ -1,14 +1,16 @@
 
 import type {
     LayoutState,
+    LayoutExpansion,
+    MainAreaPanelCount,
     Panel,
     PanelContainer,
     UIState,
     View,
 } from '../types/index';
 
-export type { LayoutExpansion, LayoutState, MainAreaPanelCount, ToolbarState, UIState } from '../types/ui-state';
-export type { ViewportWidthMode } from '../types/core';
+// Re-export types for convenience
+export type { LayoutState, LayoutExpansion, MainAreaPanelCount, UIState, Panel, PanelContainer, View };
 
 export type UiStateContextState = UIState;
 

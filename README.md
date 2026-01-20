@@ -1,374 +1,560 @@
-# BuildBlox Framework - Improved Demo Package
+# BuildBlox Framework
 
-## 📦 What's Included
+> **A modern, type-safe web application framework for building dynamic workspace layouts with panel-based UIs**
 
-This package contains a complete, improved demonstration of the BuildBlox Layout Framework with proper architecture patterns and best practices.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Lit](https://img.shields.io/badge/Lit-3.0+-orange.svg)](https://lit.dev/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-### Files
-
-1. **demo-layout-improved.ts** - Complete UI state definition with proper structure
-2. **demo-view-improved.ts** - Example view component demonstrating correct patterns
-3. **main-improved.ts** - Bootstrap configuration with logging and event handling
-4. **IMPROVED_DEMO_GUIDE.md** - Comprehensive guide to framework architecture
-5. **USE_CASES.md** - Real-world implementation examples
+BuildBlox is a production-ready framework for creating sophisticated, IDE-like web applications with resizable panels, dynamic views, and centralized state management. Built on Lit Element and TypeScript, it provides a clean architecture for complex UI applications.
 
 ---
 
-## 🎯 Key Improvements Over Original Demo
+## ✨ Features
 
-### 1. **Proper Context Usage**
-- ❌ **Before**: Direct state mutations
-- ✅ **After**: Read-only context consumption via `ContextConsumer`
+### 🏗️ **Flexible Layout System**
+- **Multi-panel workspace** with left, right, bottom, and main areas
+- **Resizable panels** with drag-to-resize functionality
+- **Collapsible side panels** for maximizing workspace
+- **Viewport modes** (1x-5x) for responsive layouts
+- **Overlay views** for settings, dialogs, and modals
 
-### 2. **Event-Driven Architecture**
-- ❌ **Before**: Mixed state update patterns
-- ✅ **After**: All updates via `dispatchUiEvent`
+### 🎯 **Type-Safe Architecture**
+- **Full TypeScript support** with strict typing
+- **Immutable state updates** for predictability
+- **Pure handler functions** for testability
+- **Context-based state distribution** using Lit Context API
+- **Event-driven communication** with custom actions
 
-### 3. **Clear Separation of Concerns**
-- ❌ **Before**: Views with business logic
-- ✅ **After**: Views as pure presentation, handlers for logic
+### 🔧 **Extensible Design**
+- **View registry** for lazy-loading components
+- **Handler registry** for centralized business logic
+- **Plugin architecture** for adding features
+- **Middleware support** for cross-cutting concerns
+- **Custom state namespaces** for application data
 
-### 4. **Better Documentation**
-- ❌ **Before**: Minimal comments
-- ✅ **After**: Extensive inline documentation and guides
+### 🚀 **Developer Experience**
+- **Hot module replacement** with Vite
+- **Comprehensive documentation** and examples
+- **Testing utilities** for unit and integration tests
+- **Debug logging** with configurable output
+- **Live playground** for experimentation
 
-### 5. **Realistic Use Cases**
-- ❌ **Before**: Simple color-coded panels
-- ✅ **After**: Interactive demos with state management examples
+---
+
+## 📦 Project Structure
+
+```
+buildblox-framework/
+├── packages/
+│   ├── framework/          # Core framework package
+│   │   ├── src/
+│   │   │   ├── components/    # UI components (panels, controls, layout)
+│   │   │   ├── handlers/      # State handlers (layout, workspace, etc.)
+│   │   │   ├── registry/      # View registry for lazy-loading
+│   │   │   ├── state/         # State management and context
+│   │   │   ├── types/         # TypeScript type definitions
+│   │   │   ├── utils/         # Utilities (dispatcher, logger, helpers)
+│   │   │   ├── bootstrap.ts   # Framework initialization
+│   │   │   └── index.ts       # Public API exports
+│   │   └── package.json
+│   │
+│   ├── playground/         # Demo and testing environment
+│   │   ├── src/
+│   │   │   ├── components/    # Demo view components
+│   │   │   ├── data/          # Demo layouts and configurations
+│   │   │   └── main.ts        # Playground entry point
+│   │   └── package.json
+│   │
+│   └── app/                # Application template (optional)
+│       └── package.json
+│
+├── FRAMEWORK_DEVELOPMENT_GUIDE.md  # Framework developer guide
+├── package.json            # Workspace configuration
+└── README.md              # This file
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Replace Existing Demo Files
+### Prerequisites
+
+- **Node.js** 20+ and npm 8+
+- Basic knowledge of **TypeScript** and **Web Components**
+
+### Installation
+
+1. **Clone the repository**
 
 ```bash
-# In your playground package
-cp demo-layout-improved.ts packages/playground/src/data/demo-layout.ts
-cp demo-view-improved.ts packages/playground/src/components/demo-view.ts
-cp main-improved.ts packages/playground/src/main.ts
+git clone <repository-url>
+cd buildblox-framework
 ```
 
-### 2. Install Dependencies
+2. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-### 3. Run the Demo
+3. **Run the playground**
 
 ```bash
 npm run --workspace @project/playground dev
 ```
 
-### 4. Explore the Demo
+4. **Open your browser**
 
-- **Toggle Panels**: Click buttons to expand/collapse panels
-- **Change Viewport**: Switch between 1x-5x modes
-- **View Context**: See real-time state updates
-- **Dispatch Actions**: Interact with buttons to trigger events
+Navigate to `http://localhost:5173` to see the framework in action!
 
 ---
 
-## 📚 Learning Path
+## 💡 Usage
 
-### For Beginners
-
-1. Start with **IMPROVED_DEMO_GUIDE.md** - Read sections 1-4
-2. Open **demo-view-improved.ts** - Study the component structure
-3. Open **main-improved.ts** - See how the framework initializes
-4. Run the demo and interact with the UI
-5. Open browser DevTools and examine logged events
-
-### For Intermediate Users
-
-1. Read **USE_CASES.md** - Pick 2-3 relevant examples
-2. Study **demo-layout-improved.ts** - Understand state structure
-3. Try modifying the demo:
-   - Add a new view
-   - Create a custom handler
-   - Add state to the app namespace
-4. Review handler implementations in framework source
-
-### For Advanced Users
-
-1. Review the complete **IMPROVED_DEMO_GUIDE.md**
-2. Study all **USE_CASES.md** examples
-3. Examine framework source code:
-   - `/packages/framework/src/handlers/handler-registry.ts`
-   - `/packages/framework/src/state/ui-state.ts`
-   - `/packages/framework/src/components/layout/FrameworkRoot.ts`
-4. Build a custom plugin using the plugin system example
-
----
-
-## 🎓 Architecture Principles
-
-### 1. Context is Read-Only
+### Basic Setup
 
 ```typescript
-// ✅ CORRECT
-private uiState: UiStateContextValue['state'] | null = null;
+import { bootstrapFramework } from '@project/framework';
 
-private uiStateConsumer = new ContextConsumer(this, {
-  context: uiStateContext,
-  subscribe: true,
-  callback: (value) => {
-    this.uiState = value?.state ?? null;
-    this.requestUpdate();
+// Define your views
+const views = [
+  {
+    id: 'editor',
+    name: 'Editor',
+    title: 'Code Editor',
+    tag: 'editor-view',
+    icon: '📝',
+    component: () => import('./views/editor-view')
+  },
+  {
+    id: 'preview',
+    name: 'Preview',
+    title: 'Live Preview',
+    tag: 'preview-view',
+    icon: '👁️',
+    component: () => import('./views/preview-view')
+  }
+];
+
+// Initialize the framework
+bootstrapFramework({
+  views,
+  state: {
+    panels: [
+      {
+        id: 'left-panel',
+        region: 'left',
+        views: ['explorer']
+      },
+      {
+        id: 'main-panel-1',
+        region: 'main',
+        views: ['editor']
+      }
+    ]
   }
 });
-
-// ❌ WRONG
-this.uiState.layout.expansion.left = true; // NEVER mutate!
 ```
 
-### 2. Updates via Dispatch
+### Creating a View Component
 
 ```typescript
-// ✅ CORRECT
-dispatchUiEvent(this, 'layout/setExpansion', {
-  side: 'left',
-  expanded: true
-});
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
+import { uiStateContext, dispatchUiEvent } from '@project/framework';
+import type { UiStateContextValue } from '@project/framework';
 
-// ❌ WRONG
-this.uiState.layout.expansion.left = true;
-this.requestUpdate();
-```
-
-### 3. Views are Decoupled
-
-```typescript
-// ✅ CORRECT - Via shared context
-render() {
-  const selection = (this.uiState?.app as any)?.selection;
-  return html`<div>Selected: ${selection?.itemId}</div>`;
-}
-
-// ❌ WRONG - Direct reference
-const otherView = document.querySelector('other-view');
-otherView.updateSelection(itemId);
-```
-
----
-
-## 🔧 Common Modifications
-
-### Add a New View
-
-```typescript
-// 1. In demo-layout-improved.ts
-const NEW_VIEW: View = {
-  id: 'my-new-view',
-  name: 'My New View',
-  component: 'my-new-view',
-  data: { label: 'My View', color: '#10b981' }
-};
-
-// Add to MAIN_VIEWS or other view array
-
-// 2. Create component file
-import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
-
-@customElement('my-new-view')
-export class MyNewView extends LitElement {
-  render() {
-    return html`<div>My New View</div>`;
+@customElement('my-view')
+export class MyView extends LitElement {
+  // Consume framework state
+  @consume({ context: uiStateContext, subscribe: true })
+  @property({ attribute: false })
+  uiState?: UiStateContextValue;
+  
+  private handleAction() {
+    // Dispatch action to update state
+    dispatchUiEvent(this, 'myapp/action', {
+      data: 'value'
+    });
   }
-}
-
-// 3. Register in main-improved.ts (already handled if using VIEW_REGISTRATIONS)
-```
-
-### Add Custom State
-
-```typescript
-// 1. Register handler
-frameworkHandlers.register('myapp/setState', (state, action) => {
-  return {
-    state: {
-      ...state,
-      myapp: action.payload
-    },
-    followUps: []
-  };
-});
-
-// 2. Use in view
-dispatchUiEvent(this, 'myapp/setState', {
-  customValue: 'my-data'
-});
-
-// 3. Read in view
-render() {
-  const myapp = this.uiState?.myapp as { customValue?: string };
-  return html`<div>${myapp?.customValue}</div>`;
-}
-```
-
-### Add Custom Toolbar
-
-```typescript
-// 1. Create toolbar component
-@customElement('my-toolbar')
-export class MyToolbar extends LitElement {
+  
   render() {
+    const appState = this.uiState?.state.myApp;
+    
     return html`
-      <button @click=${() => dispatchUiEvent(this, 'my/action')}>
-        My Action
-      </button>
+      <div class="my-view">
+        <h2>My View</h2>
+        <p>State: ${JSON.stringify(appState)}</p>
+        <button @click=${this.handleAction}>Update</button>
+      </div>
     `;
   }
+  
+  static styles = css`
+    .my-view {
+      padding: 1rem;
+    }
+  `;
 }
+```
 
-// 2. Add to WorkspaceRoot.ts
-<dock-container .manager=${this.dockManager} toolbarId="my-toolbar">
-  <my-toolbar></my-toolbar>
-</dock-container>
+### Creating a Handler
+
+```typescript
+import type { UIState, HandlerAction, HandlerResult } from '@project/framework';
+
+export const myAppHandlers = {
+  'myapp/action': (state: UIState, action: HandlerAction): HandlerResult<UIState> => {
+    return {
+      state: {
+        ...state,
+        myApp: {
+          ...state.myApp,
+          data: action.payload.data
+        }
+      },
+      followUps: []
+    };
+  }
+};
 ```
 
 ---
 
-## 🐛 Debugging Tips
+## 🏛️ Architecture
 
-### Enable Logging
+BuildBlox follows the **View-Context-Handler Protocol**, a unidirectional data flow pattern:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                  User Interaction                        │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│  View dispatches action via dispatchUiEvent()            │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│  Handler processes action and returns new state          │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│  Context distributes updated state to all views          │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│  Views re-render with new state                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Core Principles
+
+1. **Views are Pure Presentation** - Components display data and report user intentions
+2. **Context Provides Read-Only State** - State access through Lit Context API
+3. **Handlers are the Only State Mutators** - All changes flow through pure functions
+4. **Type Safety Throughout** - Full TypeScript coverage with strict typing
+5. **Immutable Updates** - State is never mutated, always replaced
+
+---
+
+## 📚 Documentation
+
+### For Users
+
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get up and running in 5 minutes *(coming soon)*
+- **[View Development Guide](docs/VIEW_DEVELOPMENT.md)** - Creating custom views *(coming soon)*
+- **[State Management Guide](docs/STATE_MANAGEMENT.md)** - Working with application state *(coming soon)*
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation *(coming soon)*
+
+### For Framework Developers
+
+- **[Framework Development Guide](FRAMEWORK_DEVELOPMENT_GUIDE.md)** - Comprehensive guide for extending the framework
+- **[Architecture Overview](FRAMEWORK_DEVELOPMENT_GUIDE.md#architecture-philosophy)** - Deep dive into the architecture
+- **[Testing Guide](FRAMEWORK_DEVELOPMENT_GUIDE.md#testing-strategy)** - Testing strategies and examples
+
+---
+
+## 🧪 Examples
+
+### Playground Demo
+
+The playground package includes a complete demonstration:
+
+```bash
+npm run --workspace @project/playground dev
+```
+
+**Features demonstrated:**
+- Multi-panel layout with resizable panels
+- View registration and lazy loading
+- State management and actions
+- Panel expansion/collapse
+- Viewport mode switching
+- Overlay views
+
+### Example Applications
+
+See the `packages/playground` directory for:
+- **Demo views** - Example view components
+- **Demo layout** - Complete workspace configuration
+- **Custom handlers** - Application-specific state handlers
+- **Interactive examples** - Buttons, forms, state display
+
+---
+
+## 🛠️ Development
+
+### Setup Development Environment
+
+```bash
+# Install dependencies
+npm install
+
+# Build framework
+npm run --workspace @project/framework build
+
+# Run playground in dev mode
+npm run --workspace @project/playground dev
+
+# Run tests (when available)
+npm test
+```
+
+### Monorepo Structure
+
+This is an npm workspaces monorepo:
+
+- **`packages/framework`** - Core framework library
+- **`packages/playground`** - Demo and testing environment
+- **`packages/app`** - Application template (optional)
+
+### Adding a New Package
+
+```bash
+# Create package directory
+mkdir -p packages/my-package
+
+# Add package.json
+cd packages/my-package
+npm init -y
+
+# Install dependencies
+npm install @project/framework lit
+```
+
+---
+
+## 🧩 Key Concepts
+
+### Panels
+
+Panels are structural containers in the workspace:
 
 ```typescript
-// In main-improved.ts (already included)
-setFrameworkLogger({
-  info: console.log,
-  warn: console.warn,
-  error: console.error
+{
+  id: 'panel-1',
+  region: 'left' | 'right' | 'bottom' | 'main',
+  views: ['view-id-1', 'view-id-2']
+}
+```
+
+### Views
+
+Views are reusable components registered with the framework:
+
+```typescript
+{
+  id: 'unique-id',
+  name: 'Display Name',
+  title: 'Full Title',
+  tag: 'custom-element-tag',
+  icon: '📝',
+  component: () => import('./view-component')
+}
+```
+
+### State
+
+Centralized application state:
+
+```typescript
+{
+  panels: Panel[],
+  views: View[],
+  layout: {
+    expansion: { left, right, bottom },
+    overlayView: string | null,
+    viewportWidthMode: '1x' | '2x' | '3x' | '4x' | '5x'
+  },
+  // Your custom state
+  myApp: { ... }
+}
+```
+
+### Handlers
+
+Pure functions that transform state:
+
+```typescript
+(state: UIState, action: HandlerAction) => {
+  return {
+    state: newState,        // Immutable update
+    followUps: [actions]    // Subsequent actions
+  };
+}
+```
+
+---
+
+## 📊 Performance
+
+- **Lazy loading** - Views loaded on-demand
+- **Efficient updates** - Only affected components re-render
+- **Virtual scrolling** - Handle large lists efficiently
+- **Memoization** - Cache computed values
+- **Tree shaking** - Only bundle what you use
+
+---
+
+## 🧪 Testing
+
+### Testing Views
+
+```typescript
+import { fixture, html, expect } from '@open-wc/testing';
+import { MyView } from './my-view';
+
+describe('MyView', () => {
+  it('renders correctly', async () => {
+    const el = await fixture<MyView>(html`
+      <my-view></my-view>
+    `);
+    
+    expect(el.shadowRoot?.textContent).to.include('My View');
+  });
 });
 ```
 
-### Inspect State
+### Testing Handlers
 
 ```typescript
-// In browser console
-__frameworkRoot.state
-__frameworkRoot.state.layout
-__frameworkRoot.state.panels
-```
+import { describe, it, expect } from 'vitest';
+import { myHandler } from './my-handler';
 
-### Monitor Events
-
-```typescript
-// Add to main-improved.ts (already included)
-window.addEventListener('ui-event', (event) => {
-  console.log('Event:', event.detail);
+describe('myHandler', () => {
+  it('updates state correctly', () => {
+    const state = { myApp: { value: 0 } };
+    const result = myHandler(state, {
+      type: 'myapp/increment',
+      payload: {}
+    });
+    
+    expect(result.state.myApp.value).toBe(1);
+  });
 });
 ```
-
----
-
-## 📖 Documentation Reference
-
-| Document | Purpose |
-|----------|---------|
-| **IMPROVED_DEMO_GUIDE.md** | Complete architecture guide |
-| **USE_CASES.md** | Real-world implementation examples |
-| **demo-layout-improved.ts** | UI state structure reference |
-| **demo-view-improved.ts** | View component patterns |
-| **main-improved.ts** | Bootstrap and initialization |
-
----
-
-## 🎨 Demo Features
-
-### Interactive Elements
-
-- **Expansion Panel Toggles**: Click to expand/collapse left/right/bottom panels
-- **Viewport Mode Switcher**: Change between 1x-5x panel layouts
-- **Auth Simulation**: Test login/logout state changes
-- **Overlay Trigger**: Open settings overlay
-- **Real-time State Display**: See current state values
-
-### Visual Indicators
-
-- **Color-coded Views**: Each view has a distinct color
-- **Status Badges**: Show login status
-- **Panel Counters**: Display active panel counts
-- **Expansion Status**: Visual indicators for panel states
-
-### Developer Tools
-
-- **Console Logging**: All events logged to console
-- **State Inspector**: Examine state in DevTools
-- **Keyboard Shortcuts**: Cmd/Ctrl+B, Cmd/Ctrl+Shift+P
-- **Auto-save**: Simulated persistence (see USE_CASES.md)
 
 ---
 
 ## 🤝 Contributing
 
-### Reporting Issues
+We welcome contributions! Please see our contributing guidelines:
 
-If you find issues with the demo or have suggestions:
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-1. Check **IMPROVED_DEMO_GUIDE.md** for architecture questions
-2. Review **USE_CASES.md** for implementation patterns
-3. Examine the actual implementation in source files
-4. Check browser console for error messages
+### Development Guidelines
 
-### Extending the Demo
-
-To add your own examples:
-
-1. Create a new view component following `demo-view-improved.ts` pattern
-2. Add view definition to `demo-layout-improved.ts`
-3. Register handlers if needed
-4. Document your addition in comments
+- Follow the existing code style
+- Add tests for new features
+- Update documentation
+- Ensure all tests pass
+- Follow TypeScript best practices
 
 ---
 
-## ✅ Checklist for Production
+## 📝 Roadmap
 
-Before moving to production, ensure:
-
-- [ ] Replace demo views with actual application views
-- [ ] Remove or disable debug logging
-- [ ] Implement proper error boundaries
-- [ ] Add loading states for async operations
-- [ ] Set up proper state persistence
-- [ ] Configure authentication properly
-- [ ] Add analytics/telemetry if needed
-- [ ] Test keyboard shortcuts
-- [ ] Verify responsive behavior
-- [ ] Check browser compatibility
+- [x] Core framework architecture
+- [x] Panel and view system
+- [x] State management with context
+- [x] Handler registry
+- [x] View registry with lazy loading
+- [x] Comprehensive documentation
+- [ ] Additional UI components
+- [ ] Plugin marketplace
+- [ ] Visual layout editor
+- [ ] State persistence utilities
+- [ ] Authentication integration
+- [ ] Theming system
+- [ ] Accessibility improvements
 
 ---
 
-## 📝 License
+## 🔗 Resources
 
-This demo is part of the BuildBlox Framework project.
+### Official
+
+- **[Framework Development Guide](FRAMEWORK_DEVELOPMENT_GUIDE.md)** - Complete framework documentation
+- **[Playground Demo](packages/playground)** - Live examples and demos
+
+### External
+
+- **[Lit Element](https://lit.dev/)** - Web component library
+- **[Lit Context](https://lit.dev/docs/data/context/)** - Context API documentation
+- **[TypeScript](https://www.typescriptlang.org/)** - TypeScript language
+- **[Vite](https://vitejs.dev/)** - Build tool
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🙏 Acknowledgments
 
-This improved demo was created to demonstrate:
-- ✅ Proper context usage patterns
-- ✅ Event-driven state management
-- ✅ Clean separation of concerns
-- ✅ Type-safe architecture
-- ✅ Extensible design patterns
+BuildBlox Framework is built with:
 
-**Built with BuildBlox Framework**  
-*Clean • Type-Safe • Extensible*
+- **[Lit](https://lit.dev/)** - Fast, lightweight web components
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[Vite](https://vitejs.dev/)** - Next generation frontend tooling
+
+Special thanks to all contributors and the open source community.
 
 ---
 
-## 📞 Support
+## 💬 Support
 
-For questions about:
-- **Architecture**: Read IMPROVED_DEMO_GUIDE.md
-- **Patterns**: Check USE_CASES.md
-- **Implementation**: Study source files
-- **Debugging**: Enable logging and inspect state
+- **Documentation**: [Framework Development Guide](FRAMEWORK_DEVELOPMENT_GUIDE.md)
+- **Issues**: [GitHub Issues](https://github.com/your-org/buildblox-framework/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/buildblox-framework/discussions)
 
 ---
 
-**Happy Building! 🚀**
+## 🎯 Use Cases
+
+BuildBlox is perfect for:
+
+- 📝 **Code Editors** - IDE-like interfaces with multiple panels
+- 🎨 **Design Tools** - Canvas with toolbars and property panels
+- 📊 **Dashboards** - Analytics with customizable layouts
+- 🗂️ **File Managers** - Explorer-style applications
+- 🛠️ **Admin Panels** - Complex management interfaces
+- 📱 **Multi-pane Apps** - Any application with resizable regions
+
+---
+
+**Built with ❤️ by the BuildBlox Team**
+
+*Extensible • Type-Safe • Production-Ready*

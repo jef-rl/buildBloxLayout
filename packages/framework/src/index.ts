@@ -1,47 +1,44 @@
-// Public components
-export * from './components/controls/Expander';
-export * from './components/controls/Resizer';
-export * from './components/controls/Views';
-export * from './components/layout/DockContainer';
-export * from './components/layout/DockManager';
-export * from './components/layout/FrameworkRoot';
-export * from './components/layout/OverlayLayer';
-export * from './components/layout/PositionPicker';
-export * from './components/layout/WorkspaceRoot';
-export * from './components/ui/Icons';
+// ============================================
+// PUBLIC API - Framework Entry Point
+// ============================================
 
-// Core functionality & state management
-export * from './registry/ViewRegistry';
-export * from './registry/ViewRegistryInstance';
-export * from './state/context';
-export * from './state/selectors';
-export * from './state/ui-state';
+// Shared/Foundational Components
+export * from './components';
+
+// Domain Exports
+export * from './domains/workspace';
+export * from './domains/panels';
+export * from './domains/dock';
+export * from './domains/layout';
+
+// Core Framework (Bootstrap & Registries)
+export * from './core';
+
+// State Management
+export * from './state';
 export { ContextConsumer, ContextProvider } from '@lit/context';
 export { uiStateContext } from './state/context';
 export type { UiStateContextValue } from './state/ui-state';
 
-// Event handling
-export * from './utils/dispatcher';
-export * from './utils/logger';
-export * from './utils/context-update';
+// Event Handling & Utilities
+export * from './utils';
 
 // Types & Interfaces
-export * from './types/core';
-export * from './types/events';
-export * from './types/panel';
+export * from './types';
 
-// Utilities
-export * from './utils/helpers';
-export * from './bootstrap';
-
-// Handlers
-export * from './handlers/layout/dock';
-export * from './handlers/layout/dock.handlers';
-export * from './handlers/layout/positioning';
-export * from './handlers/layout/position-picker.handlers';
-export * from './handlers/layout/resize';
-export * from './handlers/layout/size-controls.handlers';
-export * from './handlers/layout/views';
-export * from './handlers/layout/view-controls.handlers';
-export * from './handlers/workspace/panels';
-export * from './handlers/handler-registry';
+// Backward Compatibility Exports (Legacy Paths)
+// These maintain the old import paths for existing consumers
+export { ViewRegistry, viewRegistry } from './core/registry/view-registry';
+export { ExpanderControls as Expander } from './domains/layout/components/Expander';
+export { SizeControls as Resizer } from './domains/layout/components/Resizer';
+export { ViewControls as Views } from './domains/layout/components/ViewControls';
+export { Workspace } from './domains/layout/components/Workspace';
+export { DockContainer } from './domains/dock/components/DockContainer';
+export { DockManager } from './domains/dock/components/DockManager';
+export { PositionPicker } from './domains/dock/components/PositionPicker';
+export { FrameworkRoot } from './components/FrameworkRoot';
+export { OverlayExpander as OverlayLayer } from './domains/workspace/components/OverlayLayer';
+export { WorkspaceRoot } from './domains/workspace/components/WorkspaceRoot';
+export { PanelView } from './domains/workspace/components/PanelView';
+export { Icons } from './components/Icons';
+export { ViewToken } from './components/ViewToken';

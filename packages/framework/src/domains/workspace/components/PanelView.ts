@@ -1,0 +1,178 @@
+import { LitElement, html, css, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { ContextConsumer } from '@lit/context';
+import { uiStateContext } from '../../../state/context';
+import type { UiStateContextValue } from '../../../state/ui-state';
+import type { View } from '../../../types/index';
+import { viewRegistry } from '../../../core/registry/view-registry';
+
+export class PanelView extends LitElement {
+    @property({ type: String }) viewId: string | null = null;
+
+    private uiState: UiStateContextValue['state'] | null = null;
+    private registryUnsubscribe: (() => void) | null = null;
+
+    private _consumer = new ContextConsumer(this, {
+        context: uiStateContext,
+        subscribe: true,
+        callback: (value: UiStateContextValue | undefined) => {
+            this.uiState = value?.state ?? null;
+            this.updateElementData();
+        },
+    });
+
+    static styles = css`
+        :host {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
+
+        .view-container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .fallback {
+            display: grid;
+            place-items: center;
+            height: 100%;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+    `;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
+            if (this.viewId) {
+                void this.loadView();
+            }
+        });
+    }
+
+    disconnectedCallback() {
+        if (this.registryUnsubscribe) {
+            this.registryUnsubscribe();
+            this.registryUnsubscribe = null;
+        }
+        super.disconnectedCallback();
+    }
+
+    updated(changedProps: Map<string, unknown>) {
+        if (changedProps.has('viewId')) {
+            void this.loadView();
+        }
+    }
+
+    private async loadView() {
+        const container = this.shadowRoot?.querySelector('.view-container');
+        if (!container) return;
+
+        // Only reload if the viewId has actually changed
+        const currentElement = container.firstElementChild as HTMLElement | null;
+        const definition = this.viewId ? viewRegistry.get(this.viewId) : null;
+        if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
+            this.applyViewData(currentElement);
+            return;
+        }
+        
+        container.innerHTML = '';
+        if (!this.viewId || !definition?.tag) {
+            this.requestUpdate(); // Request a render to show the fallback message
+            return;
+        }
+
+        await viewRegistry.getComponent(this.viewId);
+        const element = document.createElement(definition.tag);
+        this.applyViewData(element);
+        container.appendChild(element);
+    }
+
+    private resolveViewData(): View | null {
+        if (!this.viewId || !this.uiState) {
+            return null;
+        }
+
+        // Prioritize finding the view instance in the central state.views array
+        const viewMatch = this.uiState.views?.find(
+            (view) => view.component === this.viewId || view.id === this.viewId
+        );
+        if (viewMatch) return viewMatch;
+
+        // Fallback for cases where panels might have transient view objects
+        const panels = this.uiState.panels ?? [];
+        const panelMatch = panels.find(
+            (panel) =>
+                panel?.viewId === this.viewId ||
+                panel?.activeViewId === this.viewId ||
+                panel?.view?.id === this.viewId ||
+                panel?.view?.component === this.viewId
+        );
+
+        return panelMatch?.view ?? null;
+    }
+
+    private applyViewData(element: HTMLElement) {
+        const view = this.resolveViewData();
+        if (!view) {
+            return;
+        }
+
+        const data = view.data;
+        if (data && typeof data === 'object') {
+            const viewData = data as { label?: unknown; color?: unknown };
+            if (typeof viewData.label === 'string') {
+                (element as { label?: string }).label = viewData.label;
+            }
+            if (typeof viewData.color === 'string') {
+                (element as { color?: string }).color = viewData.color;
+            }
+            (element as { data?: unknown }).data = data;
+        } else if (data !== undefined) {
+            (element as { data?: unknown }).data = data;
+        }
+    }
+
+    private updateElementData() {
+        const container = this.shadowRoot?.querySelector('.view-container');
+        const element = container?.firstElementChild as HTMLElement | null;
+        if (element) {
+            this.applyViewData(element);
+        }
+    }
+
+    private renderFallback() {
+        let message = '';
+        if (!this.viewId) {
+            message = 'No view selected.';
+        } else {
+            const definition = viewRegistry.get(this.viewId);
+            if (!definition) {
+                message = `View "${this.viewId}" is not registered.`;
+            } else if (!definition.tag) {
+                message = `View "${this.viewId}" is missing a tag.`;
+            }
+        }
+
+        if (message) {
+            return html`
+                <div class="fallback">
+                    <slot>${message}</slot>
+                </div>
+            `;
+        }
+        return nothing;
+    }
+
+    render() {
+        // The container is always rendered.
+        // Fallback content is now determined purely within the render cycle.
+        return html`
+            <div class="view-container"></div>
+            ${this.renderFallback()}
+        `;
+    }
+}
+
+customElements.define('panel-view', PanelView);

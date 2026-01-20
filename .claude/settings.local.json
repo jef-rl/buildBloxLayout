@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(dir:*)",
+      "Bash(npx tsc)",
+      "Bash(if exist \"node_modules\\\\@project\\\\framework\" rmdir /s /q \"node_modules\\\\@project\\\\framework\")",
+      "Bash(if exist \"node_modules\\\\@project\" rmdir \"node_modules\\\\@project\")",
+      "Bash(powershell -Command:*)"
+    ]
+  }
+}
