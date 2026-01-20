@@ -8,7 +8,10 @@ import { getFrameworkLogger } from '../../utils/logger';
 import { applyLayoutAction } from '../../handlers/workspace/layout';
 import { viewRegistry } from '../../registry/ViewRegistry';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from '../../handlers/workspace/panels';
+import { validateState } from '../../utils/state-validator';
 import './WorkspaceRoot';
+
+const isDev = import.meta.env.DEV;
 
 type StateActionPayload = {
   state?: UIState;
@@ -103,6 +106,14 @@ export class FrameworkRoot extends LitElement {
     super.connectedCallback();
     this.addEventListener('ui-event', this.handleUiEvent as EventListener);
     this.unsubscribe = uiState.subscribe((nextState) => {
+      if (isDev) {
+        try {
+          validateState(nextState);
+        } catch (error) {
+          console.error("State validation failed after subscription update:", error);
+          return; 
+        }
+      }
       this.state = nextState;
       this.refreshContext();
     });
@@ -190,25 +201,32 @@ export class FrameworkRoot extends LitElement {
 
     switch (action.type) {
       case 'layout/setExpansion':
-      case 'layout/setOverlayView':
-      case 'layout/setViewportWidthMode':
-      case 'layout/setMainAreaCount': {
+      case 'layout/setOverlayView': {
         const normalizedState = this.normalizeLayoutState(previousState);
         const draftState = {
           ...normalizedState,
-          layout: {
-            ...normalizedState.layout,
-            expansion: { ...normalizedState.layout.expansion },
-          },
+          layout: { ...normalizedState.layout },
         };
+        handled = applyLayoutAction(draftState, { ...payload, type: action.type });
+        if(handled) nextState = draftState;
+        break;
+      }
+      case 'layout/setViewportWidthMode': {
+        const normalizedState = this.normalizeLayoutState(previousState);
+        const draftState = { ...normalizedState };
+        handled = applyLayoutAction(draftState, { ...payload, type: action.type });
+        if(handled) nextState = draftState;
+        break;
+      }
+      case 'layout/setMainAreaCount': {
+        const normalizedState = this.normalizeLayoutState(previousState);
+        const draftState = { ...normalizedState };
         handled = applyLayoutAction(draftState, { ...payload, type: action.type });
         if (handled) {
           const fallbackOrder = draftState.layout.mainViewOrder?.length
             ? draftState.layout.mainViewOrder
             : deriveMainViewOrderFromPanels(draftState.panels);
           nextState = applyMainViewOrder(draftState, fallbackOrder);
-        } else {
-          nextState = previousState;
         }
         break;
       }
@@ -322,79 +340,45 @@ export class FrameworkRoot extends LitElement {
         continue;
       }
 
-      if (action.type === 'state/replace' || action.type === 'state/patch') {
-        const payload = action.payload as StateActionPayload | undefined;
-        const previousState = uiState.getState();
-        const followUps = toFollowUps(payload);
-        let nextState = previousState;
-
-        if (action.type === 'state/replace') {
-          const nextValue = (payload?.state ?? payload?.value ?? payload?.changes) as UIState | undefined;
-          if (nextValue) {
-            uiState.update(nextValue);
-            nextState = nextValue;
-          }
-        } else {
-          const patch = (payload?.patch ?? payload?.changes ?? payload?.value ?? {}) as Partial<UIState>;
-          nextState = uiState.hydrate(patch);
-        }
-
-        logger?.info?.('FrameworkRoot state action.', {
-          actionType: action.type,
-          summary: summarizeState(
-            action.type === 'state/replace' ? nextState : payload?.patch ?? payload?.changes ?? payload?.value ?? null,
-          ),
-          update: summarizeUpdate(previousState, nextState),
-        });
-
-        if (followUps.length > 0) {
-          queue.push(...followUps);
-        }
-
-        continue;
-      }
-
       const previousState = uiState.getState();
+      let nextState = previousState;
+      let actionFollowUps: HandlerAction[] = [];
+      
       const workspaceResult = this.handleWorkspaceAction(action, previousState);
       if (workspaceResult.handled) {
-        if (workspaceResult.nextState !== previousState) {
-          uiState.update(workspaceResult.nextState);
-          logger?.info?.('FrameworkRoot workspace action.', {
-            actionType: action.type,
-            summary: summarizeUpdate(previousState, workspaceResult.nextState),
-          });
-        }
+          nextState = workspaceResult.nextState;
+          actionFollowUps = workspaceResult.followUps;
 
-        if (workspaceResult.panelStateChanged) {
-          this.refreshContext();
-        }
-
-        if (workspaceResult.followUps.length > 0) {
-          queue.push(...workspaceResult.followUps);
-        }
-
-        continue;
+          if (workspaceResult.panelStateChanged) {
+              this.refreshContext();
+          }
+      } else {
+          const handler = frameworkHandlers.get(action.type);
+          if (handler) {
+              const result = frameworkHandlers.handle(previousState, action);
+              nextState = result.state;
+              actionFollowUps = result.followUps;
+          }
       }
 
-      const handler = frameworkHandlers.get(action.type);
-      const { state: nextState, followUps } = frameworkHandlers.handle(previousState, action);
-
-      logger?.info?.('FrameworkRoot handler output.', {
-        actionType: action.type,
-        handled: Boolean(handler),
-        followUps: followUps.map((item) => item.type),
-      });
-
-      if (handler && nextState !== previousState) {
+      if (nextState !== previousState) {
+        if (isDev) {
+            try {
+                validateState(nextState);
+            } catch (error) {
+                console.error(`State validation failed after action: ${action.type}`, error);
+                continue; // Skip state update if validation fails
+            }
+        }
         uiState.update(nextState);
         logger?.info?.('FrameworkRoot state update.', {
-          actionType: action.type,
-          summary: summarizeUpdate(previousState, nextState),
+            actionType: action.type,
+            summary: summarizeUpdate(previousState, nextState),
         });
       }
 
-      if (followUps.length > 0) {
-        queue.push(...followUps);
+      if (actionFollowUps.length > 0) {
+        queue.push(...actionFollowUps);
       }
     }
 

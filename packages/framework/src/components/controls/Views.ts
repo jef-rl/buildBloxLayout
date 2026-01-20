@@ -333,39 +333,45 @@ export class ViewControls extends LitElement {
         }
     }
 
-    private handleTokenDrop(event: DragEvent, targetViewId: string) {
+    /**
+     * Unified drop handler for the token pool.
+     * Determines if the drop target is a specific token (to reorder)
+     * or the container itself (to move to end).
+     */
+    private handleDrop(event: DragEvent) {
         event.preventDefault();
         const viewId =
             event.dataTransfer?.getData('application/x-view-id') ||
             event.dataTransfer?.getData('text/plain');
-        if (!viewId || viewId === targetViewId) {
-            return;
-        }
-        const currentOrder = this.resolveTokenViewOrder();
-        const fromIndex = currentOrder.indexOf(viewId);
-        const toIndex = currentOrder.indexOf(targetViewId);
-        if (fromIndex === -1 || toIndex === -1) {
-            return;
-        }
-        const nextOrder: string[] = currentOrder.filter((id: string) => id !== viewId);
-        nextOrder.splice(toIndex, 0, viewId);
-        this.handlers.setMainViewOrder(nextOrder);
-    }
 
-    private handleTokenDropOnList(event: DragEvent) {
-        event.preventDefault();
-        const viewId =
-            event.dataTransfer?.getData('application/x-view-id') ||
-            event.dataTransfer?.getData('text/plain');
         if (!viewId) {
             return;
         }
+
         const currentOrder = this.resolveTokenViewOrder();
         if (!currentOrder.includes(viewId)) {
             return;
         }
+
+        // Find if we dropped onto another token
+        const targetToken = (event.target as HTMLElement).closest('.token');
+        const targetViewId = targetToken?.getAttribute('data-view-id');
+
         const nextOrder: string[] = currentOrder.filter((id: string) => id !== viewId);
-        nextOrder.push(viewId);
+
+        if (targetViewId && targetViewId !== viewId) {
+            // Reorder: Insert dropped token before the target token
+            const toIndex = nextOrder.indexOf(targetViewId);
+            if (toIndex !== -1) {
+                nextOrder.splice(toIndex, 0, viewId);
+            } else {
+                nextOrder.push(viewId);
+            }
+        } else {
+            // Dropped on container or same token: Move to end
+            nextOrder.push(viewId);
+        }
+
         this.handlers.setMainViewOrder(nextOrder);
     }
 
@@ -443,7 +449,7 @@ export class ViewControls extends LitElement {
                     role="list"
                     aria-label="View tokens"
                     @dragover=${this.handleTokenDragOver}
-                    @drop=${this.handleTokenDropOnList}
+                    @drop=${(event: DragEvent) => this.handleDrop(event)}
                 >
                     ${tokenOrder
                 .map((viewId: string) => viewMap.get(viewId))
@@ -455,14 +461,13 @@ export class ViewControls extends LitElement {
                     return html`
                                 <div
                                     class="token"
+                                    data-view-id=${view.id}
                                     draggable="true"
                                     role="listitem"
                                     title=${label}
                                     aria-label=${label}
                                     @dragstart=${(event: DragEvent) =>
                             this.handleTokenDragStart(event, view.id)}
-                                    @dragover=${this.handleTokenDragOver}
-                                    @drop=${(event: DragEvent) => this.handleTokenDrop(event, view.id)}
                                 >
                                     <span class="token__icon">
                                         <img src="https://storage.googleapis.com/lozzuck.appspot.com/blox/icons/${iconName}.png" alt="${label}" />
@@ -486,24 +491,3 @@ export class ViewControls extends LitElement {
 }
 
 customElements.define('view-controls', ViewControls);
-
-
-
-// <span class="token__actions">
-//     <button
-//         class="token__move"
-//         type="button"
-//         aria-label="Move ${label} up"
-//         @click=${() => this.moveToken(view.id, 'up')}
-//     >
-//         <i class="codicon codicon-arrow-up"></i>
-//     </button>
-//     <button
-//         class="token__move"
-//         type="button"
-//         aria-label="Move ${label} down"
-//         @click=${() => this.moveToken(view.id, 'down')}
-//     >
-//         <i class="codicon codicon-arrow-down"></i>
-//     </button>
-// </span>
