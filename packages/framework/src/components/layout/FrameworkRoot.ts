@@ -173,7 +173,7 @@ export class FrameworkRoot extends LitElement {
         ...layout,
         expansion: layout.expansion ?? { left: false, right: false, bottom: false },
         overlayView: layout.overlayView ?? null,
-        viewportWidthMode: layout.viewportWidthMode ?? 'auto',
+        viewportWidthMode: layout.viewportWidthMode ?? '1x',
         mainAreaCount: layout.mainAreaCount ?? 1,
         mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
       },
@@ -222,11 +222,28 @@ export class FrameworkRoot extends LitElement {
         const normalizedState = this.normalizeLayoutState(previousState);
         const draftState = { ...normalizedState };
         handled = applyLayoutAction(draftState, { ...payload, type: action.type });
+        
         if (handled) {
           const fallbackOrder = draftState.layout.mainViewOrder?.length
             ? draftState.layout.mainViewOrder
             : deriveMainViewOrderFromPanels(draftState.panels);
-          nextState = applyMainViewOrder(draftState, fallbackOrder);
+          
+          let finalState = applyMainViewOrder(draftState, fallbackOrder);
+
+          // Final consistency check
+          const newMainAreaCount = finalState.layout.mainAreaCount;
+          const currentViewportWidth = parseInt(finalState.layout.viewportWidthMode, 10);
+
+          if (currentViewportWidth > newMainAreaCount) {
+            finalState = {
+              ...finalState,
+              layout: {
+                ...finalState.layout,
+                viewportWidthMode: `${newMainAreaCount}x`,
+              }
+            };
+          }
+          nextState = finalState;
         }
         break;
       }

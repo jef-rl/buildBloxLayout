@@ -7,7 +7,7 @@ import type { UiStateContextValue } from '../../state/ui-state';
 import { createSizeControlsHandlers } from '../../handlers/layout/size-controls.handlers';
 
 export class SizeControls extends LitElement {
-    @property({ attribute: false }) viewportWidthMode = 'auto'; // 'auto', '1x', etc
+    @property({ attribute: false }) viewportWidthMode = '1x'; // Default to '1x'
     @property({ type: String }) orientation = 'row';
 
     private uiState: UiStateContextValue['state'] | null = null;
@@ -74,30 +74,40 @@ export class SizeControls extends LitElement {
     `;
 
     get activeViewportWidthMode() {
-        return this.uiState?.layout?.viewportWidthMode ?? this.viewportWidthMode ?? 'auto';
+        return this.uiState?.layout?.viewportWidthMode ?? this.viewportWidthMode ?? '1x';
     }
 
     render() {
         const isColumn = this.orientation === 'column';
         const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
         const mainPanelCount = panels.filter((panel) => panel.region === 'main').length;
+        const activeViewCount = this.uiState?.layout?.mainAreaCount ?? 1;
 
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
-                ${['1x', '2x', '3x', '4x', '5x', 'auto'].map(mode => {
-                    const requiredCount = mode === 'auto' ? 0 : Number.parseInt(mode, 10);
-                    const isEnabled = mode === 'auto' || mainPanelCount >= Math.max(requiredCount, 1);
+                ${['1x', '2x', '3x', '4x', '5x'].map(mode => {
+                    const requiredCount = Number.parseInt(mode, 10);
+                    const isEnabled = mainPanelCount >= Math.max(requiredCount, 1);
+                    
+                    const handleViewportClick = () => {
+                        if (!isEnabled) return;
+
+                        let targetMode = mode;
+                        const requestedCount = Number.parseInt(mode, 10);
+                        if (requestedCount > activeViewCount) {
+                            targetMode = `${activeViewCount}x`;
+                        }
+                        this.handlers.setViewport(targetMode);
+                    };
 
                     return html`
                         <button 
-                            @click=${() => isEnabled && this.handlers.setViewport(mode)}
+                            @click=${handleViewportClick}
                             class="viewport-button ${this.activeViewportWidthMode === mode ? 'active' : ''}"
-                            title="${mode === 'auto' ? 'Auto Width (Magic)' : `${mode} Viewport Width`}"
+                            title="${`${mode} Viewport Width`}"
                             ?disabled="${!isEnabled}"
                         >
-                            ${mode === 'auto'
-                                ? html`<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
-                                : mode}
+                            ${mode}
                         </button>
                     `;
                 })}
