@@ -78,6 +78,20 @@ const toFollowUps = (actions: unknown): HandlerAction[] => {
 };
 
 export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
+  'state/hydrate': (state, action) => {
+    const payload = action.payload ?? {};
+    const patch = (payload.state ?? payload.patch ?? payload.value) as Partial<UIState> | undefined;
+    if (!patch || typeof patch !== 'object') {
+      logAction(action.type, 'state', patch);
+      return { state, followUps: toFollowUps(payload.followUps) };
+    }
+    const nextState = {
+      ...state,
+      ...patch,
+    };
+    logAction(action.type, 'state', patch);
+    return { state: nextState, followUps: toFollowUps(payload.followUps) };
+  },
   'context/update': (state, action) => {
     const payload = action.payload ?? {};
     const path = payload.path as string | string[] | undefined;
