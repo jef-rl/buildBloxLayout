@@ -1,5 +1,5 @@
 import { LitElement, html, css, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../state/context';
 import type { UiStateContextValue } from '../../state/ui-state';
@@ -8,7 +8,6 @@ import { viewRegistry } from '../../registry/ViewRegistry';
 
 export class PanelView extends LitElement {
     @property({ type: String }) viewId: string | null = null;
-    @state() private fallbackMessage: string | null = null;
 
     private uiState: UiStateContextValue['state'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
@@ -68,26 +67,19 @@ export class PanelView extends LitElement {
 
     private async loadView() {
         const container = this.shadowRoot?.querySelector('.view-container');
-        if (!container) {
+        if (!container) return;
+
+        // Only reload if the viewId has actually changed
+        const currentElement = container.firstElementChild as HTMLElement | null;
+        const definition = this.viewId ? viewRegistry.get(this.viewId) : null;
+        if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
+            this.applyViewData(currentElement);
             return;
         }
-
+        
         container.innerHTML = '';
-        this.fallbackMessage = null;
-
-        if (!this.viewId) {
-            this.fallbackMessage = 'No view selected.';
-            return;
-        }
-
-        const definition = viewRegistry.get(this.viewId);
-        if (!definition) {
-            this.fallbackMessage = `View "${this.viewId}" is not registered.`;
-            return;
-        }
-
-        if (!definition.tag) {
-            this.fallbackMessage = `View "${this.viewId}" is missing a tag.`;
+        if (!this.viewId || !definition?.tag) {
+            this.requestUpdate(); // Request a render to show the fallback message
             return;
         }
 
@@ -102,18 +94,23 @@ export class PanelView extends LitElement {
             return null;
         }
 
-        const panels = this.uiState.panels ?? [];
-        const panelMatch = panels.find((panel) =>
-            panel?.viewId === this.viewId
-            || panel?.activeViewId === this.viewId
-            || panel?.view?.id === this.viewId
-            || panel?.view?.component === this.viewId,
+        // Prioritize finding the view instance in the central state.views array
+        const viewMatch = this.uiState.views?.find(
+            (view) => view.component === this.viewId || view.id === this.viewId
         );
-        const viewMatch = this.uiState.views?.find((view) =>
-            view.id === this.viewId || view.component === this.viewId,
+        if (viewMatch) return viewMatch;
+
+        // Fallback for cases where panels might have transient view objects
+        const panels = this.uiState.panels ?? [];
+        const panelMatch = panels.find(
+            (panel) =>
+                panel?.viewId === this.viewId ||
+                panel?.activeViewId === this.viewId ||
+                panel?.view?.id === this.viewId ||
+                panel?.view?.component === this.viewId
         );
 
-        return panelMatch?.view ?? viewMatch ?? null;
+        return panelMatch?.view ?? null;
     }
 
     private applyViewData(element: HTMLElement) {
@@ -140,20 +137,40 @@ export class PanelView extends LitElement {
     private updateElementData() {
         const container = this.shadowRoot?.querySelector('.view-container');
         const element = container?.firstElementChild as HTMLElement | null;
-        if (!element) {
-            return;
+        if (element) {
+            this.applyViewData(element);
         }
-        this.applyViewData(element);
+    }
+
+    private renderFallback() {
+        let message = '';
+        if (!this.viewId) {
+            message = 'No view selected.';
+        } else {
+            const definition = viewRegistry.get(this.viewId);
+            if (!definition) {
+                message = `View "${this.viewId}" is not registered.`;
+            } else if (!definition.tag) {
+                message = `View "${this.viewId}" is missing a tag.`;
+            }
+        }
+
+        if (message) {
+            return html`
+                <div class="fallback">
+                    <slot>${message}</slot>
+                </div>
+            `;
+        }
+        return nothing;
     }
 
     render() {
+        // The container is always rendered.
+        // Fallback content is now determined purely within the render cycle.
         return html`
             <div class="view-container"></div>
-            ${this.fallbackMessage ? html`
-                <div class="fallback">
-                    <slot>${this.fallbackMessage}</slot>
-                </div>
-            ` : nothing}
+            ${this.renderFallback()}
         `;
     }
 }
