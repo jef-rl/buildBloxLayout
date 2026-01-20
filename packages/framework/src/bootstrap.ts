@@ -1,6 +1,6 @@
 import type { UIState, ViewDefinition, ViewTokenState } from './types/index';
 import { viewRegistry } from './registry/ViewRegistry';
-import { uiState } from './state/ui-state';
+import { dispatchUiEvent } from './utils/dispatcher';
 import { getFrameworkLogger } from './utils/logger';
 import './components/layout/FrameworkRoot';
 
@@ -32,15 +32,15 @@ export const bootstrapFramework = ({ views, state, mount }: BootstrapFrameworkOp
         viewIds: views.map((view) => view.id),
     });
 
-    if (state) {
-        uiState.hydrate(state);
-    }
-
-    logger?.info?.('bootstrapFramework state hydrated.', summarizeState(state));
-
     const root = document.createElement('framework-root');
     const mountTarget = mount ?? document.body;
     mountTarget.appendChild(root);
+
+    if (state) {
+        dispatchUiEvent(root, 'state/hydrate', { state });
+    }
+
+    logger?.info?.('bootstrapFramework state hydrated.', summarizeState(state));
 
     logger?.info?.('bootstrapFramework root mounted.', {
         tagName: root.tagName.toLowerCase(),
