@@ -43,6 +43,12 @@ export type AuthState = {
   user?: AuthUser | null;
 };
 
+export type PanelState = {
+  open: Record<string, boolean>;
+  data: Record<string, unknown>;
+  errors: Record<string, unknown>;
+};
+
 export type UIState = {
   containers: PanelContainer[];
   panels: Panel[];
@@ -54,4 +60,5 @@ export type UIState = {
   dock: unknown;
   theme: unknown;
   auth: AuthState;
+  panelState: PanelState;
 };
