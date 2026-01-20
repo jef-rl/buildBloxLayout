@@ -1,48 +1,32 @@
 import { LitElement, css, html } from 'lit';
 import { ContextProvider } from '@lit/context';
-import { coreHandlers, createHandlerRegistry, type HandlerAction } from '../../handlers/handler-registry';
+import {
+  coreHandlers,
+  createHandlerRegistry,
+  type HandlerAction,
+  type ReducerHandler,
+} from '../../handlers/handler-registry';
 import type { UIState } from '../../types/ui-state';
-import { uiState, type UiStateContextState } from '../../state/ui-state';
+import { uiState, type PanelStateExtras, type UiStateContextState } from '../../state/ui-state';
 import { uiStateContext } from '../../state/context';
 import { getFrameworkLogger } from '../../utils/logger';
-import { applyLayoutAction } from '../../handlers/workspace/layout';
-import { viewRegistry } from '../../registry/ViewRegistry';
-import { applyMainViewOrder, deriveMainViewOrderFromPanels } from '../../handlers/workspace/panels';
 import { validateState } from '../../utils/state-validator';
+import {
+  registerWorkspaceHandlers,
+  type FrameworkContextState,
+} from '../../handlers/workspace/registry';
 import './WorkspaceRoot';
 
 const isDev = import.meta.env.DEV;
 
-type StateActionPayload = {
-  state?: UIState;
-  patch?: Partial<UIState>;
-  value?: UIState | Partial<UIState>;
-  changes?: Partial<UIState>;
-  followUps?: HandlerAction[];
-};
-
 type UiEventDetail = {
   type: string;
-  payload?: StateActionPayload & Record<string, unknown>;
+  payload?: Record<string, unknown>;
 };
 
 type UiDispatchPayload = {
   type: string;
   [key: string]: unknown;
-};
-
-const toFollowUps = (payload?: StateActionPayload) => {
-  if (!Array.isArray(payload?.followUps)) {
-    return [] as HandlerAction[];
-  }
-  return payload.followUps.filter((action): action is HandlerAction => Boolean(action?.type));
-};
-
-const summarizeState = (state: UIState | Partial<UIState> | null) => {
-  if (!state || typeof state !== 'object') {
-    return { valueType: typeof state };
-  }
-  return { keys: Object.keys(state) };
 };
 
 const summarizeUpdate = (previousState: UIState, nextState: UIState) => {
@@ -56,7 +40,26 @@ const summarizeUpdate = (previousState: UIState, nextState: UIState) => {
   };
 };
 
-export const frameworkHandlers = createHandlerRegistry<UIState>(coreHandlers);
+const wrapCoreHandler = (
+  handler: ReducerHandler<UIState>,
+): ReducerHandler<FrameworkContextState> => {
+  return (context, action) => {
+    const result = handler(context.state, action);
+    return {
+      state: {
+        ...context,
+        state: result.state,
+      },
+      followUps: result.followUps,
+    };
+  };
+};
+
+export const frameworkHandlers = createHandlerRegistry<FrameworkContextState>();
+Object.entries(coreHandlers).forEach(([type, handler]) => {
+  frameworkHandlers.register(type, wrapCoreHandler(handler));
+});
+registerWorkspaceHandlers(frameworkHandlers);
 
 export class FrameworkRoot extends LitElement {
   static styles = css`
@@ -78,10 +81,10 @@ export class FrameworkRoot extends LitElement {
 
   private state = uiState.getState();
 
-  private panelState = {
-    open: {} as Record<string, boolean>,
-    data: {} as Record<string, unknown>,
-    errors: {} as Record<string, unknown>,
+  private panelState: PanelStateExtras = {
+    open: {},
+    data: {},
+    errors: {},
   };
 
   private unsubscribe: (() => void) | null = null;
@@ -165,177 +168,6 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([action]);
   };
 
-  private normalizeLayoutState(state: UIState) {
-    const layout = typeof state.layout === 'object' && state.layout ? state.layout : ({} as UIState['layout']);
-    return {
-      ...state,
-      layout: {
-        ...layout,
-        expansion: layout.expansion ?? { left: false, right: false, bottom: false },
-        overlayView: layout.overlayView ?? null,
-        viewportWidthMode: layout.viewportWidthMode ?? 'auto',
-        mainAreaCount: layout.mainAreaCount ?? 1,
-        mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
-      },
-    };
-  }
-
-  private normalizeAuthState(state: UIState) {
-    const auth = typeof state.auth === 'object' && state.auth ? state.auth : ({} as UIState['auth']);
-    return {
-      ...state,
-      auth: {
-        ...auth,
-        isLoggedIn: auth.isLoggedIn ?? false,
-        user: auth.user ?? null,
-      },
-    };
-  }
-
-  private handleWorkspaceAction(action: HandlerAction, previousState: UIState) {
-    const payload = (action.payload ?? {}) as UiDispatchPayload;
-    const followUps = toFollowUps(payload as StateActionPayload);
-    let nextState = previousState;
-    let handled = true;
-    let panelStateChanged = false;
-
-    switch (action.type) {
-      case 'layout/setExpansion':
-      case 'layout/setOverlayView': {
-        const normalizedState = this.normalizeLayoutState(previousState);
-        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
-        handled = Boolean(nextLayout);
-        if (nextLayout) {
-          nextState = {
-            ...normalizedState,
-            layout: nextLayout,
-          };
-        }
-        break;
-      }
-      case 'layout/setViewportWidthMode': {
-        const normalizedState = this.normalizeLayoutState(previousState);
-        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
-        handled = Boolean(nextLayout);
-        if (nextLayout) {
-          nextState = {
-            ...normalizedState,
-            layout: nextLayout,
-          };
-        }
-        break;
-      }
-      case 'layout/setMainAreaCount': {
-        const normalizedState = this.normalizeLayoutState(previousState);
-        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
-        handled = Boolean(nextLayout);
-        if (nextLayout) {
-          const draftState = {
-            ...normalizedState,
-            layout: nextLayout,
-          };
-          const fallbackOrder = draftState.layout.mainViewOrder?.length
-            ? draftState.layout.mainViewOrder
-            : deriveMainViewOrderFromPanels(draftState.panels);
-          nextState = applyMainViewOrder(draftState, fallbackOrder);
-        }
-        break;
-      }
-      case 'panels/selectPanel':
-        if (payload.panelId) {
-          this.panelState.data = {
-            ...this.panelState.data,
-            targetPanelId: payload.panelId,
-          };
-          panelStateChanged = true;
-        }
-        break;
-      case 'panels/assignView': {
-        const viewId = payload.viewId as string | undefined;
-        const targetPanelId = payload.panelId ?? (this.panelState.data?.targetPanelId as string | undefined);
-        const panels = previousState.panels ?? [];
-        const fallbackPanel = panels.find((panel) => panel.region === 'main') ?? panels[0];
-        const panelId = targetPanelId ?? fallbackPanel?.id;
-        const panel = panels.find((item) => item.id === panelId);
-        if (panel && viewId) {
-          const view = viewRegistry.createView(viewId);
-          if (view) {
-            const nextPanels = panels.map((item) =>
-              item.id === panel.id
-                ? {
-                    ...item,
-                    view,
-                    viewId,
-                    activeViewId: viewId,
-                  }
-                : item,
-            );
-            const nextViews = previousState.views
-              .filter((existing) => existing.id !== view.id)
-              .concat(view);
-            nextState = {
-              ...previousState,
-              panels: nextPanels,
-              views: nextViews,
-              activeView: view.id,
-              layout: {
-                ...previousState.layout,
-                mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
-              },
-            };
-          }
-        }
-        break;
-      }
-      case 'panels/setMainViewOrder': {
-        const viewOrder = Array.isArray(payload.viewOrder) ? payload.viewOrder : [];
-        nextState = applyMainViewOrder(previousState, viewOrder);
-        break;
-      }
-      case 'panels/togglePanel':
-        if (payload.panelId || payload.viewId) {
-          const panelId = (payload.panelId ?? payload.viewId) as string;
-          const nextOpen = !this.panelState.open[panelId];
-          this.panelState.open = {
-            ...this.panelState.open,
-            [panelId]: nextOpen,
-          };
-          panelStateChanged = true;
-        }
-        break;
-      case 'panels/setScopeMode':
-        this.panelState.data = {
-          ...this.panelState.data,
-          scope: { ...(this.panelState.data?.scope ?? {}), mode: payload.mode },
-        };
-        panelStateChanged = true;
-        break;
-      case 'session/reset':
-        this.panelState.errors = {};
-        this.panelState.data = {};
-        panelStateChanged = true;
-        break;
-      case 'auth/setUser': {
-        const normalizedState = this.normalizeAuthState(previousState);
-        const nextUser = payload.user as { uid: string; email?: string } | null | undefined;
-        nextState = {
-          ...normalizedState,
-          auth: {
-            ...normalizedState.auth,
-            user: nextUser ?? null,
-            isLoggedIn: Boolean(nextUser),
-          },
-        };
-        break;
-      }
-      default:
-        handled = false;
-        break;
-    }
-
-    return { handled, nextState, followUps, panelStateChanged };
-  }
-
   private dispatchActions(actions: HandlerAction[]) {
     const logger = getFrameworkLogger();
     const queue = [...actions];
@@ -352,24 +184,18 @@ export class FrameworkRoot extends LitElement {
       }
 
       const previousState = uiState.getState();
-      let nextState = previousState;
-      let actionFollowUps: HandlerAction[] = [];
-      
-      const workspaceResult = this.handleWorkspaceAction(action, previousState);
-      if (workspaceResult.handled) {
-          nextState = workspaceResult.nextState;
-          actionFollowUps = workspaceResult.followUps;
+      const context: FrameworkContextState = {
+        state: previousState,
+        panelState: this.panelState,
+      };
+      const result = frameworkHandlers.handle(context, action);
+      const nextContext = result.state;
+      const nextState = nextContext.state;
+      const actionFollowUps = result.followUps;
+      const panelStateChanged = nextContext.panelState !== this.panelState;
 
-          if (workspaceResult.panelStateChanged) {
-              this.refreshContext();
-          }
-      } else {
-          const handler = frameworkHandlers.get(action.type);
-          if (handler) {
-              const result = frameworkHandlers.handle(previousState, action);
-              nextState = result.state;
-              actionFollowUps = result.followUps;
-          }
+      if (panelStateChanged) {
+        this.panelState = nextContext.panelState;
       }
 
       if (nextState !== previousState) {
@@ -386,6 +212,8 @@ export class FrameworkRoot extends LitElement {
             actionType: action.type,
             summary: summarizeUpdate(previousState, nextState),
         });
+      } else if (panelStateChanged) {
+        this.refreshContext();
       }
 
       if (actionFollowUps.length > 0) {
