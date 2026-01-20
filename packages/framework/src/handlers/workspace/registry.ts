@@ -1,4 +1,3 @@
-import type { PanelStateExtras } from '../../state/ui-state';
 import type { UIState } from '../../types/ui-state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../handler-registry';
 import { viewRegistry } from '../../registry/ViewRegistry';
@@ -7,7 +6,6 @@ import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './panels';
 
 export type FrameworkContextState = {
   state: UIState;
-  panelState: PanelStateExtras;
 };
 
 type StateActionPayload = {
@@ -104,11 +102,14 @@ const handleSelectPanel: ReducerHandler<FrameworkContextState> = (context, actio
   return {
     state: {
       ...context,
-      panelState: {
-        ...context.panelState,
-        data: {
-          ...context.panelState.data,
-          targetPanelId: panelId,
+      state: {
+        ...context.state,
+        panelState: {
+          ...context.state.panelState,
+          data: {
+            ...context.state.panelState.data,
+            targetPanelId: panelId,
+          },
         },
       },
     },
@@ -121,7 +122,7 @@ const handleAssignView: ReducerHandler<FrameworkContextState> = (context, action
   const viewId = payload.viewId as string | undefined;
   const targetPanelId =
     (payload.panelId as string | undefined) ??
-    (context.panelState.data?.targetPanelId as string | undefined);
+    (context.state.panelState.data?.targetPanelId as string | undefined);
   const panels = context.state.panels ?? [];
   const fallbackPanel = panels.find((panel) => panel.region === 'main') ?? panels[0];
   const panelId = targetPanelId ?? fallbackPanel?.id;
@@ -187,15 +188,18 @@ const handleTogglePanel: ReducerHandler<FrameworkContextState> = (context, actio
     return { state: context, followUps: toFollowUps(payload) };
   }
 
-  const nextOpen = !context.panelState.open[panelId];
+  const nextOpen = !context.state.panelState.open[panelId];
   return {
     state: {
       ...context,
-      panelState: {
-        ...context.panelState,
-        open: {
-          ...context.panelState.open,
-          [panelId]: nextOpen,
+      state: {
+        ...context.state,
+        panelState: {
+          ...context.state.panelState,
+          open: {
+            ...context.state.panelState.open,
+            [panelId]: nextOpen,
+          },
         },
       },
     },
@@ -208,13 +212,16 @@ const handleSetScopeMode: ReducerHandler<FrameworkContextState> = (context, acti
   return {
     state: {
       ...context,
-      panelState: {
-        ...context.panelState,
-        data: {
-          ...context.panelState.data,
-          scope: {
-            ...(context.panelState.data?.scope ?? {}),
-            mode: payload.mode,
+      state: {
+        ...context.state,
+        panelState: {
+          ...context.state.panelState,
+          data: {
+            ...context.state.panelState.data,
+            scope: {
+              ...(context.state.panelState.data?.scope ?? {}),
+              mode: payload.mode,
+            },
           },
         },
       },
@@ -228,10 +235,13 @@ const handleSessionReset: ReducerHandler<FrameworkContextState> = (context, acti
   return {
     state: {
       ...context,
-      panelState: {
-        ...context.panelState,
-        errors: {},
-        data: {},
+      state: {
+        ...context.state,
+        panelState: {
+          ...context.state.panelState,
+          errors: {},
+          data: {},
+        },
       },
     },
     followUps: toFollowUps(payload),

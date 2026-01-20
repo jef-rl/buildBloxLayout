@@ -10,17 +10,7 @@ import type {
 export type { LayoutExpansion, LayoutState, MainAreaPanelCount, ToolbarState, UIState } from '../types/ui-state';
 export type { ViewportWidthMode } from '../types/core';
 
-export type PanelStateExtras = {
-    open: Record<string, boolean>;
-    data: Record<string, unknown>;
-    errors: Record<string, unknown>;
-};
-
-export type PanelsWithState = Panel[] & PanelStateExtras;
-
-export type UiStateContextState = Omit<UIState, 'panels'> & {
-    panels: PanelsWithState;
-};
+export type UiStateContextState = UIState;
 
 export interface UiStateContextValue {
   state: UiStateContextState;
@@ -54,6 +44,11 @@ export class UiState {
         auth: {
             isLoggedIn: false,
             user: null,
+        },
+        panelState: {
+            open: {},
+            data: {},
+            errors: {},
         },
     };
     private listeners = new Set<(state: UIState) => void>();

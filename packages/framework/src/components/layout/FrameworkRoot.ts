@@ -7,7 +7,7 @@ import {
   type ReducerHandler,
 } from '../../handlers/handler-registry';
 import type { UIState } from '../../types/ui-state';
-import { uiState, type PanelStateExtras, type UiStateContextState } from '../../state/ui-state';
+import { uiState, type UiStateContextState } from '../../state/ui-state';
 import { uiStateContext } from '../../state/context';
 import { getFrameworkLogger } from '../../utils/logger';
 import { validateState } from '../../utils/state-validator';
@@ -81,12 +81,6 @@ export class FrameworkRoot extends LitElement {
 
   private state = uiState.getState();
 
-  private panelState: PanelStateExtras = {
-    open: {},
-    data: {},
-    errors: {},
-  };
-
   private unsubscribe: (() => void) | null = null;
 
   private dispatchUiAction = (payload: UiDispatchPayload) => {
@@ -133,17 +127,7 @@ export class FrameworkRoot extends LitElement {
   }
 
   private getContextState(): UiStateContextState {
-    const snapshot = this.state ?? uiState.getState();
-    const panels = (Array.isArray(snapshot.panels) ? [...snapshot.panels] : []) as UiStateContextState['panels'];
-
-    panels.open = this.panelState.open;
-    panels.data = this.panelState.data;
-    panels.errors = this.panelState.errors;
-
-    return {
-      ...snapshot,
-      panels,
-    };
+    return this.state ?? uiState.getState();
   }
 
   private refreshContext() {
@@ -186,17 +170,11 @@ export class FrameworkRoot extends LitElement {
       const previousState = uiState.getState();
       const context: FrameworkContextState = {
         state: previousState,
-        panelState: this.panelState,
       };
       const result = frameworkHandlers.handle(context, action);
       const nextContext = result.state;
       const nextState = nextContext.state;
       const actionFollowUps = result.followUps;
-      const panelStateChanged = nextContext.panelState !== this.panelState;
-
-      if (panelStateChanged) {
-        this.panelState = nextContext.panelState;
-      }
 
       if (nextState !== previousState) {
         if (isDev) {
@@ -212,8 +190,6 @@ export class FrameworkRoot extends LitElement {
             actionType: action.type,
             summary: summarizeUpdate(previousState, nextState),
         });
-      } else if (panelStateChanged) {
-        this.refreshContext();
       }
 
       if (actionFollowUps.length > 0) {
