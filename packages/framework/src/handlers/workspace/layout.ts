@@ -21,23 +21,6 @@ const normalizeMainAreaCount = (
     return clamped as MainAreaPanelCount;
 };
 
-const resolveViewportMainAreaCount = (
-    mode: ViewportWidthMode,
-    fallback: MainAreaPanelCount = 1,
-): MainAreaPanelCount => {
-    if (mode === 'auto') {
-        return fallback;
-    }
-
-    const parsed = Number.parseInt(mode, 10);
-    if (!Number.isFinite(parsed)) {
-        return fallback;
-    }
-
-    const clamped = Math.min(5, Math.max(1, Math.round(parsed)));
-    return clamped as MainAreaPanelCount;
-};
-
 const resolveExpansion = (
     current: LayoutExpansion,
     side: keyof LayoutExpansion,
@@ -74,12 +57,6 @@ export const applyLayoutAction = (
         case 'layout/setViewportWidthMode': {
             const mode = normalizeViewportWidthMode(payload.mode);
             state.layout.viewportWidthMode = mode;
-            if (mode !== 'auto') {
-                state.layout.mainAreaCount = resolveViewportMainAreaCount(
-                    mode,
-                    state.layout.mainAreaCount ?? 1,
-                );
-            }
             return true;
         }
         case 'layout/setMainAreaCount': {
