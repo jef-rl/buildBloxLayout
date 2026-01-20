@@ -203,26 +203,37 @@ export class FrameworkRoot extends LitElement {
       case 'layout/setExpansion':
       case 'layout/setOverlayView': {
         const normalizedState = this.normalizeLayoutState(previousState);
-        const draftState = {
-          ...normalizedState,
-          layout: { ...normalizedState.layout },
-        };
-        handled = applyLayoutAction(draftState, { ...payload, type: action.type });
-        if(handled) nextState = draftState;
+        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
+        handled = Boolean(nextLayout);
+        if (nextLayout) {
+          nextState = {
+            ...normalizedState,
+            layout: nextLayout,
+          };
+        }
         break;
       }
       case 'layout/setViewportWidthMode': {
         const normalizedState = this.normalizeLayoutState(previousState);
-        const draftState = { ...normalizedState };
-        handled = applyLayoutAction(draftState, { ...payload, type: action.type });
-        if(handled) nextState = draftState;
+        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
+        handled = Boolean(nextLayout);
+        if (nextLayout) {
+          nextState = {
+            ...normalizedState,
+            layout: nextLayout,
+          };
+        }
         break;
       }
       case 'layout/setMainAreaCount': {
         const normalizedState = this.normalizeLayoutState(previousState);
-        const draftState = { ...normalizedState };
-        handled = applyLayoutAction(draftState, { ...payload, type: action.type });
-        if (handled) {
+        const nextLayout = applyLayoutAction(normalizedState.layout, { ...payload, type: action.type });
+        handled = Boolean(nextLayout);
+        if (nextLayout) {
+          const draftState = {
+            ...normalizedState,
+            layout: nextLayout,
+          };
           const fallbackOrder = draftState.layout.mainViewOrder?.length
             ? draftState.layout.mainViewOrder
             : deriveMainViewOrderFromPanels(draftState.panels);

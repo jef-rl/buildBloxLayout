@@ -33,40 +33,48 @@ const resolveExpansion = (
 };
 
 export const applyLayoutAction = (
-    state: { layout: LayoutState },
+    layout: LayoutState,
     payload: { type: string; [key: string]: unknown },
-): boolean => {
+): LayoutState | null => {
     switch (payload.type) {
         case 'layout/setExpansion': {
             const side = payload.side as keyof LayoutExpansion;
-            if (!side || !(side in state.layout.expansion)) {
-                return false;
+            if (!side || !(side in layout.expansion)) {
+                return null;
             }
 
-            state.layout.expansion = resolveExpansion(
-                state.layout.expansion,
-                side,
-                Boolean(payload.expanded),
-            );
-            return true;
+            return {
+                ...layout,
+                expansion: resolveExpansion(
+                    layout.expansion,
+                    side,
+                    Boolean(payload.expanded),
+                ),
+            };
         }
         case 'layout/setOverlayView': {
-            state.layout.overlayView = (payload.viewId as string | null | undefined) ?? null;
-            return true;
+            return {
+                ...layout,
+                overlayView: (payload.viewId as string | null | undefined) ?? null,
+            };
         }
         case 'layout/setViewportWidthMode': {
             const mode = normalizeViewportWidthMode(payload.mode);
-            state.layout.viewportWidthMode = mode;
-            return true;
+            return {
+                ...layout,
+                viewportWidthMode: mode,
+            };
         }
         case 'layout/setMainAreaCount': {
-            state.layout.mainAreaCount = normalizeMainAreaCount(
-                payload.count ?? payload.mainAreaCount,
-                state.layout.mainAreaCount ?? 1,
-            );
-            return true;
+            return {
+                ...layout,
+                mainAreaCount: normalizeMainAreaCount(
+                    payload.count ?? payload.mainAreaCount,
+                    layout.mainAreaCount ?? 1,
+                ),
+            };
         }
         default:
-            return false;
+            return null;
     }
 };
