@@ -4,6 +4,7 @@ import { uiState } from '../../../state/ui-state.js';
 import { DockManager } from '../../dock/components/DockManager.js';
 import '../../layout/components/Resizer.js';
 import '../../layout/components/Expander.js';
+import '../../layout/components/ControlToolbar.js';
 import '../../dock/components/DockContainer.js';
 import './OverlayLayer.js';
 import './PanelView.js';
@@ -217,6 +218,10 @@ export class WorkspaceRoot extends LitElement {
 
                 <dock-container .manager=${this.dockManager} toolbarId="expander" fallbackPosition="bottom-left">
                     <expander-controls></expander-controls>
+                </dock-container>
+
+                <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center">
+                    <control-toolbar></control-toolbar>
                 </dock-container>
 
                 ${overlayView ? html`

@@ -1,7 +1,7 @@
 import type { UIState } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
-import { applyLayoutAction } from './workspace-layout.handlers';
+import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
 
 export type FrameworkContextState = {
@@ -78,9 +78,20 @@ const handleMainAreaCount: ReducerHandler<FrameworkContextState> = (context, act
     return { state: context, followUps: toFollowUps(payload) };
   }
 
+  // Clamp viewport width mode based on new mainAreaCount
+  const clampedViewportMode = clampViewportModeToCapacity(
+    nextLayout.viewportWidthMode,
+    nextLayout.mainAreaCount,
+  );
+
+  // Apply clamped viewport mode if it changed
+  const finalLayout = clampedViewportMode !== nextLayout.viewportWidthMode
+    ? { ...nextLayout, viewportWidthMode: clampedViewportMode }
+    : nextLayout;
+
   const draftState = {
     ...normalizedState,
-    layout: nextLayout,
+    layout: finalLayout,
   };
   const fallbackOrder = draftState.layout.mainViewOrder?.length
     ? draftState.layout.mainViewOrder

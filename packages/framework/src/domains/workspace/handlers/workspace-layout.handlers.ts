@@ -22,6 +22,30 @@ const normalizeMainAreaCount = (
     return clamped as MainAreaPanelCount;
 };
 
+export const clampViewportModeToCapacity = (
+    mode: ViewportWidthMode,
+    capacity: MainAreaPanelCount,
+): ViewportWidthMode => {
+    // Preserve 'auto' mode
+    if (mode === 'auto') {
+        return 'auto';
+    }
+
+    // Extract numeric value from mode (e.g., '4x' → 4)
+    const modeValue = Number.parseInt(mode, 10);
+
+    // If mode is invalid or NaN, return 'auto'
+    if (Number.isNaN(modeValue) || modeValue < 1) {
+        return 'auto';
+    }
+
+    // Clamp to capacity
+    const clampedValue = Math.min(modeValue, capacity);
+
+    // Return clamped mode (e.g., 3 → '3x')
+    return `${clampedValue}x` as ViewportWidthMode;
+};
+
 const resolveExpansion = (
     current: LayoutExpansion,
     side: keyof LayoutExpansion,

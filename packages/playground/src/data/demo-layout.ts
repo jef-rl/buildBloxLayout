@@ -290,7 +290,8 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     positions: {
       'views': 'bottom-center',
       'viewport': 'bottom-right',
-      'expander': 'bottom-left'
+      'expander': 'bottom-left',
+      'control': 'top-center'
     },
     activePicker: null
   },
