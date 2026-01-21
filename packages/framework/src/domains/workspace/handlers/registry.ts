@@ -14,10 +14,13 @@ type StateActionPayload = {
 };
 
 const toFollowUps = (payload?: StateActionPayload) => {
-  if (!Array.isArray(payload?.followUps)) {
+  if (!payload || !Array.isArray(payload.followUps)) {
     return [] as HandlerAction[];
   }
-  return payload.followUps.filter((action): action is HandlerAction => Boolean(action?.type));
+  const followUps = payload.followUps;
+  return followUps.filter((action): action is HandlerAction => {
+    return action !== null && action !== undefined && typeof (action as any)?.type === 'string';
+  });
 };
 
 const normalizeLayoutState = (state: UIState): UIState => {
@@ -219,7 +222,7 @@ const handleSetScopeMode: ReducerHandler<FrameworkContextState> = (context, acti
           data: {
             ...context.state.panelState.data,
             scope: {
-              ...(context.state.panelState.data?.scope ?? {}),
+              ...(typeof context.state.panelState.data?.scope === 'object' && !Array.isArray(context.state.panelState.data?.scope) ? context.state.panelState.data.scope : {} as Record<string, unknown>),
               mode: payload.mode,
             },
           },

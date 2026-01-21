@@ -8,7 +8,11 @@
       "Bash(npx tsc)",
       "Bash(if exist \"node_modules\\\\@project\\\\framework\" rmdir /s /q \"node_modules\\\\@project\\\\framework\")",
       "Bash(if exist \"node_modules\\\\@project\" rmdir \"node_modules\\\\@project\")",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(npm ls:*)",
+      "Bash(test:*)",
+      "Bash(del package-lock.json)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

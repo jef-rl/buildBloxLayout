@@ -3,8 +3,12 @@ import type { UiStateContextValue } from '../../../state/ui-state';
 
 type UiDispatch = UiStateContextValue['dispatch'];
 
+type UiEventTarget = {
+  dispatchEvent: (event: Event) => boolean;
+};
+
 export const createExpanderControlsHandlers = (
-    _controls: ExpanderControls,
+    _controls: UiEventTarget,
     getDispatch: () => UiDispatch | null,
 ) => ({
     stopClickPropagation: (event: Event) => {

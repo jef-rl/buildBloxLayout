@@ -319,7 +319,8 @@ export class Workspace extends LitElement {
     }
 
     private resolveActiveMainViews() {
-        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
+        const uiState = this.uiState;
+        const panels = uiState && Array.isArray(uiState.panels) ? uiState.panels : [];
         return panels
             .filter((panel) => panel.region === 'main')
             .map((panel) => this.resolvePanelViewId(panel))

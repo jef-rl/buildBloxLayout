@@ -1,8 +1,12 @@
 import type { ViewControls } from '../components/ViewControls';
 import { dispatchUiEvent } from '../../../utils/dispatcher';
 
+type UiEventTarget = {
+  dispatchEvent: (event: Event) => boolean;
+};
+
 export const createViewControlsHandlers = (
-    controls: ViewControls,
+    controls: UiEventTarget,
     _getDispatch: () => unknown,
 ) => ({
     stopClickPropagation: (event: Event) => {

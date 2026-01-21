@@ -316,6 +316,13 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   auth: {
     isLoggedIn: false,
     user: null
+  },
+
+  // Panel state tracking
+  panelState: {
+    open: {},
+    data: {},
+    errors: {}
   }
 };
 

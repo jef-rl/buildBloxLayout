@@ -88,10 +88,11 @@ const assignViewToPanel = (
     let viewNeedsUpdate = false;
 
     if (viewInstance) {
-        if (data && typeof data === 'object') {
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            const existingData = (typeof viewInstance.data === 'object' && !Array.isArray(viewInstance.data)) ? viewInstance.data as Record<string, unknown> : {};
             viewInstance = {
                 ...viewInstance,
-                data: { ...(viewInstance.data || {}), ...data },
+                data: { ...existingData, ...data as Record<string, unknown> },
             };
             viewNeedsUpdate = true;
         }
