@@ -29,8 +29,6 @@ export * from './types';
 // Backward Compatibility Exports (Legacy Paths)
 // These maintain the old import paths for existing consumers
 export { ViewRegistry, viewRegistry } from './core/registry/view-registry';
-export { ExpanderControls as Expander } from './domains/layout/components/Expander';
-export { SizeControls as Resizer } from './domains/layout/components/Resizer';
 export { ViewControls as Views } from './domains/layout/components/ViewControls';
 export { Workspace } from './domains/layout/components/Workspace';
 export { DockContainer } from './domains/dock/components/DockContainer';

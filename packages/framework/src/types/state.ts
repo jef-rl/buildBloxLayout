@@ -9,12 +9,37 @@ export type LayoutExpansion = {
 
 export type MainAreaPanelCount = 1 | 2 | 3 | 4 | 5;
 
+export type PanelSizeConfig = {
+  width?: number;
+  height?: number;
+};
+
+export type LayoutPreset = {
+  name: string;
+  mainAreaCount: MainAreaPanelCount;
+  viewportWidthMode: ViewportWidthMode;
+  expansion: LayoutExpansion;
+  mainViewOrder: string[];
+  leftViewId?: string | null;
+  rightViewId?: string | null;
+  bottomViewId?: string | null;
+  panelSizes?: {
+    left?: PanelSizeConfig;
+    right?: PanelSizeConfig;
+    bottom?: PanelSizeConfig;
+  };
+};
+
+export type LayoutPresets = Record<string, LayoutPreset>;
+
 export type LayoutState = {
   expansion: LayoutExpansion;
   overlayView: string | null;
   viewportWidthMode: ViewportWidthMode;
   mainAreaCount: MainAreaPanelCount;
   mainViewOrder: string[];
+  presets?: LayoutPresets;
+  activePreset?: string | null;
 };
 
 export type RegisteredViewSummary = {

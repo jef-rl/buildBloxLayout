@@ -226,7 +226,7 @@ export class DockContainer extends LitElement {
 
         slot.assignedElements({ flatten: true }).forEach((element) => {
             const tagName = element.tagName?.toLowerCase();
-            if (!['view-controls', 'size-controls', 'expander-controls'].includes(tagName)) {
+            if (!['view-controls'].includes(tagName)) {
                 return;
             }
             element.orientation = layout.orientation;

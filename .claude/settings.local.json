@@ -12,7 +12,8 @@
       "Bash(npm ls:*)",
       "Bash(test:*)",
       "Bash(del package-lock.json)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

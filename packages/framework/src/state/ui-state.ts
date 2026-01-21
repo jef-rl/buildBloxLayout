@@ -33,9 +33,11 @@ export class UiState {
         layout: {
             expansion: { left: false, right: false, bottom: false },
             overlayView: null,
-            viewportWidthMode: 'auto',
+            viewportWidthMode: '1x',
             mainAreaCount: 1,
             mainViewOrder: [],
+            presets: {},
+            activePreset: null,
         },
         toolbars: {
             positions: {},

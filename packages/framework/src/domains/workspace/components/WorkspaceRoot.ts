@@ -2,9 +2,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { uiState } from '../../../state/ui-state.js';
 import { DockManager } from '../../dock/components/DockManager.js';
-import '../../layout/components/Resizer.js';
-import '../../layout/components/Expander.js';
 import '../../layout/components/ControlToolbar.js';
+import '../../layout/components/PresetManager.js';
 import '../../dock/components/DockContainer.js';
 import './OverlayLayer.js';
 import './PanelView.js';
@@ -140,8 +139,8 @@ export class WorkspaceRoot extends LitElement {
         const expansion = layout.expansion ?? { left: false, right: false, bottom: false };
         const panels = this.state?.panels ?? [];
 
-        const viewportMode = layout.viewportWidthMode ?? 'auto';
-        const viewportCount = viewportMode === 'auto' ? NaN : Number.parseInt(viewportMode, 10);
+        const viewportMode = layout.viewportWidthMode ?? '1x';
+        const viewportCount = Number.parseInt(viewportMode, 10);
 
         const leftWidth = expansion.left ? 'clamp(220px, 22vw, 360px)' : '0px';
         const rightWidth = expansion.right ? 'clamp(220px, 22vw, 360px)' : '0px';
@@ -212,16 +211,12 @@ export class WorkspaceRoot extends LitElement {
                     <view-controls></view-controls>
                 </dock-container>
 
-                <dock-container .manager=${this.dockManager} toolbarId="viewport" fallbackPosition="bottom-right">
-                    <size-controls></size-controls>
-                </dock-container>
-
-                <dock-container .manager=${this.dockManager} toolbarId="expander" fallbackPosition="bottom-left">
-                    <expander-controls></expander-controls>
-                </dock-container>
-
                 <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center">
                     <control-toolbar></control-toolbar>
+                </dock-container>
+
+                <dock-container .manager=${this.dockManager} toolbarId="presets" fallbackPosition="top-right">
+                    <preset-manager></preset-manager>
                 </dock-container>
 
                 ${overlayView ? html`

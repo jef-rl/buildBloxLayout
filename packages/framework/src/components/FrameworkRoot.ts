@@ -108,13 +108,16 @@ export class FrameworkRoot extends LitElement {
           validateState(nextState);
         } catch (error) {
           console.error("State validation failed after subscription update:", error);
-          return; 
+          return;
         }
       }
       this.state = nextState;
       this.refreshContext();
     });
     this.refreshContext();
+
+    // Hydrate presets from localStorage on startup
+    this.dispatchActions([{ type: 'presets/hydrate', payload: {} }]);
   }
 
   disconnectedCallback() {

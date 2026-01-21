@@ -1,8 +1,9 @@
-import type { UIState } from '../../../types/state';
+import type { UIState, LayoutPreset } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
+import { presetPersistence } from '../../../utils/persistence';
 
 export type FrameworkContextState = {
   state: UIState;
@@ -31,9 +32,11 @@ const normalizeLayoutState = (state: UIState): UIState => {
       ...layout,
       expansion: layout.expansion ?? { left: false, right: false, bottom: false },
       overlayView: layout.overlayView ?? null,
-      viewportWidthMode: layout.viewportWidthMode ?? 'auto',
+      viewportWidthMode: layout.viewportWidthMode ?? '1x',
       mainAreaCount: layout.mainAreaCount ?? 1,
       mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
+      presets: layout.presets ?? {},
+      activePreset: layout.activePreset ?? null,
     },
   };
 };
@@ -89,9 +92,38 @@ const handleMainAreaCount: ReducerHandler<FrameworkContextState> = (context, act
     ? { ...nextLayout, viewportWidthMode: clampedViewportMode }
     : nextLayout;
 
+  // === SYNC PANEL COUNT TO MATCH CAPACITY ===
+  const currentMainPanels = normalizedState.panels.filter(p => p.region === 'main');
+  const targetCount = finalLayout.mainAreaCount;
+  const currentCount = currentMainPanels.length;
+
+  let nextPanels = [...normalizedState.panels];
+
+  if (currentCount < targetCount) {
+    // CASE 1: Need to create more panels
+    const panelsToCreate = targetCount - currentCount;
+    for (let i = 0; i < panelsToCreate; i++) {
+      const newPanelIndex = currentCount + i;
+      nextPanels.push({
+        id: `panel-main-${newPanelIndex + 1}`,
+        name: `Main Panel ${newPanelIndex + 1}`,
+        region: 'main',
+        viewId: undefined,
+        view: null
+      });
+    }
+  } else if (currentCount > targetCount) {
+    // CASE 2: Need to remove excess panels
+    const mainPanelsToKeep = currentMainPanels.slice(0, targetCount);
+    const otherPanels = normalizedState.panels.filter(p => p.region !== 'main');
+    nextPanels = [...mainPanelsToKeep, ...otherPanels];
+  }
+  // === END SYNC CODE ===
+
   const draftState = {
     ...normalizedState,
     layout: finalLayout,
+    panels: nextPanels,
   };
   const fallbackOrder = draftState.layout.mainViewOrder?.length
     ? draftState.layout.mainViewOrder
@@ -282,6 +314,218 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
   };
 };
 
+// === PRESET HANDLERS ===
+
+const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const name = payload.name as string | undefined;
+  if (!name) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const normalizedState = normalizeLayoutState(context.state);
+  const panels = normalizedState.panels ?? [];
+
+  const leftPanel = panels.find(p => p.region === 'left');
+  const rightPanel = panels.find(p => p.region === 'right');
+  const bottomPanel = panels.find(p => p.region === 'bottom');
+
+  const preset: LayoutPreset = {
+    name,
+    mainAreaCount: normalizedState.layout.mainAreaCount,
+    viewportWidthMode: normalizedState.layout.viewportWidthMode,
+    expansion: { ...normalizedState.layout.expansion },
+    mainViewOrder: [...normalizedState.layout.mainViewOrder],
+    leftViewId: leftPanel?.viewId ?? leftPanel?.activeViewId ?? null,
+    rightViewId: rightPanel?.viewId ?? rightPanel?.activeViewId ?? null,
+    bottomViewId: bottomPanel?.viewId ?? bottomPanel?.activeViewId ?? null,
+  };
+
+  const nextPresets = {
+    ...normalizedState.layout.presets,
+    [name]: preset,
+  };
+
+  // Persist to localStorage
+  presetPersistence.saveAll(nextPresets);
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          presets: nextPresets,
+          activePreset: name,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const name = payload.name as string | undefined;
+  if (!name) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const normalizedState = normalizeLayoutState(context.state);
+  const preset = normalizedState.layout.presets?.[name];
+  if (!preset) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  // Build follow-up actions for view assignments
+  const followUps: HandlerAction[] = [...toFollowUps(payload)];
+
+  // Assign views to side panels if specified
+  if (preset.leftViewId) {
+    const leftPanel = normalizedState.panels.find(p => p.region === 'left');
+    if (leftPanel) {
+      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.leftViewId, panelId: leftPanel.id } });
+    }
+  }
+  if (preset.rightViewId) {
+    const rightPanel = normalizedState.panels.find(p => p.region === 'right');
+    if (rightPanel) {
+      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.rightViewId, panelId: rightPanel.id } });
+    }
+  }
+  if (preset.bottomViewId) {
+    const bottomPanel = normalizedState.panels.find(p => p.region === 'bottom');
+    if (bottomPanel) {
+      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.bottomViewId, panelId: bottomPanel.id } });
+    }
+  }
+
+  // Apply main view order after setting main area count
+  followUps.push({ type: 'panels/setMainViewOrder', payload: { viewOrder: preset.mainViewOrder } });
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          expansion: { ...preset.expansion },
+          viewportWidthMode: preset.viewportWidthMode,
+          mainAreaCount: preset.mainAreaCount,
+          activePreset: name,
+        },
+      },
+    },
+    followUps,
+  };
+};
+
+const handlePresetDelete: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const name = payload.name as string | undefined;
+  if (!name) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const normalizedState = normalizeLayoutState(context.state);
+  const nextPresets = { ...normalizedState.layout.presets };
+  delete nextPresets[name];
+
+  // Persist to localStorage
+  presetPersistence.saveAll(nextPresets);
+
+  // Clear activePreset if it was the deleted one
+  const nextActivePreset = normalizedState.layout.activePreset === name
+    ? null
+    : normalizedState.layout.activePreset;
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          presets: nextPresets,
+          activePreset: nextActivePreset,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const oldName = payload.oldName as string | undefined;
+  const newName = payload.newName as string | undefined;
+  if (!oldName || !newName || oldName === newName) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const normalizedState = normalizeLayoutState(context.state);
+  const preset = normalizedState.layout.presets?.[oldName];
+  if (!preset) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const nextPresets = { ...normalizedState.layout.presets };
+  delete nextPresets[oldName];
+  nextPresets[newName] = { ...preset, name: newName };
+
+  // Persist to localStorage
+  presetPersistence.saveAll(nextPresets);
+
+  // Update activePreset if it was renamed
+  const nextActivePreset = normalizedState.layout.activePreset === oldName
+    ? newName
+    : normalizedState.layout.activePreset;
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          presets: nextPresets,
+          activePreset: nextActivePreset,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const normalizedState = normalizeLayoutState(context.state);
+
+  // Load presets from localStorage
+  const loadedPresets = presetPersistence.loadAll();
+  if (!loadedPresets) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          presets: loadedPresets,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+// === END PRESET HANDLERS ===
+
 const registerHandler = (
   registry: HandlerRegistry<FrameworkContextState>,
   type: string,
@@ -304,4 +548,11 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'panels/setScopeMode', handleSetScopeMode);
   registerHandler(registry, 'session/reset', handleSessionReset);
   registerHandler(registry, 'auth/setUser', handleAuthSetUser);
+
+  // Preset handlers
+  registerHandler(registry, 'presets/save', handlePresetSave);
+  registerHandler(registry, 'presets/load', handlePresetLoad);
+  registerHandler(registry, 'presets/delete', handlePresetDelete);
+  registerHandler(registry, 'presets/rename', handlePresetRename);
+  registerHandler(registry, 'presets/hydrate', handlePresetHydrate);
 };

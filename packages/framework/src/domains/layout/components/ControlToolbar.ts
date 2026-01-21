@@ -132,6 +132,20 @@ export class ControlToolbar extends LitElement {
         this.handlers.setOverlayView(nextOverlay);
     }
 
+    setViewportWidth(requestedMode: string) {
+        // Rule #1: Proactive Width Limiting
+        // Cap the requested width to the current mainAreaCount
+        const mainAreaCount = this.uiState?.layout?.mainAreaCount ?? 1;
+        const requestedCount = Number.parseInt(requestedMode, 10);
+
+        // If requested width exceeds active views, cap it
+        const actualMode = requestedCount > mainAreaCount
+            ? `${mainAreaCount}x`
+            : requestedMode;
+
+        this.handlers.setViewport(actualMode);
+    }
+
     render() {
         const isColumn = this.orientation === 'column';
         const leftExpanded = this.uiState?.layout?.expansion?.left;
@@ -141,9 +155,23 @@ export class ControlToolbar extends LitElement {
         const separatorClass = `separator ${isColumn ? 'column' : 'row'}`;
 
         // Get viewport info for size controls
-        const panels = Array.isArray(this.uiState?.panels) ? this.uiState?.panels : [];
-        const mainPanelCount = panels.filter((panel) => panel.region === 'main').length;
-        const activeViewportWidthMode = this.uiState?.layout?.viewportWidthMode ?? 'auto';
+        const activeViewportWidthMode = this.uiState?.layout?.viewportWidthMode ?? '1x';
+
+        // === FILTER BUTTONS BASED ON AVAILABLE VIEWS ===
+        const panels = this.uiState?.panels ?? [];
+        const assignedViews = panels
+            .filter(p => p.region === 'main')
+            .map(p => p.viewId ?? p.activeViewId ?? p.view?.component)
+            .filter(Boolean);
+        const registeredViewCount = new Set(assignedViews).size;
+        const availableViewCount = Math.max(
+            registeredViewCount,
+            this.uiState?.layout?.mainAreaCount ?? 1
+        );
+
+        const allModes = ['1x', '2x', '3x', '4x', '5x'];
+        const visibleModes = allModes.slice(0, Math.min(availableViewCount, 5));
+        // === END FILTER CODE ===
 
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
@@ -191,23 +219,15 @@ export class ControlToolbar extends LitElement {
                 <div class="${separatorClass}"></div>
 
                 <!-- Size Controls Section -->
-                ${['1x', '2x', '3x', '4x', '5x', 'auto'].map(mode => {
-                    const requiredCount = mode === 'auto' ? 0 : Number.parseInt(mode, 10);
-                    const isEnabled = mode === 'auto' || mainPanelCount >= Math.max(requiredCount, 1);
-
-                    return html`
-                        <button
-                            @click=${() => isEnabled && this.handlers.setViewport(mode)}
-                            class="viewport-button ${activeViewportWidthMode === mode ? 'active' : ''}"
-                            title="${mode === 'auto' ? 'Auto Width (Magic)' : `${mode} Viewport Width`}"
-                            ?disabled="${!isEnabled}"
-                        >
-                            ${mode === 'auto'
-                                ? html`<svg class="viewport-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
-                                : mode}
-                        </button>
-                    `;
-                })}
+                ${visibleModes.map(mode => html`
+                    <button
+                        @click=${() => this.setViewportWidth(mode)}
+                        class="viewport-button ${activeViewportWidthMode === mode ? 'active' : ''}"
+                        title="${mode} Viewport Width"
+                    >
+                        ${mode}
+                    </button>
+                `)}
             </div>
         `;
     }
