@@ -1,12 +1,10 @@
 {
   "name": "new-project",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "dev": "node index.js",
     "build": "tsc -b"

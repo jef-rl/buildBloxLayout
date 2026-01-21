@@ -2,7 +2,6 @@
   "name": "@project/app",
   "private": true,
   "dependencies": {
-    "@project/framework": "*",
     "lit": "^3.0.0"
   },
   "scripts": {
