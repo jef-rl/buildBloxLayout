@@ -13,7 +13,13 @@
       "Bash(test:*)",
       "Bash(del package-lock.json)",
       "Bash(npx tsc:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(npm view:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(node_modules/.bin/tsc.cmd:*)",
+      "Bash(node:*)",
+      "Bash(tsc:*)"
     ]
   }
 }
