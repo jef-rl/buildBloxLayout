@@ -85,9 +85,15 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
       logAction(action.type, 'state', patch);
       return { state, followUps: toFollowUps(payload.followUps) };
     }
+    // Deep merge layout to preserve presets
     const nextState = {
       ...state,
       ...patch,
+      layout: patch.layout ? {
+        ...state.layout,
+        ...patch.layout,
+        presets: state.layout?.presets ?? patch.layout?.presets ?? {},
+      } : state.layout,
     };
     logAction(action.type, 'state', patch);
     return { state: nextState, followUps: toFollowUps(payload.followUps) };

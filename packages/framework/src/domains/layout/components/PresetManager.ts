@@ -24,6 +24,7 @@ export class PresetManager extends LitElement {
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? null;
             this.uiDispatch = value?.dispatch ?? null;
+            console.log('[PresetManager] Context updated, presets:', Object.keys(this.uiState?.layout?.presets ?? {}));
             this.requestUpdate();
         },
     });
@@ -243,6 +244,7 @@ export class PresetManager extends LitElement {
 
     private get presets(): LayoutPreset[] {
         const presetsMap = this.uiState?.layout?.presets ?? {};
+        console.log('[PresetManager] Getting presets:', { presetsMap, keys: Object.keys(presetsMap), uiStateExists: !!this.uiState });
         return Object.values(presetsMap);
     }
 

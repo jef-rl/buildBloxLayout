@@ -21,11 +21,13 @@ export const setFirestoreSyncCallback = (
 export const presetPersistence = {
   saveAll: (presets: LayoutPresets): void => {
     try {
+      console.log('[Persistence] saveAll called with presets:', Object.keys(presets));
       const data: PersistedPresets = {
         version: STORAGE_VERSION,
         presets,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      console.log('[Persistence] Saved to localStorage with key:', STORAGE_KEY);
       firestoreSyncCallback?.(presets);
     } catch (error) {
       console.warn('Failed to persist layout presets:', error);
@@ -71,9 +73,11 @@ export const presetPersistence = {
   },
 
   savePreset: (name: string, preset: LayoutPreset): void => {
+    console.log('[Persistence] savePreset called:', { name, preset });
     const current = presetPersistence.loadAll() ?? {};
     current[name] = preset;
     presetPersistence.saveAll(current);
+    console.log('[Persistence] savePreset completed, total presets:', Object.keys(current).length);
   },
 
   deletePreset: (name: string): void => {
