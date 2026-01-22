@@ -4,3 +4,4 @@ dist
 .env
 packages/playground/src/firebase.ts
 icons
+packages/framework/tsconfig.tsbuildinfo
