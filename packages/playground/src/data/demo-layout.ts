@@ -149,6 +149,16 @@ const BOTTOM_PANEL_VIEWS: View[] = [
  */
 const OVERLAY_VIEWS: View[] = [
   {
+    id: 'firebase-auth',
+    name: 'Authentication',
+    component: 'auth-view',
+    data: {
+      label: 'Authentication',
+      color: '#1e40af',
+      description: 'Firebase authentication view'
+    }
+  },
+  {
     id: 'project-settings',
     name: 'Project Settings',
     component: 'project-settings',
@@ -345,6 +355,7 @@ export const VIEW_REGISTRATIONS = ALL_VIEWS.map((view) => ({
  */
 function getIconForView(viewId: string): string {
   const iconMap: Record<string, string> = {
+    'firebase-auth': 'person',
     'canvas-editor': 'edit',
     'code-editor': 'code',
     'preview-panel': 'device_hub',
@@ -366,6 +377,11 @@ function getIconForView(viewId: string): string {
  * Map view IDs to their component loaders
  */
 function getComponentLoader(viewId: string): () => Promise<any> {
+  // Firebase auth view loads from framework
+  if (viewId === 'firebase-auth') {
+    return () => import('@project/framework').then(m => m.AuthView);
+  }
+
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
   return () => import('../components/demo-view');

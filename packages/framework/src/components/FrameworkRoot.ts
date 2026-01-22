@@ -1,6 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import { ContextProvider } from '@lit/context';
 import type { Firestore } from 'firebase/firestore';
+import type { Auth } from 'firebase/auth';
 import {
   coreHandlers,
   createHandlerRegistry,
@@ -19,6 +20,7 @@ import {
 import { hybridPersistence } from '../utils/hybrid-persistence';
 import { setFirestoreSyncCallback } from '../utils/persistence';
 import { firestorePersistence } from '../utils/firestore-persistence';
+import { configureFrameworkAuth, onFrameworkAuthStateChange } from '../utils/firebase-auth';
 import '../domains/workspace/components/WorkspaceRoot';
 
 const isDev = import.meta.env.DEV;
@@ -140,6 +142,25 @@ export class FrameworkRoot extends LitElement {
     const userId = this.state.auth?.user?.uid ?? null;
     hybridPersistence.configure({ firestore, userId });
     this.initializeFirestorePersistence();
+  }
+
+  configureFirebaseAuth(auth: Auth): void {
+    // Configure auth utilities
+    configureFrameworkAuth(auth);
+
+    // Listen for auth state changes from Firebase
+    onFrameworkAuthStateChange((user) => {
+      this.dispatchActions([{
+        type: 'auth/setUser',
+        payload: { user }
+      }]);
+
+      // Update Firestore persistence with new userId
+      if (this.firestore) {
+        const userId = user?.uid ?? null;
+        hybridPersistence.setUserId(userId);
+      }
+    });
   }
 
   private async initializeFirestorePersistence(): Promise<void> {

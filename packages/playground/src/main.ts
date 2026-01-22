@@ -1,7 +1,7 @@
 import { bootstrapFramework, setFrameworkLogger } from '@project/framework';
 import { getFirestore } from 'firebase/firestore';
 import { IMPROVED_DEMO_LAYOUT, VIEW_REGISTRATIONS } from './data/demo-layout';
-import { firebaseApp } from './firebase';
+import { firebaseApp, firebaseAuth } from './firebase';
 
 /**
  * Improved Demo Bootstrap
@@ -91,6 +91,25 @@ const initializeFirestorePersistence = () => {
 
 // Initialize Firestore after a short delay to ensure framework is ready
 setTimeout(initializeFirestorePersistence, 100);
+
+// ====================
+// FIREBASE AUTHENTICATION
+// ====================
+
+/**
+ * Initialize Firebase Authentication
+ * Provides email/password, signup, password reset, and Google OAuth
+ */
+const initializeFirebaseAuth = () => {
+  const frameworkRoot = root.querySelector('framework-root') as any;
+  if (frameworkRoot?.configureFirebaseAuth) {
+    frameworkRoot.configureFirebaseAuth(firebaseAuth);
+    console.log('%c Firebase Auth Initialized ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
+  }
+};
+
+// Initialize Firebase Auth after a short delay to ensure framework is ready
+setTimeout(initializeFirebaseAuth, 100);
 
 // ====================
 // DEVELOPMENT HELPERS
