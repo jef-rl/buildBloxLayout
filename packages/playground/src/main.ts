@@ -1,5 +1,7 @@
 import { bootstrapFramework, setFrameworkLogger } from '@project/framework';
+import { getFirestore } from 'firebase/firestore';
 import { IMPROVED_DEMO_LAYOUT, VIEW_REGISTRATIONS } from './data/demo-layout';
+import { firebaseApp } from './firebase';
 
 /**
  * Improved Demo Bootstrap
@@ -62,13 +64,33 @@ const root = bootstrapFramework({
     ...reg,
     component: loadDemoView  // Use unified demo component
   })),
-  
+
   // Hydrate initial state
   state: IMPROVED_DEMO_LAYOUT,
-  
+
   // Optional: specify mount point (defaults to document.body)
   // mount: document.getElementById('app')
 });
+
+// ====================
+// FIRESTORE PERSISTENCE
+// ====================
+
+/**
+ * Initialize Firestore for preset persistence
+ * Presets will sync to cloud and be available across devices
+ */
+const initializeFirestorePersistence = () => {
+  const frameworkRoot = root.querySelector('framework-root') as any;
+  if (frameworkRoot?.configureFirestore) {
+    const db = getFirestore(firebaseApp);
+    frameworkRoot.configureFirestore(db);
+    console.log('%c Firestore Persistence Enabled ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+  }
+};
+
+// Initialize Firestore after a short delay to ensure framework is ready
+setTimeout(initializeFirestorePersistence, 100);
 
 // ====================
 // DEVELOPMENT HELPERS

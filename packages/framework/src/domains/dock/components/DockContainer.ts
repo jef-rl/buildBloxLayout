@@ -55,6 +55,14 @@ export class DockContainer extends LitElement {
             gap: 12px;
         }
 
+        .dock-container--top-left {
+            top: 0;
+            left: 0;
+            border-top: 0;
+            border-left: 0;
+            border-radius: 0 0 16px 0;
+        }
+
         .dock-container--top-center {
             top: 0;
             left: 50%;

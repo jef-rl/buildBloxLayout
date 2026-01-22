@@ -8,6 +8,15 @@ interface PersistedPresets {
   presets: LayoutPresets;
 }
 
+type FirestoreSyncCallback = (presets: LayoutPresets) => void;
+let firestoreSyncCallback: FirestoreSyncCallback | null = null;
+
+export const setFirestoreSyncCallback = (
+  callback: FirestoreSyncCallback | null
+): void => {
+  firestoreSyncCallback = callback;
+};
+
 export const presetPersistence = {
   saveAll: (presets: LayoutPresets): void => {
     try {
@@ -16,6 +25,7 @@ export const presetPersistence = {
         presets,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      firestoreSyncCallback?.(presets);
     } catch (error) {
       console.warn('Failed to persist layout presets:', error);
     }

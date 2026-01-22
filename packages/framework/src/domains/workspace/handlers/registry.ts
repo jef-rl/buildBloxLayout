@@ -1,9 +1,10 @@
-import type { UIState, LayoutPreset } from '../../../types/state';
+import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
 import { presetPersistence } from '../../../utils/persistence';
+import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 
 export type FrameworkContextState = {
   state: UIState;
@@ -503,7 +504,28 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeLayoutState(context.state);
 
-  // Load presets from localStorage
+  // Check if presets were passed directly (from async Firestore load)
+  const providedPresets = payload.presets as LayoutPresets | undefined;
+  if (providedPresets) {
+    // Merge with existing presets (Firestore presets as base, existing as overrides)
+    const existingPresets = normalizedState.layout.presets ?? {};
+    const mergedPresets = { ...providedPresets, ...existingPresets };
+    return {
+      state: {
+        ...context,
+        state: {
+          ...normalizedState,
+          layout: {
+            ...normalizedState.layout,
+            presets: mergedPresets,
+          },
+        },
+      },
+      followUps: toFollowUps(payload),
+    };
+  }
+
+  // Fallback to localStorage (existing behavior)
   const loadedPresets = presetPersistence.loadAll();
   if (!loadedPresets) {
     return { state: context, followUps: toFollowUps(payload) };
@@ -525,6 +547,87 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
 };
 
 // === END PRESET HANDLERS ===
+
+// === FRAMEWORK MENU HANDLERS ===
+
+const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload & { draggedId?: string; targetId?: string };
+  const normalizedState = normalizeLayoutState(context.state);
+  const { draggedId, targetId } = payload;
+
+  if (!draggedId || !targetId) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  const currentConfig = normalizedState.layout.frameworkMenu ?? frameworkMenuPersistence.getDefaultConfig();
+  const newItems = frameworkMenuPersistence.reorderItems(currentConfig.items, draggedId, targetId);
+  const newConfig: FrameworkMenuConfig = { ...currentConfig, items: newItems };
+
+  frameworkMenuPersistence.save(newConfig);
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          frameworkMenu: newConfig,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload & { config?: FrameworkMenuConfig };
+  const normalizedState = normalizeLayoutState(context.state);
+  const { config } = payload;
+
+  if (!config) {
+    return { state: context, followUps: toFollowUps(payload) };
+  }
+
+  frameworkMenuPersistence.save(config);
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          frameworkMenu: config,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+  const normalizedState = normalizeLayoutState(context.state);
+
+  const loadedConfig = frameworkMenuPersistence.load() ?? frameworkMenuPersistence.getDefaultConfig();
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          frameworkMenu: loadedConfig,
+        },
+      },
+    },
+    followUps: toFollowUps(payload),
+  };
+};
+
+// === END FRAMEWORK MENU HANDLERS ===
 
 const registerHandler = (
   registry: HandlerRegistry<FrameworkContextState>,
@@ -555,4 +658,9 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'presets/delete', handlePresetDelete);
   registerHandler(registry, 'presets/rename', handlePresetRename);
   registerHandler(registry, 'presets/hydrate', handlePresetHydrate);
+
+  // Framework menu handlers
+  registerHandler(registry, 'frameworkMenu/reorderItems', handleFrameworkMenuReorderItems);
+  registerHandler(registry, 'frameworkMenu/updateConfig', handleFrameworkMenuUpdateConfig);
+  registerHandler(registry, 'frameworkMenu/hydrate', handleFrameworkMenuHydrate);
 };

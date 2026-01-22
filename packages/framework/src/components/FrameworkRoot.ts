@@ -1,5 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { ContextProvider } from '@lit/context';
+import type { Firestore } from 'firebase/firestore';
 import {
   coreHandlers,
   createHandlerRegistry,
@@ -15,6 +16,9 @@ import {
   registerWorkspaceHandlers,
   type FrameworkContextState,
 } from '../domains/workspace/handlers/registry';
+import { hybridPersistence } from '../utils/hybrid-persistence';
+import { setFirestoreSyncCallback } from '../utils/persistence';
+import { firestorePersistence } from '../utils/firestore-persistence';
 import '../domains/workspace/components/WorkspaceRoot';
 
 const isDev = import.meta.env.DEV;
@@ -82,6 +86,8 @@ export class FrameworkRoot extends LitElement {
   private state = uiState.getState();
 
   private unsubscribe: (() => void) | null = null;
+  private firestoreUnsubscribe: (() => void) | null = null;
+  private firestore: Firestore | null = null;
 
   private dispatchUiAction = (payload: UiDispatchPayload) => {
     if (!payload?.type) {
@@ -118,6 +124,56 @@ export class FrameworkRoot extends LitElement {
 
     // Hydrate presets from localStorage on startup
     this.dispatchActions([{ type: 'presets/hydrate', payload: {} }]);
+
+    // Set up Firestore sync callback
+    setFirestoreSyncCallback((presets) => {
+      if (hybridPersistence.isConfigured()) {
+        firestorePersistence.saveAll(presets).catch((error) => {
+          console.warn('Firestore sync failed:', error);
+        });
+      }
+    });
+  }
+
+  configureFirestore(firestore: Firestore): void {
+    this.firestore = firestore;
+    const userId = this.state.auth?.user?.uid ?? null;
+    hybridPersistence.configure({ firestore, userId });
+    this.initializeFirestorePersistence();
+  }
+
+  private async initializeFirestorePersistence(): Promise<void> {
+    if (!hybridPersistence.isConfigured()) {
+      return;
+    }
+
+    try {
+      // Load presets from Firestore and merge with localStorage
+      const firestorePresets = await hybridPersistence.syncFromFirestore();
+      if (firestorePresets && Object.keys(firestorePresets).length > 0) {
+        this.dispatchActions([{
+          type: 'presets/hydrate',
+          payload: { presets: firestorePresets },
+        }]);
+      }
+
+      // Set up real-time listener for cross-device sync
+      this.firestoreUnsubscribe = hybridPersistence.onPresetsChanged((presets) => {
+        this.dispatchActions([{
+          type: 'presets/hydrate',
+          payload: { presets },
+        }]);
+      });
+    } catch (error) {
+      console.warn('Firestore persistence initialization failed:', error);
+    }
+  }
+
+  setAuthUser(userId: string | null): void {
+    hybridPersistence.setUserId(userId);
+    if (hybridPersistence.isConfigured()) {
+      this.initializeFirestorePersistence();
+    }
   }
 
   disconnectedCallback() {
@@ -126,6 +182,11 @@ export class FrameworkRoot extends LitElement {
       this.unsubscribe();
       this.unsubscribe = null;
     }
+    if (this.firestoreUnsubscribe) {
+      this.firestoreUnsubscribe();
+      this.firestoreUnsubscribe = null;
+    }
+    setFirestoreSyncCallback(null);
     super.disconnectedCallback();
   }
 

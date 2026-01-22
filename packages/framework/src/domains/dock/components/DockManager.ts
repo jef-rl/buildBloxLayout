@@ -1,7 +1,7 @@
 import { getPosClasses } from '../utils';
 
 export type DockPosition =
-    'top-center' | 'top-right' | 'middle-right' | 'bottom-right' |
+    'top-left' | 'top-center' | 'top-right' | 'middle-right' | 'bottom-right' |
     'bottom-center' | 'bottom-left' | 'middle-left';
 
 export type DockManagerState = {

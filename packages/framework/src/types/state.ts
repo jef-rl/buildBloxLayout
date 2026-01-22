@@ -28,9 +28,44 @@ export type LayoutPreset = {
     right?: PanelSizeConfig;
     bottom?: PanelSizeConfig;
   };
+  isSystemPreset?: boolean;
 };
 
 export type LayoutPresets = Record<string, LayoutPreset>;
+
+// === Framework Menu Types ===
+
+export type FrameworkMenuItemType = 'parent' | 'preset' | 'action';
+
+export interface FrameworkMenuItemBase {
+  id: string;
+  label: string;
+  icon?: string;
+  order: number;
+}
+
+export interface FrameworkMenuParentItem extends FrameworkMenuItemBase {
+  type: 'parent';
+  children: FrameworkMenuItem[];
+}
+
+export interface FrameworkMenuPresetItem extends FrameworkMenuItemBase {
+  type: 'preset';
+  presetName: string;
+}
+
+export interface FrameworkMenuActionItem extends FrameworkMenuItemBase {
+  type: 'action';
+  actionType: string;
+  payload?: Record<string, unknown>;
+}
+
+export type FrameworkMenuItem = FrameworkMenuParentItem | FrameworkMenuPresetItem | FrameworkMenuActionItem;
+
+export interface FrameworkMenuConfig {
+  items: FrameworkMenuItem[];
+  version: number;
+}
 
 export type LayoutState = {
   expansion: LayoutExpansion;
@@ -40,6 +75,7 @@ export type LayoutState = {
   mainViewOrder: string[];
   presets?: LayoutPresets;
   activePreset?: string | null;
+  frameworkMenu?: FrameworkMenuConfig;
 };
 
 export type RegisteredViewSummary = {

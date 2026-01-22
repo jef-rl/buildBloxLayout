@@ -2,6 +2,7 @@ export type PanelMode = 'text' | 'visual';
 export type ViewportWidthMode = '1x' | '2x' | '3x' | '4x' | '5x' | string ;
 
 export type ToolbarPos =
+  | 'top-left'
   | 'top-center'
   | 'top-right'
   | 'middle-right'
