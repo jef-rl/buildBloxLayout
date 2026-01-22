@@ -1,10 +1,11 @@
-import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem } from '../../../types/state';
+import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem, LayoutExpansion } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
 import { presetPersistence } from '../../../utils/persistence';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
+import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 
 export type FrameworkContextState = {
   state: UIState;
@@ -27,11 +28,29 @@ const toFollowUps = (payload?: StateActionPayload) => {
 
 const normalizeLayoutState = (state: UIState): UIState => {
   const layout = typeof state.layout === 'object' && state.layout ? state.layout : ({} as UIState['layout']);
+
+  // Migration logic: detect and convert legacy boolean format
+  let expansion: LayoutExpansion;
+  if (layout.expansion) {
+    const exp = layout.expansion as any;
+    // Detect legacy format by checking for boolean 'left' property
+    if (typeof exp.left === 'boolean') {
+      expansion = migrateLegacyExpansion(exp as LegacyLayoutExpansion);
+    } else if (exp.expanderLeft) {
+      expansion = exp as LayoutExpansion;
+    } else {
+      // Fallback to defaults
+      expansion = { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' };
+    }
+  } else {
+    expansion = { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' };
+  }
+
   return {
     ...state,
     layout: {
       ...layout,
-      expansion: layout.expansion ?? { left: false, right: false, bottom: false },
+      expansion,
       overlayView: layout.overlayView ?? null,
       viewportWidthMode: layout.viewportWidthMode ?? '1x',
       mainAreaCount: layout.mainAreaCount ?? 1,
@@ -405,6 +424,15 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
   // Apply main view order after setting main area count
   followUps.push({ type: 'panels/setMainViewOrder', payload: { viewOrder: preset.mainViewOrder } });
 
+  // Migrate expansion if needed
+  let expansion: LayoutExpansion;
+  const presetExpansion = preset.expansion as any;
+  if (typeof presetExpansion.left === 'boolean') {
+    expansion = migrateLegacyExpansion(presetExpansion as LegacyLayoutExpansion);
+  } else {
+    expansion = { ...preset.expansion } as LayoutExpansion;
+  }
+
   return {
     state: {
       ...context,
@@ -412,7 +440,7 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          expansion: { ...preset.expansion },
+          expansion,
           viewportWidthMode: preset.viewportWidthMode,
           mainAreaCount: preset.mainAreaCount,
           activePreset: name,

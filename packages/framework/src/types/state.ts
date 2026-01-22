@@ -1,10 +1,11 @@
 import type { ToolbarPos, ViewportWidthMode } from './core';
 import type { Panel, PanelContainer, View } from '../domains/panels/types';
+import type { ExpanderState } from '../utils/expansion-helpers.js';
 
 export type LayoutExpansion = {
-  left: boolean;
-  right: boolean;
-  bottom: boolean;
+	expanderLeft: ExpanderState;
+	expanderRight: ExpanderState;
+	expanderBottom: ExpanderState;
 };
 
 export type MainAreaPanelCount = 1 | 2 | 3 | 4 | 5;

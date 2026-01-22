@@ -1,5 +1,6 @@
 import type { LayoutExpansion, LayoutState, MainAreaPanelCount } from '../../../types/state';
 import type { ViewportWidthMode } from '../../../types/core';
+import { toggleExpanderState, type ExpanderState } from '../../../utils/expansion-helpers.js';
 
 const VIEWPORT_WIDTH_MODES: ViewportWidthMode[] = ['1x', '2x', '3x', '4x', '5x'];
 
@@ -42,14 +43,15 @@ export const clampViewportModeToCapacity = (
 };
 
 const resolveExpansion = (
-    current: LayoutExpansion,
-    side: keyof LayoutExpansion,
-    expanded: boolean,
+	current: LayoutExpansion,
+	side: 'left' | 'right' | 'bottom',
+	state: ExpanderState,
 ): LayoutExpansion => {
-    return {
-        ...current,
-        [side]: expanded,
-    };
+	const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
+	return {
+		...current,
+		[key]: state,
+	};
 };
 
 export const applyLayoutAction = (
@@ -58,18 +60,29 @@ export const applyLayoutAction = (
 ): LayoutState | null => {
     switch (payload.type) {
         case 'layout/setExpansion': {
-            const side = payload.side as keyof LayoutExpansion;
-            if (!side || !(side in layout.expansion)) {
+            const side = payload.side as 'left' | 'right' | 'bottom';
+            const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
+
+            if (!side || !(key in layout.expansion)) {
                 return null;
+            }
+
+            // Determine new state
+            let newState: ExpanderState;
+            if (typeof payload.expanded === 'boolean') {
+                // Legacy boolean support for backward compatibility
+                newState = payload.expanded ? 'Opened' : 'Closed';
+            } else if (typeof payload.state === 'string') {
+                // Direct state assignment
+                newState = payload.state as ExpanderState;
+            } else {
+                // Toggle behavior
+                newState = toggleExpanderState(layout.expansion[key]);
             }
 
             return {
                 ...layout,
-                expansion: resolveExpansion(
-                    layout.expansion,
-                    side,
-                    Boolean(payload.expanded),
-                ),
+                expansion: resolveExpansion(layout.expansion, side, newState),
             };
         }
         case 'layout/setOverlayView': {

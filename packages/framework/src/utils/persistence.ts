@@ -1,7 +1,8 @@
 import type { LayoutPreset, LayoutPresets } from '../types/state';
+import { migrateLegacyExpansion, type LegacyLayoutExpansion } from './expansion-helpers.js';
 
 const STORAGE_KEY = 'buildblox-layout-presets';
-const STORAGE_VERSION = 1;
+const STORAGE_VERSION = 2;
 
 interface PersistedPresets {
   version: number;
@@ -36,6 +37,27 @@ export const presetPersistence = {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const data: PersistedPresets = JSON.parse(raw);
+
+      // Handle version migration
+      if (data.version === 1) {
+        // Migrate from version 1 (boolean) to version 2 (string)
+        const migratedPresets: LayoutPresets = {};
+        for (const [key, preset] of Object.entries(data.presets)) {
+          const expansion = preset.expansion as any;
+          if (typeof expansion.left === 'boolean') {
+            migratedPresets[key] = {
+              ...preset,
+              expansion: migrateLegacyExpansion(expansion as LegacyLayoutExpansion),
+            };
+          } else {
+            migratedPresets[key] = preset;
+          }
+        }
+        // Save migrated version
+        presetPersistence.saveAll(migratedPresets);
+        return migratedPresets;
+      }
+
       if (data.version !== STORAGE_VERSION) {
         console.warn('Layout presets version mismatch, clearing stored data');
         presetPersistence.clear();
