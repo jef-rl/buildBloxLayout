@@ -10,6 +10,7 @@ import './OverlayLayer.js';
 import './PanelView.js';
 import { viewRegistry } from '../../../core/registry/view-registry.js';
 import { dispatchUiEvent } from '../../../utils/dispatcher.js';
+import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -137,15 +138,24 @@ export class WorkspaceRoot extends LitElement {
 
     render() {
         const layout = this.state?.layout ?? {};
-        const expansion = layout.expansion ?? { left: false, right: false, bottom: false };
+        const expansion = layout.expansion ?? {
+            expanderLeft: 'Closed',
+            expanderRight: 'Closed',
+            expanderBottom: 'Closed'
+        };
         const panels = this.state?.panels ?? [];
 
         const viewportMode = layout.viewportWidthMode ?? '1x';
         const viewportCount = Number.parseInt(viewportMode, 10);
 
-        const leftWidth = expansion.left ? 'clamp(220px, 22vw, 360px)' : '0px';
-        const rightWidth = expansion.right ? 'clamp(220px, 22vw, 360px)' : '0px';
-        const bottomHeight = expansion.bottom ? 'clamp(180px, 26vh, 320px)' : '0px';
+        // Use helper functions to determine panel state
+        const leftOpen = isExpanderPanelOpen(expansion.expanderLeft);
+        const rightOpen = isExpanderPanelOpen(expansion.expanderRight);
+        const bottomOpen = isExpanderPanelOpen(expansion.expanderBottom);
+
+        const leftWidth = leftOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
+        const rightWidth = rightOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
+        const bottomHeight = bottomOpen ? 'clamp(180px, 26vh, 320px)' : '0px';
 
         const overlayView = layout.overlayView ?? null;
         const mainPanels = panels.filter((panel) => panel.region === 'main');
@@ -176,7 +186,7 @@ export class WorkspaceRoot extends LitElement {
                     "
                 >
                     <div
-                        class="expander expander-left ${expansion.left ? '' : 'collapsed'}"
+                        class="expander expander-left ${leftOpen ? '' : 'collapsed'}"
                         @click=${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(leftPanel)}"></panel-view>
@@ -194,14 +204,14 @@ export class WorkspaceRoot extends LitElement {
                     </div>
 
                     <div
-                        class="expander expander-right ${expansion.right ? '' : 'collapsed'}"
+                        class="expander expander-right ${rightOpen ? '' : 'collapsed'}"
                         @click=${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(rightPanel)}"></panel-view>
                     </div>
 
                     <div
-                        class="expander expander-bottom ${expansion.bottom ? '' : 'collapsed'}"
+                        class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}"
                         @click=${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}
                     >
                         <panel-view .viewId="${getPanelViewId(bottomPanel)}"></panel-view>

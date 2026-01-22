@@ -31,7 +31,7 @@ export class UiState {
         },
         activeView: null,
         layout: {
-            expansion: { left: false, right: false, bottom: false },
+            expansion: { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' },
             overlayView: null,
             viewportWidthMode: '1x',
             mainAreaCount: 1,
