@@ -1,10 +1,12 @@
-import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem } from '../../../types/state';
+import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem, LayoutExpansion } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
 import { presetPersistence } from '../../../utils/persistence';
+import { hybridPersistence } from '../../../utils/hybrid-persistence';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
+import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 
 export type FrameworkContextState = {
   state: UIState;
@@ -27,11 +29,29 @@ const toFollowUps = (payload?: StateActionPayload) => {
 
 const normalizeLayoutState = (state: UIState): UIState => {
   const layout = typeof state.layout === 'object' && state.layout ? state.layout : ({} as UIState['layout']);
+
+  // Migration logic: detect and convert legacy boolean format
+  let expansion: LayoutExpansion;
+  if (layout.expansion) {
+    const exp = layout.expansion as any;
+    // Detect legacy format by checking for boolean 'left' property
+    if (typeof exp.left === 'boolean') {
+      expansion = migrateLegacyExpansion(exp as LegacyLayoutExpansion);
+    } else if (exp.expanderLeft) {
+      expansion = exp as LayoutExpansion;
+    } else {
+      // Fallback to defaults
+      expansion = { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' };
+    }
+  } else {
+    expansion = { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' };
+  }
+
   return {
     ...state,
     layout: {
       ...layout,
-      expansion: layout.expansion ?? { left: false, right: false, bottom: false },
+      expansion,
       overlayView: layout.overlayView ?? null,
       viewportWidthMode: layout.viewportWidthMode ?? '1x',
       mainAreaCount: layout.mainAreaCount ?? 1,
@@ -320,7 +340,9 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
 const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const name = payload.name as string | undefined;
+  console.log('[Handler] handlePresetSave called:', { name, payload });
   if (!name) {
+    console.warn('[Handler] handlePresetSave: No name provided');
     return { state: context, followUps: toFollowUps(payload) };
   }
 
@@ -347,8 +369,10 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
     [name]: preset,
   };
 
-  // Persist to localStorage
-  presetPersistence.saveAll(nextPresets);
+  // Persist to localStorage and Firestore
+  console.log('[Handler] Calling hybridPersistence.savePreset...');
+  hybridPersistence.savePreset(name, preset);
+  console.log('[Handler] hybridPersistence.savePreset completed');
 
   return {
     state: {
@@ -405,6 +429,15 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
   // Apply main view order after setting main area count
   followUps.push({ type: 'panels/setMainViewOrder', payload: { viewOrder: preset.mainViewOrder } });
 
+  // Migrate expansion if needed
+  let expansion: LayoutExpansion;
+  const presetExpansion = preset.expansion as any;
+  if (typeof presetExpansion.left === 'boolean') {
+    expansion = migrateLegacyExpansion(presetExpansion as LegacyLayoutExpansion);
+  } else {
+    expansion = { ...preset.expansion } as LayoutExpansion;
+  }
+
   return {
     state: {
       ...context,
@@ -412,7 +445,7 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          expansion: { ...preset.expansion },
+          expansion,
           viewportWidthMode: preset.viewportWidthMode,
           mainAreaCount: preset.mainAreaCount,
           activePreset: name,
@@ -434,8 +467,8 @@ const handlePresetDelete: ReducerHandler<FrameworkContextState> = (context, acti
   const nextPresets = { ...normalizedState.layout.presets };
   delete nextPresets[name];
 
-  // Persist to localStorage
-  presetPersistence.saveAll(nextPresets);
+  // Persist to localStorage and Firestore
+  hybridPersistence.deletePreset(name);
 
   // Clear activePreset if it was the deleted one
   const nextActivePreset = normalizedState.layout.activePreset === name
@@ -476,8 +509,8 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
   delete nextPresets[oldName];
   nextPresets[newName] = { ...preset, name: newName };
 
-  // Persist to localStorage
-  presetPersistence.saveAll(nextPresets);
+  // Persist to localStorage and Firestore
+  hybridPersistence.renamePreset(oldName, newName);
 
   // Update activePreset if it was renamed
   const nextActivePreset = normalizedState.layout.activePreset === oldName
@@ -503,13 +536,16 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
 const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeLayoutState(context.state);
+  console.log('[Handler] handlePresetHydrate called');
 
   // Check if presets were passed directly (from async Firestore load)
   const providedPresets = payload.presets as LayoutPresets | undefined;
   if (providedPresets) {
+    console.log('[Handler] Hydrating from provided presets (Firestore):', Object.keys(providedPresets));
     // Merge with existing presets (Firestore presets as base, existing as overrides)
     const existingPresets = normalizedState.layout.presets ?? {};
     const mergedPresets = { ...providedPresets, ...existingPresets };
+    console.log('[Handler] Merged presets:', Object.keys(mergedPresets));
     return {
       state: {
         ...context,
@@ -526,11 +562,14 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
   }
 
   // Fallback to localStorage (existing behavior)
+  console.log('[Handler] Loading presets from localStorage...');
   const loadedPresets = presetPersistence.loadAll();
   if (!loadedPresets) {
+    console.warn('[Handler] No presets loaded from localStorage');
     return { state: context, followUps: toFollowUps(payload) };
   }
 
+  console.log('[Handler] Loaded presets from localStorage:', Object.keys(loadedPresets));
   return {
     state: {
       ...context,

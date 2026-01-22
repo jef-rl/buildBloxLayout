@@ -8,6 +8,8 @@ import { createExpanderControlsHandlers } from '../handlers/expander-controls.ha
 import { ViewRegistry } from '../../../core/registry/view-registry';
 import type { ViewDefinition } from '../../../types';
 import { Icons } from '../../../components/Icons';
+import { toggleExpanderState, isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
+import type { LayoutExpansion } from '../../../types/state.js';
 
 export class Workspace extends LitElement {
     @property({ type: String }) orientation = 'row';
@@ -395,8 +397,11 @@ export class Workspace extends LitElement {
     }
 
     toggleSide(side: 'left' | 'right' | 'bottom') {
-        const expanded = this.uiState?.layout?.expansion?.[side];
-        this.expanderHandlers.setExpansion(side, !expanded);
+        const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
+        const currentState = this.uiState?.layout?.expansion?.[key] ?? 'Closed';
+        const newState = toggleExpanderState(currentState);
+        // Dispatch with boolean for backward compatibility
+        this.expanderHandlers.setExpansion(side, newState === 'Opened');
     }
 
     toggleOverlay() {
@@ -423,9 +428,14 @@ export class Workspace extends LitElement {
         const capacity = this.panelLimit;
         const tokenOrder = this.resolveTokenViewOrder();
 
-        const leftExpanded = this.uiState?.layout?.expansion?.left;
-        const rightExpanded = this.uiState?.layout?.expansion?.right;
-        const bottomExpanded = this.uiState?.layout?.expansion?.bottom;
+        const expansion = this.uiState?.layout?.expansion ?? {
+            expanderLeft: 'Closed',
+            expanderRight: 'Closed',
+            expanderBottom: 'Closed'
+        };
+        const leftExpanded = isExpanderPanelOpen(expansion.expanderLeft);
+        const rightExpanded = isExpanderPanelOpen(expansion.expanderRight);
+        const bottomExpanded = isExpanderPanelOpen(expansion.expanderBottom);
         const overlayOpen = !!this.uiState?.layout?.overlayView;
 
         const toolbarClass = `workspace-toolbar ${isRow ? 'row' : 'column'}`;

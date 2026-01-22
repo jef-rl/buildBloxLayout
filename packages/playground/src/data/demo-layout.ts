@@ -275,9 +275,9 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   // Layout configuration
   layout: {
     expansion: {
-      left: false,   // Start collapsed
-      right: false,  // Start collapsed
-      bottom: false  // Start collapsed
+      expanderLeft: 'Closed',   // Start closed
+      expanderRight: 'Closed',  // Start closed
+      expanderBottom: 'Closed'  // Start closed
     },
     overlayView: null,  // No overlay initially
     viewportWidthMode: '3x',  // Show 3 main panels by default

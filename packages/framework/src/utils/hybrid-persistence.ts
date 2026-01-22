@@ -42,11 +42,15 @@ export const hybridPersistence = {
   },
 
   savePreset(name: string, preset: LayoutPreset): void {
+    console.log('[HybridPersistence] savePreset called:', { name, isConfigured });
     presetPersistence.savePreset(name, preset);
     if (isConfigured) {
+      console.log('[HybridPersistence] Syncing to Firestore...');
       firestorePersistence.savePreset(name, preset).catch((error) => {
         console.warn('Background Firestore sync failed:', error);
       });
+    } else {
+      console.log('[HybridPersistence] Firestore not configured, skipping sync');
     }
   },
 

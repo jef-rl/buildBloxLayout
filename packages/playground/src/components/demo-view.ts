@@ -284,9 +284,9 @@ export class ImprovedDemoView extends LitElement {
       mainAreaCount: layout?.mainAreaCount ?? 1,
       overlayView: layout?.overlayView ?? null,
       expansion: {
-        left: layout?.expansion?.left ?? false,
-        right: layout?.expansion?.right ?? false,
-        bottom: layout?.expansion?.bottom ?? false
+        left: layout?.expansion?.expanderLeft ?? 'Closed',
+        right: layout?.expansion?.expanderRight ?? 'Closed',
+        bottom: layout?.expansion?.expanderBottom ?? 'Closed'
       }
     };
   }
