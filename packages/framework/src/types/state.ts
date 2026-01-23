@@ -102,7 +102,16 @@ export type AuthUser = {
 
 export type AuthState = {
   isLoggedIn: boolean;
+  isAdmin: boolean;
   user?: AuthUser | null;
+};
+
+export type FrameworkAuthConfig = {
+  enabled: boolean;
+  authViewId?: string;
+  autoShowOnStartup?: boolean;
+  requireAuthForActions?: string[];
+  adminEmails?: string[];
 };
 
 export type PanelState = {
@@ -122,5 +131,6 @@ export type UIState = {
   dock: unknown;
   theme: unknown;
   auth: AuthState;
+  authConfig?: FrameworkAuthConfig;
   panelState: PanelState;
 };

@@ -47,6 +47,7 @@ export class UiState {
         theme: {},
         auth: {
             isLoggedIn: false,
+            isAdmin: false,
             user: null,
         },
         panelState: {

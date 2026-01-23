@@ -34,7 +34,7 @@ export class OverlayExpander extends LitElement {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding-top: 0; /* Changed from 10vh to 0 to align to top */
+            padding-top: 0;
         }
 
         :host([open]) {
@@ -56,15 +56,15 @@ export class OverlayExpander extends LitElement {
 
         .panel-container {
             position: relative;
-            width: 80vw;
-            height: 80vh;
+            max-width: 90vw;
+            max-height: 90vh;
             background-color: #111827;
             border: 1px solid #374151;
-            border-top: none; /* Looks attached to top if no top border */
-            border-radius: 0 0 12px 12px; /* Rounded only at bottom */
+            border-top: none;
+            border-radius: 0 0 12px 12px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            transform: translateY(-100%); /* Slide down from top */
+            overflow: auto;
+            transform: translateY(-100%);
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;

@@ -3,5 +3,8 @@ dist
 .DS_Store
 .env
 packages/playground/src/firebase.ts
+packages/framework/src/config/admin-emails.ts
 icons
+packages/app/tsconfig.tsbuildinfo
 packages/framework/tsconfig.tsbuildinfo
+README_SECRET.md

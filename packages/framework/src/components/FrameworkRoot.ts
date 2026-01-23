@@ -91,6 +91,14 @@ export class FrameworkRoot extends LitElement {
   private firestoreUnsubscribe: (() => void) | null = null;
   private firestore: Firestore | null = null;
 
+  // Auth configuration from bootstrap
+  authConfig: {
+    enabled: boolean;
+    authViewId?: string;
+    autoShowOnStartup?: boolean;
+    requireAuthForActions?: string[];
+  } | null = null;
+
   private dispatchUiAction = (payload: UiDispatchPayload) => {
     if (!payload?.type) {
       return;
@@ -124,6 +132,13 @@ export class FrameworkRoot extends LitElement {
     });
     this.refreshContext();
 
+    // Set auth configuration in state if provided
+    if (this.authConfig) {
+      uiState.hydrate({
+        authConfig: this.authConfig,
+      });
+    }
+
     // Hydrate presets from localStorage on startup
     this.dispatchActions([{ type: 'presets/hydrate', payload: {} }]);
 
@@ -148,17 +163,51 @@ export class FrameworkRoot extends LitElement {
     // Configure auth utilities
     configureFrameworkAuth(auth);
 
+    let initialAuthCheckDone = false;
+
     // Listen for auth state changes from Firebase
     onFrameworkAuthStateChange((user) => {
-      this.dispatchActions([{
-        type: 'auth/setUser',
-        payload: { user }
-      }]);
+      this.dispatchActions([
+        {
+          type: 'auth/setUser',
+          payload: { user }
+        },
+        // Refresh menu to show/hide auth items based on login state
+        {
+          type: 'frameworkMenu/hydrate',
+          payload: {}
+        }
+      ]);
 
       // Update Firestore persistence with new userId
       if (this.firestore) {
         const userId = user?.uid ?? null;
         hybridPersistence.setUserId(userId);
+      }
+
+      // Check auto-show on initial auth state (only once)
+      if (!initialAuthCheckDone) {
+        initialAuthCheckDone = true;
+
+        const logger = getFrameworkLogger();
+        logger?.info?.('Initial auth state check', {
+          hasUser: !!user,
+          authEnabled: this.authConfig?.enabled,
+          autoShowOnStartup: this.authConfig?.autoShowOnStartup,
+        });
+
+        if (!user && this.authConfig?.enabled && this.authConfig?.autoShowOnStartup) {
+          const authViewId = this.authConfig.authViewId ?? 'firebase-auth';
+          logger?.info?.('Auto-showing auth overlay', { authViewId });
+
+          // Small delay to ensure views are registered and state is ready
+          setTimeout(() => {
+            this.dispatchActions([{
+              type: 'layout/setOverlayView',
+              payload: { viewId: authViewId }
+            }]);
+          }, 200);
+        }
       }
     });
   }

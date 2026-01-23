@@ -326,6 +326,7 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   // Authentication state
   auth: {
     isLoggedIn: false,
+    isAdmin: false,
     user: null
   },
 

@@ -7,6 +7,8 @@ import { presetPersistence } from '../../../utils/persistence';
 import { hybridPersistence } from '../../../utils/hybrid-persistence';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
+import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
+import { FRAMEWORK_ADMIN_EMAILS } from '../../../config/admin-emails';
 
 export type FrameworkContextState = {
   state: UIState;
@@ -319,6 +321,16 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeAuthState(context.state);
   const nextUser = payload.user as { uid: string; email?: string } | null | undefined;
+
+  // Determine admin status from both framework-level and implementation-level lists
+  const frameworkAdmins = FRAMEWORK_ADMIN_EMAILS;
+  const implementationAdmins = normalizedState.authConfig?.adminEmails ?? [];
+  const userEmail = nextUser?.email?.toLowerCase();
+  const isAdmin = !!userEmail && (
+    frameworkAdmins.some((email) => email.toLowerCase() === userEmail) ||
+    implementationAdmins.some((email) => email.toLowerCase() === userEmail)
+  );
+
   return {
     state: {
       ...context,
@@ -328,9 +340,27 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
           ...normalizedState.auth,
           user: nextUser ?? null,
           isLoggedIn: Boolean(nextUser),
+          isAdmin,
         },
       },
     },
+    followUps: toFollowUps(payload),
+  };
+};
+
+const handleAuthLogout: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload;
+
+  // Import logout dynamically to avoid circular dependencies
+  import('../../../utils/firebase-auth').then(({ logout }) => {
+    logout().catch((error) => {
+      console.error('Logout failed:', error);
+    });
+  });
+
+  // Don't update state here - the auth state change listener will handle it
+  return {
+    state: context,
     followUps: toFollowUps(payload),
   };
 };
@@ -651,6 +681,21 @@ const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (conte
 
   const loadedConfig = frameworkMenuPersistence.load() ?? frameworkMenuPersistence.getDefaultConfig();
 
+  // Inject auth menu items if auth is configured
+  const authConfig = normalizedState.authConfig;
+  let finalMenuItems = [...loadedConfig.items];
+
+  if (authConfig?.enabled) {
+    const authItems = generateAuthMenuItems(authConfig, normalizedState.auth);
+    // Auth items should appear at the beginning of the menu
+    finalMenuItems = [...authItems, ...finalMenuItems];
+  }
+
+  const finalConfig = {
+    ...loadedConfig,
+    items: finalMenuItems,
+  };
+
   return {
     state: {
       ...context,
@@ -658,7 +703,7 @@ const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (conte
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          frameworkMenu: loadedConfig,
+          frameworkMenu: finalConfig,
         },
       },
     },
@@ -690,6 +735,7 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'panels/setScopeMode', handleSetScopeMode);
   registerHandler(registry, 'session/reset', handleSessionReset);
   registerHandler(registry, 'auth/setUser', handleAuthSetUser);
+  registerHandler(registry, 'auth/logout', handleAuthLogout);
 
   // Preset handlers
   registerHandler(registry, 'presets/save', handlePresetSave);

@@ -65,51 +65,84 @@ const root = bootstrapFramework({
     component: loadDemoView  // Use unified demo component
   })),
 
-  // Hydrate initial state
+  // Hydrate initial state 
   state: IMPROVED_DEMO_LAYOUT,
+
+  // Configure authentication behavior
+  auth: {
+    enabled: true,                     // Enable auth features
+    authViewId: 'firebase-auth',       // ID of the auth overlay view
+    autoShowOnStartup: true,           // Show login on startup if not logged in
+    requireAuthForActions: [],         // Actions that require authentication
+    adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e: string) => e.trim())
+      .filter(Boolean),                // System administrator emails from .env
+  },
 
   // Optional: specify mount point (defaults to document.body)
   // mount: document.getElementById('app')
 });
 
 // ====================
-// FIRESTORE PERSISTENCE
+// FIREBASE INITIALIZATION
 // ====================
 
 /**
- * Initialize Firestore for preset persistence
- * Presets will sync to cloud and be available across devices
+ * Initialize Firebase services (Firestore & Authentication)
+ * Uses custom element lifecycle to ensure framework-root is ready
  */
-const initializeFirestorePersistence = () => {
-  const frameworkRoot = root.querySelector('framework-root') as any;
-  if (frameworkRoot?.configureFirestore) {
+const initializeFirebaseServices = () => {
+  const frameworkRoot = root as any;
+
+  if (!frameworkRoot) {
+    console.error('Framework root not found');
+    return;
+  }
+
+  // Wait for framework-root to be connected to the DOM
+  if (frameworkRoot.isConnected) {
+    setupFirebase(frameworkRoot);
+  } else {
+    // If not yet connected, wait for it
+    const observer = new MutationObserver(() => {
+      if (frameworkRoot.isConnected) {
+        setupFirebase(frameworkRoot);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+};
+
+/**
+ * Configure Firestore and Firebase Authentication
+ */
+const setupFirebase = (frameworkRoot: any) => {
+  // Initialize Firestore for preset persistence
+  if (frameworkRoot.configureFirestore) {
     const db = getFirestore(firebaseApp);
     frameworkRoot.configureFirestore(db);
     console.log('%c Firestore Persistence Enabled ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
   }
-};
 
-// Initialize Firestore after a short delay to ensure framework is ready
-setTimeout(initializeFirestorePersistence, 100);
-
-// ====================
-// FIREBASE AUTHENTICATION
-// ====================
-
-/**
- * Initialize Firebase Authentication
- * Provides email/password, signup, password reset, and Google OAuth
- */
-const initializeFirebaseAuth = () => {
-  const frameworkRoot = root.querySelector('framework-root') as any;
-  if (frameworkRoot?.configureFirebaseAuth) {
+  // Initialize Firebase Authentication
+  if (frameworkRoot.configureFirebaseAuth) {
     frameworkRoot.configureFirebaseAuth(firebaseAuth);
     console.log('%c Firebase Auth Initialized ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
   }
+
+  // Log authentication configuration
+  console.log('%c Auth Configuration ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
+  console.log('  • Email/Password authentication: ✓');
+  console.log('  • Google OAuth: ✓');
+  console.log('  • Password reset: ✓');
+  console.log('  • User signup: ✓');
+  console.log('  • Auto-show on startup:', frameworkRoot.authConfig?.autoShowOnStartup ? '✓' : '✗');
 };
 
-// Initialize Firebase Auth after a short delay to ensure framework is ready
-setTimeout(initializeFirebaseAuth, 100);
+// Initialize Firebase services
+initializeFirebaseServices();
 
 // ====================
 // DEVELOPMENT HELPERS
@@ -139,8 +172,26 @@ dispatchUiEvent(window, 'your/action', { payload: 'data' });
 // Check current state
 __frameworkRoot.querySelector('framework-root').state
 
-  `, 
+  `,
     'background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px;',
+    'color: #9ca3af; font-size: 0.9em;'
+  );
+
+  console.log(`
+%c🔐 Authentication Shortcuts %c
+
+// Open authentication overlay
+Cmd/Ctrl + L
+
+// The auth view supports:
+- Email/password login
+- User signup
+- Password reset
+- Google OAuth
+- User profile and logout
+
+  `,
+    'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;',
     'color: #9ca3af; font-size: 0.9em;'
   );
 }
@@ -226,7 +277,20 @@ document.addEventListener('keydown', (event) => {
       });
     }
   }
-  
+
+  // Cmd/Ctrl + L: Open authentication overlay
+  if ((event.metaKey || event.ctrlKey) && event.key === 'l') {
+    event.preventDefault();
+    const frameworkRoot = document.querySelector('framework-root');
+    if (frameworkRoot) {
+      import('@project/framework').then(({ dispatchUiEvent }) => {
+        dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
+          viewId: 'firebase-auth'
+        });
+      });
+    }
+  }
+
   // Escape: Close overlay
   if (event.key === 'Escape') {
     const frameworkRoot = document.querySelector('framework-root');

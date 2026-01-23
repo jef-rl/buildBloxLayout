@@ -1,4 +1,4 @@
-import type { UIState, ViewDefinition, ViewTokenState } from '../types/index';
+import type { UIState, ViewDefinition, FrameworkAuthConfig } from '../types/index';
 import { viewRegistry } from './registry/view-registry';
 import { dispatchUiEvent } from '../utils/dispatcher';
 import { getFrameworkLogger } from '../utils/logger';
@@ -8,6 +8,7 @@ export type BootstrapFrameworkOptions = {
     views: ViewDefinition[];
     state?: Partial<UIState>;
     mount?: ParentNode;
+    auth?: FrameworkAuthConfig;
 };
 
 const summarizeState = (state?: Partial<UIState>) => {
@@ -20,7 +21,7 @@ const summarizeState = (state?: Partial<UIState>) => {
     };
 };
 
-export const bootstrapFramework = ({ views, state, mount }: BootstrapFrameworkOptions) => {
+export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrameworkOptions) => {
     const logger = getFrameworkLogger();
 
     views.forEach((view) => {
@@ -32,8 +33,19 @@ export const bootstrapFramework = ({ views, state, mount }: BootstrapFrameworkOp
         viewIds: views.map((view) => view.id),
     });
 
-    const root = document.createElement('framework-root');
+    const root = document.createElement('framework-root') as any;
     const mountTarget = mount ?? document.body;
+
+    // Configure auth BEFORE mounting so connectedCallback can access it
+    if (auth) {
+        root.authConfig = auth;
+        logger?.info?.('bootstrapFramework auth configured.', {
+            enabled: auth.enabled,
+            authViewId: auth.authViewId ?? 'firebase-auth',
+            autoShowOnStartup: auth.autoShowOnStartup ?? false,
+        });
+    }
+
     mountTarget.appendChild(root);
 
     if (state) {
