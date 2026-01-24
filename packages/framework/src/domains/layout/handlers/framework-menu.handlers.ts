@@ -57,6 +57,6 @@ export const createFrameworkMenuHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'frameworkMenu/hydrate' });
+        dispatch({ type: 'effects/frameworkMenu/hydrate' });
     },
 });

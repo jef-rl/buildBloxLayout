@@ -147,6 +147,13 @@ export class WorkspaceRoot extends LitElement {
 
         const viewportMode = layout.viewportWidthMode ?? '1x';
         const viewportCount = Number.parseInt(viewportMode, 10);
+        const viewportWidthMap: Record<string, string> = {
+            '1x': '100vw',
+            '2x': '50vw',
+            '3x': '33vw',
+            '4x': '25vw',
+            '5x': '20vw',
+        };
 
         // Use helper functions to determine panel state
         const leftOpen = isExpanderPanelOpen(expansion.expanderLeft);
@@ -166,12 +173,15 @@ export class WorkspaceRoot extends LitElement {
             1,
             5,
         );
+        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `calc(100% / ${visibleCount})`;
         const leftPanel = panels.find((panel) => panel.region === 'left');
         const rightPanel = panels.find((panel) => panel.region === 'right');
         const bottomPanel = panels.find((panel) => panel.region === 'bottom');
         const mainPanelsToRender = mainPanels;
         const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
             panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
+        const getPanelViewInstanceId = (panel: { view?: { id?: string } | null } | null) =>
+            panel?.view?.id ?? null;
 
         return html`
             <div class="workspace">
@@ -182,14 +192,17 @@ export class WorkspaceRoot extends LitElement {
                         --right-width: ${rightWidth};
                         --bottom-height: ${bottomHeight};
                         --main-panel-count: ${Math.max(mainPanelsToRender.length, 1)};
-                        --main-panel-width: calc(100% / ${visibleCount});
+                        --main-panel-width: ${mainPanelWidth};
                     "
                 >
                     <div
                         class="expander expander-left ${leftOpen ? '' : 'collapsed'}"
                         @click=${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}
                     >
-                        <panel-view .viewId="${getPanelViewId(leftPanel)}"></panel-view>
+                        <panel-view
+                            .viewId="${getPanelViewId(leftPanel)}"
+                            .viewInstanceId="${getPanelViewInstanceId(leftPanel)}"
+                        ></panel-view>
                     </div>
 
                     <div class="main-area">
@@ -198,7 +211,10 @@ export class WorkspaceRoot extends LitElement {
                                 class="main-panel"
                                 @click=${() => panel && this.dispatch({ type: 'panels/selectPanel', panelId: panel.id })}
                             >
-                                <panel-view .viewId="${getPanelViewId(panel)}"></panel-view>
+                                <panel-view
+                                    .viewId="${getPanelViewId(panel)}"
+                                    .viewInstanceId="${getPanelViewInstanceId(panel)}"
+                                ></panel-view>
                             </div>
                         `)}
                     </div>
@@ -207,14 +223,20 @@ export class WorkspaceRoot extends LitElement {
                         class="expander expander-right ${rightOpen ? '' : 'collapsed'}"
                         @click=${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}
                     >
-                        <panel-view .viewId="${getPanelViewId(rightPanel)}"></panel-view>
+                        <panel-view
+                            .viewId="${getPanelViewId(rightPanel)}"
+                            .viewInstanceId="${getPanelViewInstanceId(rightPanel)}"
+                        ></panel-view>
                     </div>
 
                     <div
                         class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}"
                         @click=${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}
                     >
-                        <panel-view .viewId="${getPanelViewId(bottomPanel)}"></panel-view>
+                        <panel-view
+                            .viewId="${getPanelViewId(bottomPanel)}"
+                            .viewInstanceId="${getPanelViewInstanceId(bottomPanel)}"
+                        ></panel-view>
                     </div>
                 </div>
 

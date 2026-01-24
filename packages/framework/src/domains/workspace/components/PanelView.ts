@@ -8,6 +8,7 @@ import { viewRegistry } from '../../../core/registry/view-registry';
 
 export class PanelView extends LitElement {
     @property({ type: String }) viewId: string | null = null;
+    @property({ type: String }) viewInstanceId: string | null = null;
 
     private uiState: UiStateContextValue['state'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
@@ -60,7 +61,7 @@ export class PanelView extends LitElement {
     }
 
     updated(changedProps: Map<string, unknown>) {
-        if (changedProps.has('viewId')) {
+        if (changedProps.has('viewId') || changedProps.has('viewInstanceId')) {
             void this.loadView();
         }
     }
@@ -72,6 +73,15 @@ export class PanelView extends LitElement {
         // Only reload if the viewId has actually changed
         const currentElement = container.firstElementChild as HTMLElement | null;
         const definition = this.viewId ? viewRegistry.get(this.viewId) : null;
+        const instanceId = this.viewInstanceId ?? null;
+
+        const cachedElement = instanceId ? viewRegistry.getElement(instanceId) : undefined;
+        if (cachedElement && definition && cachedElement.tagName.toLowerCase() === definition.tag) {
+            this.applyViewData(cachedElement);
+            container.innerHTML = '';
+            container.appendChild(cachedElement);
+            return;
+        }
         if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
             this.applyViewData(currentElement);
             return;
@@ -85,12 +95,26 @@ export class PanelView extends LitElement {
 
         await viewRegistry.getComponent(this.viewId);
         const element = document.createElement(definition.tag);
+        if (instanceId) {
+            viewRegistry.setElement(instanceId, element);
+        }
         this.applyViewData(element);
         container.appendChild(element);
     }
 
     private resolveViewData(): View | null {
-        if (!this.viewId || !this.uiState) {
+        if (!this.uiState) {
+            return null;
+        }
+
+        if (this.viewInstanceId) {
+            const viewByInstance = this.uiState.views?.find(
+                (view) => view.id === this.viewInstanceId
+            );
+            if (viewByInstance) return viewByInstance;
+        }
+
+        if (!this.viewId) {
             return null;
         }
 

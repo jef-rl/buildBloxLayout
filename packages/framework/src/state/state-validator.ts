@@ -19,6 +19,20 @@ const validators: ((state: UIState) => string[])[] = [
         });
         return errors;
     },
+    // Validates the 'viewDefinitions' array.
+    (state) => {
+        if (!Array.isArray((state as UIState).viewDefinitions)) {
+            return ['state.viewDefinitions must be an array.'];
+        }
+        return [];
+    },
+    // Validates the 'viewInstanceCounter'.
+    (state) => {
+        if (!Number.isFinite((state as UIState).viewInstanceCounter)) {
+            return ['state.viewInstanceCounter must be a number.'];
+        }
+        return [];
+    },
 
     // Validates the 'panels' array.
     (state) => {

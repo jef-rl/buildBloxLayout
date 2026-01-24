@@ -3,9 +3,8 @@ import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
-import type { UIState, FrameworkMenuItem, FrameworkMenuParentItem, FrameworkMenuPresetItem, LayoutPreset } from '../../../types/state';
+import type { UIState, FrameworkMenuItem, FrameworkMenuParentItem, FrameworkMenuPresetItem } from '../../../types/state';
 import { createFrameworkMenuHandlers } from '../handlers/framework-menu.handlers';
-import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 
 export class FrameworkMenu extends LitElement {
     @property({ type: String }) orientation: 'row' | 'column' = 'column';
@@ -15,7 +14,6 @@ export class FrameworkMenu extends LitElement {
     @state() private draggedItemId: string | null = null;
     @state() private dropTargetId: string | null = null;
     @state() private menuItems: FrameworkMenuItem[] = [];
-    private hasHydratedMenu = false;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
@@ -23,11 +21,7 @@ export class FrameworkMenu extends LitElement {
         callback: (value: UiStateContextValue) => {
             this.uiState = value?.state ?? null;
             this.uiDispatch = value?.dispatch ?? null;
-            if (!this.hasHydratedMenu) {
-                this.hasHydratedMenu = true;
-                this.handlers.hydrateMenu();
-            }
-            this.refreshMenuItems();
+            this.menuItems = this.uiState?.layout?.frameworkMenu?.items ?? [];
         },
     });
 
@@ -213,47 +207,11 @@ export class FrameworkMenu extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.refreshMenuItems();
     }
 
     disconnectedCallback() {
         document.removeEventListener('click', this.boundClickOutside);
         super.disconnectedCallback();
-    }
-
-    private getSystemPresetItems(): FrameworkMenuPresetItem[] {
-        const presets = this.uiState?.layout?.presets ?? {};
-        const systemPresets = Object.values(presets).filter(
-            (p): p is LayoutPreset => p.isSystemPreset === true
-        );
-
-        if (systemPresets.length > 0) {
-            return systemPresets.map((preset, index) => ({
-                id: `preset-${preset.name}`,
-                type: 'preset' as const,
-                label: preset.name,
-                presetName: preset.name,
-                order: index,
-            }));
-        }
-        return [];
-    }
-
-    private refreshMenuItems() {
-        const menuItems = this.uiState?.layout?.frameworkMenu?.items;
-        if (menuItems && menuItems.length > 0) {
-            this.menuItems = menuItems;
-            return;
-        }
-
-        const saved = frameworkMenuPersistence.load();
-        if (saved?.items?.length) {
-            this.menuItems = saved.items;
-            return;
-        }
-
-        const systemPresets = this.getSystemPresetItems();
-        this.menuItems = systemPresets;
     }
 
     private toggleMenu() {
@@ -320,12 +278,7 @@ export class FrameworkMenu extends LitElement {
     private handleDrop(event: DragEvent, targetId: string) {
         event.preventDefault();
         if (this.draggedItemId && this.draggedItemId !== targetId) {
-            this.menuItems = frameworkMenuPersistence.reorderItems(
-                this.menuItems,
-                this.draggedItemId,
-                targetId
-            );
-            frameworkMenuPersistence.save({ version: 1, items: this.menuItems });
+            this.handlers.reorderItems(this.draggedItemId, targetId);
         }
         this.draggedItemId = null;
         this.dropTargetId = null;
@@ -489,6 +442,7 @@ export class FrameworkMenu extends LitElement {
     }
 
     render() {
+        const items = [...this.menuItems].sort((a, b) => a.order - b.order);
         return html`
             <button
                 class="menu-trigger ${this.isOpen ? 'active' : ''}"
@@ -510,8 +464,8 @@ export class FrameworkMenu extends LitElement {
                         </button>
                     </div>
                     <div class="menu-items">
-                        ${this.menuItems.length > 0
-                            ? this.menuItems.map(item => this.renderMenuItem(item))
+                        ${items.length > 0
+                            ? items.map(item => this.renderMenuItem(item))
                             : html`<div class="empty-state">No system layouts available</div>`
                         }
                     </div>

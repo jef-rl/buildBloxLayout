@@ -165,6 +165,8 @@ The framework is built on a unidirectional data flow pattern called the **View-C
 
 Views are components that display data and report user intentions. They never modify state directly.
 
+Local component state is allowed and may be mutated when it is strictly internal and not exposed through context or shared objects. UI-only behavior (hover flags, focus state, transient animation toggles, local measurements) can live in the component. Any complex processing or state that must be shared across components must be handled through handlers and stored in global state.
+
 ```typescript
 // ✅ CORRECT: View reads state and dispatches actions
 @customElement('todo-view')

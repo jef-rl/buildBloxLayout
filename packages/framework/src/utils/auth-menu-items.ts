@@ -69,7 +69,7 @@ export const generateAuthMenuItems = (
           type: 'action',
           label: 'Logout',
           icon: 'logout',
-          actionType: 'auth/logout',
+          actionType: 'auth/logoutRequested',
           payload: {},
           order: 1,
         },

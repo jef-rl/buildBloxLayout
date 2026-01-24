@@ -9,13 +9,6 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext, dispatchUiEvent } from '../../../index';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { AuthMode, AuthConfig } from '../../../types/auth';
-import {
-  loginWithEmail,
-  signupWithEmail,
-  loginWithGoogle,
-  sendPasswordReset,
-  logout,
-} from '../../../utils/firebase-auth';
 
 @customElement('auth-view')
 export class AuthView extends LitElement {
@@ -198,9 +191,8 @@ export class AuthView extends LitElement {
   @state() private email = '';
   @state() private password = '';
   @state() private confirmPassword = '';
-  @state() private loading = false;
-  @state() private error: string | null = null;
-  @state() private success: string | null = null;
+  @state() private pendingAction: AuthMode | 'google' | 'logout' | null = null;
+  @state() private lastSuccess: string | null = null;
 
   private uiState: UiStateContextValue['state'] | null = null;
 
@@ -217,6 +209,10 @@ export class AuthView extends LitElement {
     return this.uiState?.auth?.isLoggedIn ?? false;
   }
 
+  private get authUi() {
+    return this.uiState?.authUi ?? { loading: false, error: null, success: null };
+  }
+
   private get currentUser() {
     return this.uiState?.auth?.user ?? null;
   }
@@ -225,173 +221,104 @@ export class AuthView extends LitElement {
     this.email = '';
     this.password = '';
     this.confirmPassword = '';
-    this.error = null;
-    this.success = null;
   }
 
   private switchMode(newMode: AuthMode) {
     this.mode = newMode;
     this.resetForm();
+    dispatchUiEvent(this, 'auth/setUi', { error: null, success: null });
   }
 
-  private async handleLogin(event: Event) {
+  private handleLogin(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password) {
-      this.error = 'Please enter email and password';
+      dispatchUiEvent(this, 'auth/setUi', {
+        error: 'Please enter email and password',
+        success: null,
+        loading: false,
+      });
       return;
     }
-
-    this.loading = true;
-    this.error = null;
-
-    try {
-      const user = await loginWithEmail(this.email, this.password);
-
-      // Dispatch auth state update
-      dispatchUiEvent(this, 'auth/setUser', { user });
-
-      this.success = 'Login successful!';
-      this.resetForm();
-
-      // Auto-close after brief delay
-      setTimeout(() => {
-        this.success = null;
-      }, 1500);
-    } catch (error: any) {
-      this.error = this.getErrorMessage(error);
-    } finally {
-      this.loading = false;
-    }
+    this.pendingAction = 'login';
+    dispatchUiEvent(this, 'auth/loginRequested', {
+      email: this.email,
+      password: this.password,
+    });
   }
 
-  private async handleSignup(event: Event) {
+  private handleSignup(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password || !this.confirmPassword) {
-      this.error = 'Please fill in all fields';
+      dispatchUiEvent(this, 'auth/setUi', {
+        error: 'Please fill in all fields',
+        success: null,
+        loading: false,
+      });
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.error = 'Passwords do not match';
+      dispatchUiEvent(this, 'auth/setUi', {
+        error: 'Passwords do not match',
+        success: null,
+        loading: false,
+      });
       return;
     }
 
     if (this.password.length < 6) {
-      this.error = 'Password must be at least 6 characters';
+      dispatchUiEvent(this, 'auth/setUi', {
+        error: 'Password must be at least 6 characters',
+        success: null,
+        loading: false,
+      });
       return;
     }
-
-    this.loading = true;
-    this.error = null;
-
-    try {
-      const user = await signupWithEmail(this.email, this.password);
-
-      // Dispatch auth state update
-      dispatchUiEvent(this, 'auth/setUser', { user });
-
-      this.success = 'Account created successfully!';
-      this.resetForm();
-
-      // Auto-close after brief delay
-      setTimeout(() => {
-        this.success = null;
-        this.switchMode('login');
-      }, 1500);
-    } catch (error: any) {
-      this.error = this.getErrorMessage(error);
-    } finally {
-      this.loading = false;
-    }
+    this.pendingAction = 'signup';
+    dispatchUiEvent(this, 'auth/signupRequested', {
+      email: this.email,
+      password: this.password,
+    });
   }
 
-  private async handlePasswordReset(event: Event) {
+  private handlePasswordReset(event: Event) {
     event.preventDefault();
     if (!this.email) {
-      this.error = 'Please enter your email address';
+      dispatchUiEvent(this, 'auth/setUi', {
+        error: 'Please enter your email address',
+        success: null,
+        loading: false,
+      });
       return;
     }
-
-    this.loading = true;
-    this.error = null;
-
-    try {
-      await sendPasswordReset(this.email);
-      this.success = 'Password reset email sent! Check your inbox.';
-
-      setTimeout(() => {
-        this.switchMode('login');
-      }, 3000);
-    } catch (error: any) {
-      this.error = this.getErrorMessage(error);
-    } finally {
-      this.loading = false;
-    }
+    this.pendingAction = 'reset-password';
+    dispatchUiEvent(this, 'auth/passwordResetRequested', { email: this.email });
   }
 
-  private async handleGoogleLogin() {
-    this.loading = true;
-    this.error = null;
-
-    try {
-      const user = await loginWithGoogle();
-
-      // Dispatch auth state update
-      dispatchUiEvent(this, 'auth/setUser', { user });
-
-      this.success = 'Login successful!';
-
-      setTimeout(() => {
-        this.success = null;
-      }, 1500);
-    } catch (error: any) {
-      this.error = this.getErrorMessage(error);
-    } finally {
-      this.loading = false;
-    }
+  private handleGoogleLogin() {
+    this.pendingAction = 'google';
+    dispatchUiEvent(this, 'auth/googleLoginRequested', {});
   }
 
-  private async handleLogout() {
-    this.loading = true;
-    this.error = null;
-
-    try {
-      await logout();
-
-      // Dispatch auth state update (null user)
-      dispatchUiEvent(this, 'auth/setUser', { user: null });
-
-      this.success = 'Logged out successfully';
-      this.switchMode('login');
-    } catch (error: any) {
-      this.error = this.getErrorMessage(error);
-    } finally {
-      this.loading = false;
-    }
+  private handleLogout() {
+    this.pendingAction = 'logout';
+    dispatchUiEvent(this, 'auth/logoutRequested', {});
   }
 
-  private getErrorMessage(error: any): string {
-    const code = error?.code ?? '';
-
-    switch (code) {
-      case 'auth/invalid-email':
-        return 'Invalid email address';
-      case 'auth/user-disabled':
-        return 'This account has been disabled';
-      case 'auth/user-not-found':
-        return 'No account found with this email';
-      case 'auth/wrong-password':
-        return 'Incorrect password';
-      case 'auth/email-already-in-use':
-        return 'Email is already registered';
-      case 'auth/weak-password':
-        return 'Password is too weak';
-      case 'auth/popup-closed-by-user':
-        return 'Sign-in popup was closed';
-      case 'auth/cancelled-popup-request':
-        return 'Only one popup request is allowed at a time';
-      default:
-        return error?.message ?? 'An error occurred';
+  protected updated() {
+    const success = this.authUi.success;
+    if (success && success !== this.lastSuccess) {
+      this.lastSuccess = success;
+      if (this.pendingAction === 'signup') {
+        setTimeout(() => this.switchMode('login'), 1500);
+      }
+      if (this.pendingAction === 'reset-password') {
+        setTimeout(() => this.switchMode('login'), 3000);
+      }
+      this.pendingAction = null;
+    }
+    if (this.authUi.error) {
+      this.pendingAction = null;
     }
   }
 
@@ -405,7 +332,7 @@ export class AuthView extends LitElement {
             type="email"
             .value=${this.email}
             @input=${(e: InputEvent) => (this.email = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+            ?disabled=${this.authUi.loading}
             required
           />
         </div>
@@ -417,13 +344,13 @@ export class AuthView extends LitElement {
             type="password"
             .value=${this.password}
             @input=${(e: InputEvent) => (this.password = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+            ?disabled=${this.authUi.loading}
             required
           />
         </div>
 
-        <button type="submit" class="btn btn-primary" ?disabled=${this.loading}>
-          ${this.loading ? 'Signing in...' : 'Sign In'}
+        <button type="submit" class="btn btn-primary" ?disabled=${this.authUi.loading}>
+          ${this.authUi.loading ? 'Signing in...' : 'Sign In'}
         </button>
 
         ${this.config.enableGoogleAuth
@@ -435,7 +362,7 @@ export class AuthView extends LitElement {
                 type="button"
                 class="btn btn-google"
                 @click=${this.handleGoogleLogin}
-                ?disabled=${this.loading}
+                ?disabled=${this.authUi.loading}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18">
                   <path
@@ -494,7 +421,7 @@ export class AuthView extends LitElement {
             type="email"
             .value=${this.email}
             @input=${(e: InputEvent) => (this.email = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+                ?disabled=${this.authUi.loading}
             required
           />
         </div>
@@ -506,7 +433,7 @@ export class AuthView extends LitElement {
             type="password"
             .value=${this.password}
             @input=${(e: InputEvent) => (this.password = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+            ?disabled=${this.authUi.loading}
             minlength="6"
             required
           />
@@ -519,13 +446,13 @@ export class AuthView extends LitElement {
             type="password"
             .value=${this.confirmPassword}
             @input=${(e: InputEvent) => (this.confirmPassword = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+            ?disabled=${this.authUi.loading}
             required
           />
         </div>
 
-        <button type="submit" class="btn btn-primary" ?disabled=${this.loading}>
-          ${this.loading ? 'Creating account...' : 'Create Account'}
+        <button type="submit" class="btn btn-primary" ?disabled=${this.authUi.loading}>
+          ${this.authUi.loading ? 'Creating account...' : 'Create Account'}
         </button>
 
         <div class="mode-switch">
@@ -548,13 +475,13 @@ export class AuthView extends LitElement {
             type="email"
             .value=${this.email}
             @input=${(e: InputEvent) => (this.email = (e.target as HTMLInputElement).value)}
-            ?disabled=${this.loading}
+            ?disabled=${this.authUi.loading}
             required
           />
         </div>
 
-        <button type="submit" class="btn btn-primary" ?disabled=${this.loading}>
-          ${this.loading ? 'Sending...' : 'Send Reset Email'}
+        <button type="submit" class="btn btn-primary" ?disabled=${this.authUi.loading}>
+          ${this.authUi.loading ? 'Sending...' : 'Send Reset Email'}
         </button>
 
         <div class="mode-switch">
@@ -571,8 +498,8 @@ export class AuthView extends LitElement {
       <div class="profile-container">
         <div class="auth-header">Profile</div>
         <div class="profile-email">${this.currentUser?.email ?? 'No email'}</div>
-        <button class="btn btn-secondary" @click=${this.handleLogout} ?disabled=${this.loading}>
-          ${this.loading ? 'Logging out...' : 'Sign Out'}
+        <button class="btn btn-secondary" @click=${this.handleLogout} ?disabled=${this.authUi.loading}>
+          ${this.authUi.loading ? 'Logging out...' : 'Sign Out'}
         </button>
       </div>
     `;
@@ -581,6 +508,9 @@ export class AuthView extends LitElement {
   render() {
     if (this.isAuthenticated && this.mode !== 'profile') {
       this.mode = 'profile';
+    }
+    if (!this.isAuthenticated && this.mode === 'profile') {
+      this.mode = 'login';
     }
 
     let header = 'Sign In';
@@ -602,8 +532,8 @@ export class AuthView extends LitElement {
     return html`
       <div class="auth-container">
         ${this.mode !== 'profile' ? html`<div class="auth-header">${header}</div>` : ''}
-        ${this.error ? html`<div class="error">${this.error}</div>` : ''}
-        ${this.success ? html`<div class="success">${this.success}</div>` : ''}
+        ${this.authUi.error ? html`<div class="error">${this.authUi.error}</div>` : ''}
+        ${this.authUi.success ? html`<div class="success">${this.authUi.success}</div>` : ''}
         ${content}
       </div>
     `;

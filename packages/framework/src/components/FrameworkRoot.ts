@@ -8,6 +8,7 @@ import {
   type HandlerAction,
   type ReducerHandler,
 } from '../core/registry/handler-registry';
+import { createEffectRegistry } from '../core/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
@@ -17,10 +18,12 @@ import {
   registerWorkspaceHandlers,
   type FrameworkContextState,
 } from '../domains/workspace/handlers/registry';
+import { registerFrameworkEffects } from '../effects/register';
 import { hybridPersistence } from '../utils/hybrid-persistence';
 import { setFirestoreSyncCallback } from '../utils/persistence';
 import { firestorePersistence } from '../utils/firestore-persistence';
 import { configureFrameworkAuth, onFrameworkAuthStateChange } from '../utils/firebase-auth';
+import { viewRegistry } from '../core/registry/view-registry';
 import '../domains/workspace/components/WorkspaceRoot';
 
 const isDev = import.meta.env.DEV;
@@ -85,6 +88,9 @@ Object.entries(coreHandlers).forEach(([type, handler]) => {
 });
 registerWorkspaceHandlers(frameworkHandlers);
 
+export const frameworkEffects = createEffectRegistry<FrameworkContextState>();
+registerFrameworkEffects(frameworkEffects);
+
 export class FrameworkRoot extends LitElement {
   static styles = css`
     :host {
@@ -108,6 +114,7 @@ export class FrameworkRoot extends LitElement {
   private unsubscribe: (() => void) | null = null;
   private firestoreUnsubscribe: (() => void) | null = null;
   private firestore: Firestore | null = null;
+  private viewRegistryUnsubscribe: (() => void) | null = null;
 
   // Auth configuration from bootstrap
   authConfig: {
@@ -158,7 +165,23 @@ export class FrameworkRoot extends LitElement {
     }
 
     // Hydrate presets from localStorage on startup
-    this.dispatchActions([{ type: 'presets/hydrate', payload: {} }]);
+    this.dispatchActions([{ type: 'effects/presets/hydrate', payload: {} }]);
+    this.dispatchActions([{ type: 'effects/frameworkMenu/hydrate', payload: {} }]);
+
+    this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
+      const viewDefinitions = viewRegistry.getAllViews().map((view) => ({
+        id: view.id,
+        name: view.name,
+        title: view.title,
+        icon: view.icon,
+      }));
+      this.dispatchActions([
+        {
+          type: 'state/hydrate',
+          payload: { state: { viewDefinitions } },
+        },
+      ]);
+    });
 
     // Set up Firestore sync callback
     setFirestoreSyncCallback((presets) => {
@@ -195,7 +218,7 @@ export class FrameworkRoot extends LitElement {
         },
         // Refresh menu to show/hide auth items based on login state
         {
-          type: 'frameworkMenu/hydrate',
+          type: 'effects/frameworkMenu/hydrate',
           payload: {}
         }
       ]);
@@ -276,6 +299,10 @@ export class FrameworkRoot extends LitElement {
     if (this.firestoreUnsubscribe) {
       this.firestoreUnsubscribe();
       this.firestoreUnsubscribe = null;
+    }
+    if (this.viewRegistryUnsubscribe) {
+      this.viewRegistryUnsubscribe();
+      this.viewRegistryUnsubscribe = null;
     }
     setFirestoreSyncCallback(null);
     super.disconnectedCallback();
@@ -384,6 +411,22 @@ export class FrameworkRoot extends LitElement {
 
       if (actionFollowUps.length > 0) {
         queue.push(...actionFollowUps);
+      }
+
+      const effectHandler = frameworkEffects.get(action.type);
+      if (effectHandler) {
+        try {
+          effectHandler(nextContext, action, (followUpActions) => {
+            if (followUpActions.length > 0) {
+              this.dispatchActions(followUpActions);
+            }
+          });
+        } catch (error) {
+          logger?.warn?.('FrameworkRoot effect error.', {
+            actionType: action.type,
+            error,
+          });
+        }
       }
     }
 

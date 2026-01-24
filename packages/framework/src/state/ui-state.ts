@@ -24,6 +24,8 @@ export class UiState {
         containers: [],
         panels: [],
         views: [],
+        viewDefinitions: [],
+        viewInstanceCounter: 0,
         viewTokens: {
             registered: [],
             activeSlots: [null, null, null, null, null],
@@ -49,6 +51,11 @@ export class UiState {
             isLoggedIn: false,
             isAdmin: false,
             user: null,
+        },
+        authUi: {
+            loading: false,
+            error: null,
+            success: null,
         },
         logs: {
             entries: [],

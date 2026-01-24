@@ -18,6 +18,21 @@ const uniqueViews = (views: View[]): View[] => {
     });
 };
 
+const allocateViewInstance = (
+    state: UIState,
+    viewDefId: string,
+    data?: unknown,
+    counterOverride?: number,
+): { view: View | undefined; nextCounter: number } => {
+    const baseCounter = Number.isFinite(state.viewInstanceCounter) ? state.viewInstanceCounter : 0;
+    const nextCounter = (counterOverride ?? baseCounter) + 1;
+    const instanceId = `${viewDefId}-${nextCounter}`;
+    return {
+        view: viewRegistry.createView(viewDefId, data, instanceId),
+        nextCounter,
+    };
+};
+
 export const deriveMainViewOrderFromPanels = (panels: Panel[]): string[] =>
     [...new Set(panels
         .filter((panel) => panel.region === 'main')
@@ -33,6 +48,7 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
     const mainPanels = state.panels.filter((panel) => panel.region === 'main');
     const mainPanelIds = mainPanels.map((panel) => panel.id);
 
+    let viewInstanceCounter = Number.isFinite(state.viewInstanceCounter) ? state.viewInstanceCounter : 0;
     const nextPanels = state.panels.map((panel) => {
         if (panel.region !== 'main') return panel;
 
@@ -51,7 +67,9 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
             return { ...panel, view: existingView, viewId: viewDefId, activeViewId: viewDefId };
         }
 
-        const newView = viewRegistry.createView(viewDefId);
+        const allocation = allocateViewInstance(state, viewDefId, undefined, viewInstanceCounter);
+        const newView = allocation.view;
+        viewInstanceCounter = allocation.nextCounter;
         return {
             ...panel,
             view: newView ?? null,
@@ -71,6 +89,7 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         panels: nextPanels,
         views: nextViews,
         activeView: nextActiveView,
+        viewInstanceCounter,
         layout: {
             ...state.layout,
             mainViewOrder: uniqueOrder,
@@ -97,7 +116,14 @@ const assignViewToPanel = (
             viewNeedsUpdate = true;
         }
     } else {
-        viewInstance = viewRegistry.createView(viewDefId, data);
+        const allocation = allocateViewInstance(state, viewDefId, data);
+        viewInstance = allocation.view;
+        if (viewInstance) {
+            state = {
+                ...state,
+                viewInstanceCounter: allocation.nextCounter,
+            };
+        }
         if (!viewInstance) return state;
         viewNeedsUpdate = true;
     }

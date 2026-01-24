@@ -1,10 +1,8 @@
-import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, FrameworkMenuItem, LayoutExpansion } from '../../../types/state';
+import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutExpansion } from '../../../types/state';
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
-import { presetPersistence } from '../../../utils/persistence';
-import { hybridPersistence } from '../../../utils/hybrid-persistence';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
@@ -95,6 +93,11 @@ const normalizeAuthState = (state: UIState): UIState => {
       ...auth,
       isLoggedIn: auth.isLoggedIn ?? false,
       user: auth.user ?? null,
+    },
+    authUi: {
+      loading: state.authUi?.loading ?? false,
+      error: state.authUi?.error ?? null,
+      success: state.authUi?.success ?? null,
     },
   };
 };
@@ -224,7 +227,9 @@ const handleAssignView: ReducerHandler<FrameworkContextState> = (context, action
     return { state: context, followUps: toFollowUps(payload) };
   }
 
-  const view = viewRegistry.createView(viewId);
+  const nextCounter = (context.state.viewInstanceCounter ?? 0) + 1;
+  const instanceId = `${viewId}-${nextCounter}`;
+  const view = viewRegistry.createView(viewId, undefined, instanceId);
   if (!view) {
     return { state: context, followUps: toFollowUps(payload) };
   }
@@ -251,6 +256,7 @@ const handleAssignView: ReducerHandler<FrameworkContextState> = (context, action
         panels: nextPanels,
         views: nextViews,
         activeView: view.id,
+        viewInstanceCounter: nextCounter,
         layout: {
           ...context.state.layout,
           mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
@@ -386,17 +392,30 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
 
 const handleAuthLogout: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
+  const followUps = toFollowUps(payload);
+  followUps.push({ type: 'effects/auth/logout', payload: {} });
+  return { state: context, followUps };
+};
 
-  // Import logout dynamically to avoid circular dependencies
-  import('../../../utils/firebase-auth').then(({ logout }) => {
-    logout().catch((error) => {
-      console.error('Logout failed:', error);
-    });
-  });
-
-  // Don't update state here - the auth state change listener will handle it
+const handleAuthSetUi: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload & {
+    loading?: boolean;
+    error?: string | null;
+    success?: string | null;
+  };
   return {
-    state: context,
+    state: {
+      ...context,
+      state: {
+        ...context.state,
+        authUi: {
+          ...context.state.authUi,
+          loading: typeof payload.loading === 'boolean' ? payload.loading : context.state.authUi.loading,
+          error: payload.error !== undefined ? payload.error : context.state.authUi.error,
+          success: payload.success !== undefined ? payload.success : context.state.authUi.success,
+        },
+      },
+    },
     followUps: toFollowUps(payload),
   };
 };
@@ -436,14 +455,16 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
     [name]: preset,
   };
 
-  // Persist to localStorage and Firestore
   const followUps = withLog(
     toFollowUps(payload),
     'info',
     'Saving preset.',
     { name },
   );
-  hybridPersistence.savePreset(name, preset);
+  followUps.push({
+    type: 'effects/presets/save',
+    payload: { name, preset },
+  });
 
   return {
     state: {
@@ -538,8 +559,11 @@ const handlePresetDelete: ReducerHandler<FrameworkContextState> = (context, acti
   const nextPresets = { ...normalizedState.layout.presets };
   delete nextPresets[name];
 
-  // Persist to localStorage and Firestore
-  hybridPersistence.deletePreset(name);
+  const followUps = toFollowUps(payload);
+  followUps.push({
+    type: 'effects/presets/delete',
+    payload: { name },
+  });
 
   // Clear activePreset if it was the deleted one
   const nextActivePreset = normalizedState.layout.activePreset === name
@@ -558,7 +582,7 @@ const handlePresetDelete: ReducerHandler<FrameworkContextState> = (context, acti
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -580,8 +604,11 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
   delete nextPresets[oldName];
   nextPresets[newName] = { ...preset, name: newName };
 
-  // Persist to localStorage and Firestore
-  hybridPersistence.renamePreset(oldName, newName);
+  const followUps = toFollowUps(payload);
+  followUps.push({
+    type: 'effects/presets/rename',
+    payload: { oldName, newName },
+  });
 
   // Update activePreset if it was renamed
   const nextActivePreset = normalizedState.layout.activePreset === oldName
@@ -600,7 +627,7 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -609,43 +636,17 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
   const normalizedState = normalizeLayoutState(context.state);
   const baseFollowUps = toFollowUps(payload);
 
-  // Check if presets were passed directly (from async Firestore load)
   const providedPresets = payload.presets as LayoutPresets | undefined;
-  if (providedPresets) {
-    // Merge with existing presets (Firestore presets as base, existing as overrides)
-    const existingPresets = normalizedState.layout.presets ?? {};
-    const mergedPresets = { ...providedPresets, ...existingPresets };
+  if (!providedPresets) {
     return {
-      state: {
-        ...context,
-        state: {
-          ...normalizedState,
-          layout: {
-            ...normalizedState.layout,
-            presets: mergedPresets,
-          },
-        },
-      },
-      followUps: withLog(
-        baseFollowUps,
-        'info',
-        'Presets hydrated from payload.',
-        {
-          providedCount: Object.keys(providedPresets).length,
-          mergedCount: Object.keys(mergedPresets).length,
-        },
-      ),
+      state: context,
+      followUps: baseFollowUps,
     };
   }
 
-  // Fallback to localStorage (existing behavior)
-  const loadedPresets = presetPersistence.loadAll();
-  if (!loadedPresets) {
-    return {
-      state: context,
-      followUps: withLog(baseFollowUps, 'warn', 'No presets loaded from localStorage.'),
-    };
-  }
+  // Merge with existing presets (payload presets as base, existing as overrides)
+  const existingPresets = normalizedState.layout.presets ?? {};
+  const mergedPresets = { ...providedPresets, ...existingPresets };
 
   return {
     state: {
@@ -654,15 +655,18 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          presets: loadedPresets,
+          presets: mergedPresets,
         },
       },
     },
     followUps: withLog(
       baseFollowUps,
       'info',
-      'Presets loaded from localStorage.',
-      { count: Object.keys(loadedPresets).length },
+      'Presets hydrated from payload.',
+      {
+        providedCount: Object.keys(providedPresets).length,
+        mergedCount: Object.keys(mergedPresets).length,
+      },
     ),
   };
 };
@@ -684,7 +688,11 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
   const newItems = frameworkMenuPersistence.reorderItems(currentConfig.items, draggedId, targetId);
   const newConfig: FrameworkMenuConfig = { ...currentConfig, items: newItems };
 
-  frameworkMenuPersistence.save(newConfig);
+  const followUps = toFollowUps(payload);
+  followUps.push({
+    type: 'effects/frameworkMenu/save',
+    payload: { config: newConfig },
+  });
 
   return {
     state: {
@@ -697,7 +705,7 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -710,7 +718,11 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
     return { state: context, followUps: toFollowUps(payload) };
   }
 
-  frameworkMenuPersistence.save(config);
+  const followUps = toFollowUps(payload);
+  followUps.push({
+    type: 'effects/frameworkMenu/save',
+    payload: { config },
+  });
 
   return {
     state: {
@@ -723,7 +735,7 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -731,11 +743,26 @@ const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (conte
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeLayoutState(context.state);
 
-  const loadedConfig = frameworkMenuPersistence.load() ?? frameworkMenuPersistence.getDefaultConfig();
+  const providedConfig = payload.config as FrameworkMenuConfig | undefined;
+  const loadedConfig = providedConfig ?? frameworkMenuPersistence.getDefaultConfig();
 
   // Inject auth menu items if auth is configured
   const authConfig = normalizedState.authConfig;
   let finalMenuItems = [...loadedConfig.items];
+
+  if (finalMenuItems.length === 0) {
+    const presets = normalizedState.layout?.presets ?? {};
+    const systemPresets = Object.values(presets).filter((preset) => preset.isSystemPreset === true);
+    if (systemPresets.length > 0) {
+      finalMenuItems = systemPresets.map((preset, index) => ({
+        id: `preset-${preset.name}`,
+        type: 'preset' as const,
+        label: preset.name,
+        presetName: preset.name,
+        order: index,
+      }));
+    }
+  }
 
   if (authConfig?.enabled) {
     const authItems = generateAuthMenuItems(authConfig, normalizedState.auth);
@@ -788,6 +815,7 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'session/reset', handleSessionReset);
   registerHandler(registry, 'auth/setUser', handleAuthSetUser);
   registerHandler(registry, 'auth/logout', handleAuthLogout);
+  registerHandler(registry, 'auth/setUi', handleAuthSetUi);
 
   // Preset handlers
   registerHandler(registry, 'presets/save', handlePresetSave);

@@ -1,4 +1,3 @@
-import { LitElement } from 'lit';
 import type { View, ViewDefinition } from '../../types/index';
 import { getFrameworkLogger } from '../../utils/logger';
 
@@ -12,6 +11,7 @@ export type ViewRegistryChangeDetail = {
 class ViewRegistryImpl extends EventTarget {
     private readonly viewDefinitions: Map<string, ViewDefinition> = new Map();
     private readonly componentCache: Map<string, any> = new Map();
+    private readonly elementCache: Map<string, HTMLElement> = new Map();
 
     register(definition: ViewDefinition): void {
         const logger = getFrameworkLogger();
@@ -66,7 +66,7 @@ class ViewRegistryImpl extends EventTarget {
         }
     }
 
-    createView(viewId: string, data?: unknown): View | undefined {
+    createView(viewId: string, data?: unknown, instanceId?: string): View | undefined {
         const definition = this.get(viewId);
         if (!definition) {
             console.warn(`View definition not found for '${viewId}'`);
@@ -74,16 +74,23 @@ class ViewRegistryImpl extends EventTarget {
         }
 
         return {
-            id: `${viewId}-${Date.now()}`,
+            id: instanceId ?? `${viewId}-${Date.now()}`,
             name: definition.title,
             component: viewId, // Store the component ID, not the loaded component
             data: data || {},
-            element: document.createElement(definition.tag) as LitElement,
         };
     }
 
     getAllViews(): ViewDefinition[] {
         return Array.from(this.viewDefinitions.values());
+    }
+
+    getElement(instanceId: string): HTMLElement | undefined {
+        return this.elementCache.get(instanceId);
+    }
+
+    setElement(instanceId: string, element: HTMLElement): void {
+        this.elementCache.set(instanceId, element);
     }
 
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void {
@@ -105,8 +112,10 @@ export interface ViewRegistryApi {
     register(definition: ViewDefinition): void;
     get(id: string): ViewDefinition | undefined;
     getComponent(id: string): Promise<any | undefined>;
-    createView(viewId: string, data?: unknown): View | undefined;
+    createView(viewId: string, data?: unknown, instanceId?: string): View | undefined;
     getAllViews(): ViewDefinition[];
+    getElement(instanceId: string): HTMLElement | undefined;
+    setElement(instanceId: string, element: HTMLElement): void;
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void;
 }
 

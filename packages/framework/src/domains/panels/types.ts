@@ -7,7 +7,6 @@ export interface Panel {
   view: View | null;
   viewId?: string;
   activeViewId?: string;
-  element?: HTMLElement | null;
   width?: number;
   height?: number;
 }
@@ -17,7 +16,6 @@ export interface PanelContainer {
   name: string;
   panels: Panel[];
   direction: 'row' | 'column';
-  element?: HTMLElement | null;
 }
 
 export interface PanelConfig {
@@ -35,7 +33,6 @@ export interface View {
   name: string;
   component: string;
   data?: unknown;
-  element?: HTMLElement;
 }
 
 export type ViewComponent = () => Promise<any>;

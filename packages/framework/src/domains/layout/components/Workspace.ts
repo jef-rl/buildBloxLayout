@@ -2,11 +2,10 @@ import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
-import type { UiState, UiStateContextValue } from '../../../state/ui-state';
+import type { UiStateContextValue } from '../../../state/ui-state';
 import { createViewControlsHandlers } from '../handlers/view-controls.handlers';
 import { createExpanderControlsHandlers } from '../handlers/expander-controls.handlers';
-import { ViewRegistry } from '../../../core/registry/view-registry';
-import type { ViewDefinition } from '../../../types';
+import type { ViewDefinitionSummary } from '../../../types/state';
 import { Icons } from '../../../components/Icons';
 import { toggleExpanderState, isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
 import type { LayoutExpansion } from '../../../types/state.js';
@@ -16,7 +15,6 @@ export class Workspace extends LitElement {
 
     private uiState: UiStateContextValue['state'] | null = null;
     private uiDispatch: UiStateContextValue['dispatch'] | null = null;
-    private registryUnsubscribe: (() => void) | null = null;
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
@@ -285,16 +283,9 @@ export class Workspace extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.registryUnsubscribe = ViewRegistry.onRegistryChange(() => {
-            this.requestUpdate();
-        });
     }
 
     disconnectedCallback() {
-        if (this.registryUnsubscribe) {
-            this.registryUnsubscribe();
-            this.registryUnsubscribe = null;
-        }
         super.disconnectedCallback();
     }
 
@@ -332,8 +323,8 @@ export class Workspace extends LitElement {
     private resolveTokenViewOrder(): string[] {
         const layout = this.uiState?.layout ?? { mainAreaCount: 1, mainViewOrder: [] };
         const layoutOrder = Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [];
-        const views = ViewRegistry.getAllViews();
-        const viewIds: string[] = views.map((view: ViewDefinition) => view.id);
+        const views = this.uiState?.viewDefinitions ?? [];
+        const viewIds: string[] = views.map((view: ViewDefinitionSummary) => view.id);
         const ordered: string[] = layoutOrder.filter((viewId: string) => viewIds.includes(viewId));
         viewIds.forEach((viewId: string) => {
             if (!ordered.includes(viewId)) {
@@ -421,8 +412,8 @@ export class Workspace extends LitElement {
 
     render() {
         const isRow = this.orientation === 'row';
-        const views = ViewRegistry.getAllViews();
-        const viewMap = new Map(views.map((view: ViewDefinition) => [view.id, view]));
+        const views = this.uiState?.viewDefinitions ?? [];
+        const viewMap = new Map(views.map((view: ViewDefinitionSummary) => [view.id, view]));
         const activeOrder = this.resolveActiveMainViews();
         const activeSet = new Set(activeOrder);
         const capacity = this.panelLimit;
@@ -515,8 +506,8 @@ export class Workspace extends LitElement {
                     >
                         ${tokenOrder
                             .map((viewId: string) => viewMap.get(viewId))
-                            .filter((view?: ViewDefinition): view is ViewDefinition => !!view)
-                            .map((view: ViewDefinition) => {
+                            .filter((view?: ViewDefinitionSummary): view is ViewDefinitionSummary => !!view)
+                            .map((view: ViewDefinitionSummary) => {
                                 const label = this.getViewLabel(view);
                                 const iconName = this.getViewIcon(view);
                                 return html`

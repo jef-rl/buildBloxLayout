@@ -90,6 +90,13 @@ export type ViewTokenState = {
   tokenOrder: string[];
 };
 
+export type ViewDefinitionSummary = {
+  id: string;
+  name: string;
+  title: string;
+  icon: string;
+};
+
 export type ToolbarState = {
   positions: Record<string, ToolbarPos>;
   activePicker: string | null;
@@ -104,6 +111,12 @@ export type AuthState = {
   isLoggedIn: boolean;
   isAdmin: boolean;
   user?: AuthUser | null;
+};
+
+export type AuthUiState = {
+  loading: boolean;
+  error: string | null;
+  success: string | null;
 };
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -141,6 +154,8 @@ export type UIState = {
   containers: PanelContainer[];
   panels: Panel[];
   views: View[];
+  viewDefinitions: ViewDefinitionSummary[];
+  viewInstanceCounter: number;
   viewTokens: ViewTokenState;
   layout: LayoutState;
   toolbars: ToolbarState;
@@ -148,6 +163,7 @@ export type UIState = {
   dock: unknown;
   theme: unknown;
   auth: AuthState;
+  authUi: AuthUiState;
   authConfig?: FrameworkAuthConfig;
   panelState: PanelState;
   logs: LogState;

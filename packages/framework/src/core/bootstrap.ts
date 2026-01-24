@@ -35,6 +35,12 @@ export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrame
 
     const root = document.createElement('framework-root') as any;
     const mountTarget = mount ?? document.body;
+    const viewDefinitions = views.map((view) => ({
+        id: view.id,
+        name: view.name,
+        title: view.title,
+        icon: view.icon,
+    }));
 
     // Configure auth BEFORE mounting so connectedCallback can access it
     if (auth) {
@@ -48,11 +54,12 @@ export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrame
 
     mountTarget.appendChild(root);
 
-    if (state) {
-        dispatchUiEvent(root, 'state/hydrate', { state });
-    }
+    const mergedState = state
+        ? { ...state, viewDefinitions: state.viewDefinitions ?? viewDefinitions }
+        : { viewDefinitions };
+    dispatchUiEvent(root, 'state/hydrate', { state: mergedState });
 
-    logger?.info?.('bootstrapFramework state hydrated.', summarizeState(state));
+    logger?.info?.('bootstrapFramework state hydrated.', summarizeState(mergedState));
 
     logger?.info?.('bootstrapFramework root mounted.', {
         tagName: root.tagName.toLowerCase(),
