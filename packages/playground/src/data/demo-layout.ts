@@ -345,7 +345,7 @@ export const VIEW_REGISTRATIONS = ALL_VIEWS.map((view) => ({
   id: view.id,
   name: view.name,
   title: view.name,
-  tag: view.component,
+  tag: getTagForView(view.id),
   icon: getIconForView(view.id),
   component: getComponentLoader(view.id)
 }));
@@ -385,6 +385,10 @@ function getComponentLoader(viewId: string): () => Promise<any> {
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
   return () => import('../components/demo-view');
+}
+
+function getTagForView(viewId: string): string {
+  return viewId === 'firebase-auth' ? 'auth-view' : 'demo-view';
 }
 
 /**

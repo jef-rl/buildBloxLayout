@@ -79,8 +79,8 @@ export class WorkspaceRoot extends LitElement {
             grid-auto-columns: var(--main-panel-width);
             grid-template-columns: repeat(var(--main-panel-count), var(--main-panel-width));
             height: 100%;
-            min-width: 100%;
-            width: max-content;
+            min-width: 0;
+            width: 100%;
             overflow-x: auto;
             overflow-y: hidden;
             background-color: #0b1220;

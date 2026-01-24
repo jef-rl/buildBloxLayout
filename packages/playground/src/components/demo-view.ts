@@ -28,9 +28,9 @@ export class ImprovedDemoView extends LitElement {
   @property() description = '';
 
   /** Data passed from panel */
-  @property({ type: Object }) data: { 
-    label?: string; 
-    color?: string; 
+  @property({ type: Object }) data: {
+    label?: string;
+    color?: string;
     description?: string;
   } | null = null;
 
@@ -72,12 +72,11 @@ export class ImprovedDemoView extends LitElement {
     }
 
     .view-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      padding: 24px;
-      gap: 16px;
-      transition: transform 0.2s ease;
+    display: grid;
+    height: 100%;
+    transition: transform 0.2s ease;
+    width: 100%;
+    overflow: auto;
     }
 
     .view-container:hover {
@@ -295,7 +294,7 @@ export class ImprovedDemoView extends LitElement {
     const panels = this.uiState?.panels ?? [];
     const mainPanels = panels.filter(p => p.region === 'main');
     const activePanels = mainPanels.filter(p => p.view !== null);
-    
+
     return {
       total: panels.length,
       main: mainPanels.length,
@@ -314,7 +313,7 @@ export class ImprovedDemoView extends LitElement {
    */
   private toggleExpansion(side: 'left' | 'right' | 'bottom') {
     const currentState = this.layoutState.expansion[side];
-    
+
     // Dispatch event through the framework's event system
     dispatchUiEvent(this, 'layout/setExpansion', {
       side,
@@ -455,10 +454,10 @@ export class ImprovedDemoView extends LitElement {
               <button class="btn btn-secondary" @click=${this.openSettings}>
                 Open Settings
               </button>
-              ${auth.isLoggedIn 
-                ? html`<button class="btn btn-secondary" @click=${this.simulateLogout}>Logout</button>`
-                : html`<button class="btn btn-secondary" @click=${this.simulateLogin}>Login</button>`
-              }
+              ${auth.isLoggedIn
+        ? html`<button class="btn btn-secondary" @click=${this.simulateLogout}>Logout</button>`
+        : html`<button class="btn btn-secondary" @click=${this.simulateLogin}>Login</button>`
+      }
             </div>
           </div>
 
