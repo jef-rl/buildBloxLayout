@@ -282,6 +282,16 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   // All available views
   views: ALL_VIEWS,
 
+  // View definitions for context-driven UI
+  viewDefinitions: ALL_VIEWS.map((view) => ({
+    id: view.id,
+    name: view.name,
+    title: view.name,
+    icon: getIconForView(view.id)
+  })),
+
+  viewInstanceCounter: 0,
+
   // View token state for the view controls toolbar
   viewTokens: {
     registered: ALL_VIEWS.map((view) => ({
@@ -342,8 +352,15 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   // Authentication state (isAdmin will be determined by handlers)
   auth: {
     isLoggedIn: false,
+    isAdmin: false,
     user: null
-  } as any,
+  },
+
+  authUi: {
+    loading: false,
+    error: null,
+    success: null
+  },
 
   // Panel state tracking
   panelState: {

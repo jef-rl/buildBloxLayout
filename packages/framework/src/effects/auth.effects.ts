@@ -112,14 +112,27 @@ export const registerAuthEffects = (
       });
   });
 
-  registry.register('auth/logoutRequested', (_context, _action, dispatch) => {
+  registry.register('auth/logoutRequested', (context, _action, dispatch) => {
     setAuthUi(dispatch, { loading: true, error: null, success: null });
+    const authConfig = context.state.authConfig;
+    const authViewId = authConfig?.authViewId ?? 'firebase-auth';
+    const shouldAutoShow = Boolean(authConfig?.enabled && authConfig?.autoShowOnStartup);
+    const shouldOpenOverlay =
+      shouldAutoShow && context.state.layout?.overlayView !== authViewId;
+
     logout()
       .then(() => {
-        dispatch([
+        const followUps: HandlerAction[] = [
           { type: 'auth/setUser', payload: { user: null } },
           { type: 'auth/setUi', payload: { loading: false, error: null, success: 'Logged out successfully' } },
-        ]);
+        ];
+        if (shouldOpenOverlay) {
+          followUps.push({
+            type: 'layout/setOverlayView',
+            payload: { viewId: authViewId },
+          });
+        }
+        dispatch(followUps);
         clearSuccessLater(dispatch, 1500);
       })
       .catch((error) => {

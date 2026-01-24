@@ -51,6 +51,17 @@ const loadDemoView = () => import('./components/demo-view');
 // FRAMEWORK BOOTSTRAP
 // ====================
 
+const authConfig = {
+  enabled: true,                     // Enable auth features
+  authViewId: 'firebase-auth',       // ID of the auth overlay view
+  autoShowOnStartup: true,           // Show login on startup if not logged in
+  requireAuthForActions: [],         // Actions that require authentication
+  adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e: string) => e.trim())
+    .filter(Boolean),                // System administrator emails from .env
+};
+
 /**
  * Initialize the framework with:
  * - View definitions (registry)
@@ -67,26 +78,12 @@ const root = bootstrapFramework({
   // Hydrate initial state
   state: IMPROVED_DEMO_LAYOUT,
 
+  // Configure auth at bootstrap so handlers can react immediately
+  auth: authConfig,
+
   // Optional: specify mount point (defaults to document.body)
   // mount: document.getElementById('app')
 });
-
-// Configure authentication behavior on the framework root after bootstrap
-setTimeout(() => {
-  const frameworkRoot = root as any;
-  if (frameworkRoot) {
-    frameworkRoot.authConfig = {
-      enabled: true,                     // Enable auth features
-      authViewId: 'firebase-auth',       // ID of the auth overlay view
-      autoShowOnStartup: true,           // Show login on startup if not logged in
-      requireAuthForActions: [],         // Actions that require authentication
-      adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
-        .split(',')
-        .map((e: string) => e.trim())
-        .filter(Boolean),                // System administrator emails from .env
-    };
-  }
-}, 0);
 
 // ====================
 // FIREBASE INITIALIZATION

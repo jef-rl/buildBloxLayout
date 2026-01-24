@@ -3813,6 +3813,17 @@ When adding features to the framework:
 5. ✅ **Testability**: Unit test handlers, integrate test components
 6. ✅ **Documentation**: Clear, comprehensive docs with examples
 
+### Compliance Criteria
+
+Use this checklist when reviewing framework changes:
+
+- [ ] **Pure Handlers Only**: No I/O, async work, timers, storage, or network calls inside reducers/handlers; return new state + follow-ups only.
+- [ ] **Unidirectional Flow**: Views dispatch actions; context is read-only; handlers transform state.
+- [ ] **Immutable Updates**: No in-place mutation of state or nested objects/arrays.
+- [ ] **Side Effects Routed**: Logging, persistence, auth, and external calls must be via follow-ups or dedicated effect/middleware paths.
+- [ ] **Type-Safe Actions**: Action payloads are typed and validated/normalized before use.
+- [ ] **Layer Boundaries**: Views in component layer; state/registry in core; no cross-layer coupling.
+
 ---
 
 ## Resources

@@ -361,11 +361,8 @@ export class ImprovedDemoView extends LitElement {
    * Demonstrates auth state updates
    */
   private simulateLogin() {
-    dispatchUiEvent(this, 'auth/setUser', {
-      user: {
-        uid: 'demo-user-' + Date.now(),
-        email: 'demo@example.com'
-      }
+    dispatchUiEvent(this, 'layout/setOverlayView', {
+      viewId: 'firebase-auth'
     });
   }
 
@@ -373,9 +370,7 @@ export class ImprovedDemoView extends LitElement {
    * Simulate logout
    */
   private simulateLogout() {
-    dispatchUiEvent(this, 'auth/setUser', {
-      user: null
-    });
+    dispatchUiEvent(this, 'auth/logoutRequested', {});
   }
 
   // ====================

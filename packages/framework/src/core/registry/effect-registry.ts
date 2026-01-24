@@ -1,7 +1,7 @@
 import type { HandlerAction } from './handler-registry';
 
 export type EffectHandler<TState> = (
-  context: { state: TState },
+  context: TState,
   action: HandlerAction,
   dispatch: (actions: HandlerAction[]) => void,
 ) => void;

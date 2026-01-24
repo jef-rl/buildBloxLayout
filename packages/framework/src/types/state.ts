@@ -121,7 +121,7 @@ export type AuthUiState = {
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-interface LogEntry {
+export interface LogEntry {
   id: string;
   level: 'info' | 'warn' | 'error' | 'debug';
   message: string;
