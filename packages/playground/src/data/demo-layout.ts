@@ -133,6 +133,16 @@ const BOTTOM_PANEL_VIEWS: View[] = [
     }
   },
   {
+    id: 'framework-logs',
+    name: 'Framework Logs',
+    component: 'framework-logs',
+    data: {
+      label: 'Framework Logs',
+      color: '#0f172a',
+      description: 'Framework log stream'
+    }
+  },
+  {
     id: 'ai-assistant',
     name: 'AI Assistant',
     component: 'ai-assistant',
@@ -217,8 +227,8 @@ const EXPANSION_PANELS: Panel[] = [
     id: 'panel-bottom',
     name: 'Bottom Panel',
     region: 'bottom',
-    viewId: BOTTOM_PANEL_VIEWS[0].id,
-    view: BOTTOM_PANEL_VIEWS[0]
+    viewId: BOTTOM_PANEL_VIEWS[1].id,
+    view: BOTTOM_PANEL_VIEWS[1]
   }
 ];
 
@@ -323,6 +333,12 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     accentColor: '#8b5cf6'
   },
 
+  // Log storage for the built-in log view
+  logs: {
+    entries: [],
+    maxEntries: 200
+  },
+
   // Authentication state (isAdmin will be determined by handlers)
   auth: {
     isLoggedIn: false,
@@ -366,6 +382,7 @@ function getIconForView(viewId: string): string {
     'properties-panel': 'tune',
     'style-editor': 'palette',
     'console-output': 'terminal',
+    'framework-logs': 'terminal',
     'ai-assistant': 'psychology',
     'project-settings': 'settings',
     'export-dialog': 'file_download'
@@ -381,6 +398,9 @@ function getComponentLoader(viewId: string): () => Promise<any> {
   if (viewId === 'firebase-auth') {
     return () => import('@project/framework').then(m => m.AuthView);
   }
+  if (viewId === 'framework-logs') {
+    return () => import('@project/framework').then(m => m.LogView);
+  }
 
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
@@ -388,7 +408,13 @@ function getComponentLoader(viewId: string): () => Promise<any> {
 }
 
 function getTagForView(viewId: string): string {
-  return viewId === 'firebase-auth' ? 'auth-view' : 'demo-view';
+  if (viewId === 'firebase-auth') {
+    return 'auth-view';
+  }
+  if (viewId === 'framework-logs') {
+    return 'log-view';
+  }
+  return 'demo-view';
 }
 
 /**

@@ -9,3 +9,4 @@ export const getLayout = (state: UIState) => state.layout;
 export const getLayoutExpansion = (state: UIState) => state.layout.expansion;
 export const getLayoutOverlayView = (state: UIState) => state.layout.overlayView;
 export const getViewportWidthMode = (state: UIState) => state.layout.viewportWidthMode;
+export const getLogs = (state: UIState) => state.logs;

@@ -33,6 +33,18 @@ export const generateAuthMenuItems = (
       order: 0,
     });
   } else {
+    if (authState.isAdmin) {
+      items.push({
+        id: 'admin-designer',
+        type: 'action',
+        label: 'Designer',
+        icon: 'designer',
+        actionType: 'layout/setOverlayView',
+        payload: { viewId: 'visual-editor' },
+        order: 0,
+      });
+    }
+
     // Show profile and logout when logged in
     const userEmail = authState.user?.email ?? 'User';
 
@@ -41,7 +53,7 @@ export const generateAuthMenuItems = (
       type: 'parent',
       label: userEmail,
       icon: 'account_circle',
-      order: 0,
+      order: authState.isAdmin ? 1 : 0,
       children: [
         {
           id: 'auth-view-profile',

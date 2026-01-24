@@ -15,6 +15,7 @@ export class FrameworkMenu extends LitElement {
     @state() private draggedItemId: string | null = null;
     @state() private dropTargetId: string | null = null;
     @state() private menuItems: FrameworkMenuItem[] = [];
+    private hasHydratedMenu = false;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
@@ -22,7 +23,11 @@ export class FrameworkMenu extends LitElement {
         callback: (value: UiStateContextValue) => {
             this.uiState = value?.state ?? null;
             this.uiDispatch = value?.dispatch ?? null;
-            this.loadSystemPresets();
+            if (!this.hasHydratedMenu) {
+                this.hasHydratedMenu = true;
+                this.handlers.hydrateMenu();
+            }
+            this.refreshMenuItems();
         },
     });
 
@@ -151,6 +156,10 @@ export class FrameworkMenu extends LitElement {
         .menu-item.preset {
             padding-left: calc(16px + var(--depth, 0) * 16px);
         }
+        
+        .menu-item.action {
+            padding-left: calc(16px + var(--depth, 0) * 16px);
+        }
 
         .menu-item-icon {
             width: 16px;
@@ -204,7 +213,7 @@ export class FrameworkMenu extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.loadMenuConfig();
+        this.refreshMenuItems();
     }
 
     disconnectedCallback() {
@@ -212,29 +221,39 @@ export class FrameworkMenu extends LitElement {
         super.disconnectedCallback();
     }
 
-    private loadMenuConfig() {
-        const saved = frameworkMenuPersistence.load();
-        if (saved) {
-            this.menuItems = saved.items;
-        }
-    }
-
-    private loadSystemPresets() {
+    private getSystemPresetItems(): FrameworkMenuPresetItem[] {
         const presets = this.uiState?.layout?.presets ?? {};
         const systemPresets = Object.values(presets).filter(
             (p): p is LayoutPreset => p.isSystemPreset === true
         );
 
         if (systemPresets.length > 0) {
-            const presetItems: FrameworkMenuPresetItem[] = systemPresets.map((preset, index) => ({
+            return systemPresets.map((preset, index) => ({
                 id: `preset-${preset.name}`,
                 type: 'preset' as const,
                 label: preset.name,
                 presetName: preset.name,
                 order: index,
             }));
-            this.menuItems = presetItems;
         }
+        return [];
+    }
+
+    private refreshMenuItems() {
+        const menuItems = this.uiState?.layout?.frameworkMenu?.items;
+        if (menuItems && menuItems.length > 0) {
+            this.menuItems = menuItems;
+            return;
+        }
+
+        const saved = frameworkMenuPersistence.load();
+        if (saved?.items?.length) {
+            this.menuItems = saved.items;
+            return;
+        }
+
+        const systemPresets = this.getSystemPresetItems();
+        this.menuItems = systemPresets;
     }
 
     private toggleMenu() {
@@ -269,6 +288,12 @@ export class FrameworkMenu extends LitElement {
 
     private handlePresetClick(item: FrameworkMenuPresetItem) {
         this.handlers.loadPreset(item);
+        this.isOpen = false;
+        document.removeEventListener('click', this.boundClickOutside);
+    }
+
+    private handleActionClick(item: FrameworkMenuItem) {
+        this.handlers.executeAction(item);
         this.isOpen = false;
         document.removeEventListener('click', this.boundClickOutside);
     }
@@ -318,7 +343,74 @@ export class FrameworkMenu extends LitElement {
         if (item.type === 'preset') {
             return this.renderPresetItem(item as FrameworkMenuPresetItem, depth);
         }
+        if (item.type === 'action') {
+            return this.renderActionItem(item, depth);
+        }
         return nothing;
+    }
+
+    private renderIcon(icon: string | undefined, fallbackType: FrameworkMenuItem['type']) {
+        switch (icon) {
+            case 'designer':
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z" />
+                    </svg>
+                `;
+            case 'login':
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 17l5-5-5-5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H3" />
+                    </svg>
+                `;
+            case 'logout':
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 17l5-5-5-5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H9" />
+                    </svg>
+                `;
+            case 'person':
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20a8 8 0 0116 0" />
+                    </svg>
+                `;
+            case 'account_circle':
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11a3 3 0 100-6 3 3 0 000 6z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20a8 8 0 0116 0" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                    </svg>
+                `;
+            default:
+                if (fallbackType === 'parent') {
+                    return html`
+                        <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    `;
+                }
+                if (fallbackType === 'preset') {
+                    return html`
+                        <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                        </svg>
+                    `;
+                }
+                return html`
+                    <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                    </svg>
+                `;
+        }
     }
 
     private renderParentItem(item: FrameworkMenuParentItem, depth: number): TemplateResult {
@@ -338,9 +430,7 @@ export class FrameworkMenu extends LitElement {
                 @drop=${(e: DragEvent) => this.handleDrop(e, item.id)}
                 @dragend=${() => this.handleDragEnd()}
             >
-                <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                ${this.renderIcon(item.icon, item.type)}
                 <span class="menu-item-label">${item.label}</span>
                 <svg class="menu-item-arrow ${isExpanded ? 'expanded' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -370,9 +460,29 @@ export class FrameworkMenu extends LitElement {
                 @drop=${(e: DragEvent) => this.handleDrop(e, item.id)}
                 @dragend=${() => this.handleDragEnd()}
             >
-                <svg class="menu-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
+                ${this.renderIcon(item.icon, item.type)}
+                <span class="menu-item-label">${item.label}</span>
+            </div>
+        `;
+    }
+
+    private renderActionItem(item: FrameworkMenuItem, depth: number) {
+        const isDragging = this.draggedItemId === item.id;
+        const isDropTarget = this.dropTargetId === item.id;
+
+        return html`
+            <div
+                class="menu-item action ${isDragging ? 'dragging' : ''} ${isDropTarget ? 'drop-target' : ''}"
+                style="--depth: ${depth}"
+                draggable="true"
+                @click=${() => this.handleActionClick(item)}
+                @dragstart=${(e: DragEvent) => this.handleDragStart(e, item.id)}
+                @dragover=${(e: DragEvent) => this.handleDragOver(e, item.id)}
+                @dragleave=${() => this.handleDragLeave()}
+                @drop=${(e: DragEvent) => this.handleDrop(e, item.id)}
+                @dragend=${() => this.handleDragEnd()}
+            >
+                ${this.renderIcon(item.icon, item.type)}
                 <span class="menu-item-label">${item.label}</span>
             </div>
         `;

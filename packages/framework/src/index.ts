@@ -11,6 +11,7 @@ export * from './domains/panels';
 export * from './domains/dock';
 export * from './domains/layout';
 export * from './domains/auth';
+export * from './domains/logging';
 
 // Core Framework (Bootstrap & Registries)
 export * from './core';

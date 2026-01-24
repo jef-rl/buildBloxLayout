@@ -3,9 +3,9 @@ import type { Panel, PanelContainer, View } from '../domains/panels/types';
 import type { ExpanderState } from '../utils/expansion-helpers.js';
 
 export type LayoutExpansion = {
-	expanderLeft: ExpanderState;
-	expanderRight: ExpanderState;
-	expanderBottom: ExpanderState;
+  expanderLeft: ExpanderState;
+  expanderRight: ExpanderState;
+  expanderBottom: ExpanderState;
 };
 
 export type MainAreaPanelCount = 1 | 2 | 3 | 4 | 5;
@@ -106,6 +106,23 @@ export type AuthState = {
   user?: AuthUser | null;
 };
 
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+interface LogEntry {
+  id: string;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  message: string;
+  timestamp: number;
+  source?: string;
+  data?: any;
+}
+
+
+export type LogState = {
+  entries: LogEntry[];
+  maxEntries: number;
+};
+
 export type FrameworkAuthConfig = {
   enabled: boolean;
   authViewId?: string;
@@ -133,4 +150,5 @@ export type UIState = {
   auth: AuthState;
   authConfig?: FrameworkAuthConfig;
   panelState: PanelState;
+  logs: LogState;
 };

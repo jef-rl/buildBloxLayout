@@ -276,6 +276,21 @@ export class ImprovedDemoView extends LitElement {
     };
   }
 
+  private get userInfo() {
+    const auth = this.uiState?.auth;
+    const user = auth?.user;
+    const email = user?.email ?? 'unknown';
+    const name = user?.email ? user.email.split('@')[0] : (user?.uid ?? 'unknown');
+
+    return {
+      name,
+      email,
+      uid: user?.uid ?? 'n/a',
+      isAdmin: auth?.isAdmin ?? false,
+      isLoggedIn: auth?.isLoggedIn ?? false
+    };
+  }
+
   private get layoutState() {
     const layout = this.uiState?.layout;
     return {
@@ -369,6 +384,7 @@ export class ImprovedDemoView extends LitElement {
 
   render() {
     const auth = this.authStatus;
+    const userInfo = this.userInfo;
     const layout = this.layoutState;
     const panelInfo = this.panelInfo;
 
@@ -396,6 +412,17 @@ export class ImprovedDemoView extends LitElement {
             <div class="info-label">Authentication</div>
             <div class="info-value">
               ${auth.isLoggedIn ? `User: ${auth.userEmail}` : 'Guest User'}
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-label">User Info</div>
+            <div class="info-value">
+              Name: ${userInfo.name}<br>
+              Email: ${userInfo.email}<br>
+              UID: ${userInfo.uid}<br>
+              Admin: ${userInfo.isAdmin ? 'Yes' : 'No'}<br>
+              Status: ${userInfo.isLoggedIn ? 'Logged In' : 'Logged Out'}
             </div>
           </div>
 

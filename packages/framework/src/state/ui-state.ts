@@ -50,6 +50,10 @@ export class UiState {
             isAdmin: false,
             user: null,
         },
+        logs: {
+            entries: [],
+            maxEntries: 200,
+        },
         panelState: {
             open: {},
             data: {},

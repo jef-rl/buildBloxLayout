@@ -1,6 +1,6 @@
 import { applyContextUpdate } from '../../state/context-update';
 import { getFrameworkLogger } from '../../utils/logger';
-import type { UIState } from '../../types/state';
+import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 
 export type HandlerAction<TPayload = Record<string, unknown>> = {
   type: string;
@@ -45,6 +45,57 @@ const summarizeChanges = (changes: unknown) => {
   }
 
   return { valueType: typeof changes };
+};
+
+const LOG_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];
+const DEFAULT_LOG_LIMIT = 200;
+
+const normalizeLogLevel = (level: unknown): LogLevel =>
+  LOG_LEVELS.includes(level as LogLevel) ? (level as LogLevel) : 'info';
+
+const normalizeLogState = (state: UIState): LogState => {
+  const fallback: LogState = { entries: [], maxEntries: DEFAULT_LOG_LIMIT };
+  const logs = state.logs ?? fallback;
+  const maxEntries = Number.isFinite(logs.maxEntries)
+    ? Math.max(1, Math.floor(logs.maxEntries))
+    : DEFAULT_LOG_LIMIT;
+  return {
+    entries: Array.isArray(logs.entries) ? logs.entries : [],
+    maxEntries,
+  };
+};
+
+const buildLogEntry = (payload: Record<string, unknown>, state: UIState): LogEntry | null => {
+  const entry = payload.entry as LogEntry | undefined;
+  const baseTimestamp =
+    typeof payload.timestamp === 'number' ? payload.timestamp : Date.now();
+  const baseId = typeof payload.id === 'string' && payload.id.trim() !== ''
+    ? payload.id
+    : `${baseTimestamp}-${(state.logs?.entries?.length ?? 0) + 1}`;
+
+  if (entry && typeof entry.message === 'string') {
+    const timestamp = typeof entry.timestamp === 'number' ? entry.timestamp : baseTimestamp;
+    const id = typeof entry.id === 'string' && entry.id.trim() !== '' ? entry.id : baseId;
+    return {
+      ...entry,
+      id,
+      timestamp,
+      level: normalizeLogLevel(entry.level),
+    };
+  }
+
+  if (typeof payload.message !== 'string' || payload.message.trim() === '') {
+    return null;
+  }
+
+  return {
+    id: baseId,
+    level: normalizeLogLevel(payload.level),
+    message: payload.message,
+    timestamp: baseTimestamp,
+    data: payload.data,
+    source: typeof payload.source === 'string' ? payload.source : undefined,
+  };
 };
 
 const logAction = (actionType: string, namespace: string | null, changes: unknown) => {
@@ -158,6 +209,65 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
 
     const nextState = nextPanels === state.panels ? state : { ...state, panels: nextPanels };
     logAction(action.type, 'panels', panels ?? { panelId, changes });
+    return { state: nextState, followUps: toFollowUps(payload.followUps) };
+  },
+  'logs/append': (state, action) => {
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const currentLogs = normalizeLogState(state);
+    const entry = buildLogEntry(payload, state);
+    if (!entry) {
+      logAction(action.type, 'logs', { reason: 'invalid-payload' });
+      return { state, followUps: toFollowUps(payload.followUps) };
+    }
+    const nextEntries = [...currentLogs.entries, entry];
+    const trimmedEntries =
+      nextEntries.length > currentLogs.maxEntries
+        ? nextEntries.slice(nextEntries.length - currentLogs.maxEntries)
+        : nextEntries;
+    const nextState = {
+      ...state,
+      logs: {
+        entries: trimmedEntries,
+        maxEntries: currentLogs.maxEntries,
+      },
+    };
+    logAction(action.type, 'logs', { count: trimmedEntries.length });
+    return { state: nextState, followUps: toFollowUps(payload.followUps) };
+  },
+  'logs/clear': (state, action) => {
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const currentLogs = normalizeLogState(state);
+    if (currentLogs.entries.length === 0) {
+      return { state, followUps: toFollowUps(payload.followUps) };
+    }
+    const nextState = {
+      ...state,
+      logs: {
+        ...currentLogs,
+        entries: [],
+      },
+    };
+    logAction(action.type, 'logs', { cleared: currentLogs.entries.length });
+    return { state: nextState, followUps: toFollowUps(payload.followUps) };
+  },
+  'logs/setMax': (state, action) => {
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const currentLogs = normalizeLogState(state);
+    const nextMax = Number.isFinite(Number(payload.maxEntries))
+      ? Math.max(1, Math.floor(Number(payload.maxEntries)))
+      : currentLogs.maxEntries;
+    const trimmedEntries =
+      currentLogs.entries.length > nextMax
+        ? currentLogs.entries.slice(currentLogs.entries.length - nextMax)
+        : currentLogs.entries;
+    const nextState = {
+      ...state,
+      logs: {
+        entries: trimmedEntries,
+        maxEntries: nextMax,
+      },
+    };
+    logAction(action.type, 'logs', { maxEntries: nextMax });
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
 };

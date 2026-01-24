@@ -29,6 +29,29 @@ const toFollowUps = (payload?: StateActionPayload) => {
   });
 };
 
+const LOG_SOURCE = 'workspace/handlers';
+
+const buildLogAction = (
+  level: 'debug' | 'info' | 'warn' | 'error',
+  message: string,
+  data?: Record<string, unknown>,
+): HandlerAction => ({
+  type: 'logs/append',
+  payload: {
+    level,
+    message,
+    data,
+    source: LOG_SOURCE,
+  },
+});
+
+const withLog = (
+  followUps: HandlerAction[],
+  level: 'debug' | 'info' | 'warn' | 'error',
+  message: string,
+  data?: Record<string, unknown>,
+) => [...followUps, buildLogAction(level, message, data)];
+
 const normalizeLayoutState = (state: UIState): UIState => {
   const layout = typeof state.layout === 'object' && state.layout ? state.layout : ({} as UIState['layout']);
 
@@ -331,6 +354,19 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
     implementationAdmins.some((email: string) => email.toLowerCase() === userEmail)
   );
 
+  const authConfig = normalizedState.authConfig;
+  const authViewId = authConfig?.authViewId ?? 'firebase-auth';
+  const shouldAutoShowAuth = !nextUser && authConfig?.enabled && authConfig?.autoShowOnStartup;
+  const shouldOpenAuthOverlay = shouldAutoShowAuth && normalizedState.layout?.overlayView !== authViewId;
+
+  const followUps = toFollowUps(payload);
+  if (shouldOpenAuthOverlay) {
+    followUps.push({
+      type: 'layout/setOverlayView',
+      payload: { viewId: authViewId },
+    });
+  }
+
   return {
     state: {
       ...context,
@@ -344,7 +380,7 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -370,10 +406,11 @@ const handleAuthLogout: ReducerHandler<FrameworkContextState> = (context, action
 const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const name = payload.name as string | undefined;
-  console.log('[Handler] handlePresetSave called:', { name, payload });
   if (!name) {
-    console.warn('[Handler] handlePresetSave: No name provided');
-    return { state: context, followUps: toFollowUps(payload) };
+    return {
+      state: context,
+      followUps: withLog(toFollowUps(payload), 'warn', 'Preset save skipped: missing name.'),
+    };
   }
 
   const normalizedState = normalizeLayoutState(context.state);
@@ -400,9 +437,13 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
   };
 
   // Persist to localStorage and Firestore
-  console.log('[Handler] Calling hybridPersistence.savePreset...');
+  const followUps = withLog(
+    toFollowUps(payload),
+    'info',
+    'Saving preset.',
+    { name },
+  );
   hybridPersistence.savePreset(name, preset);
-  console.log('[Handler] hybridPersistence.savePreset completed');
 
   return {
     state: {
@@ -416,7 +457,7 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps,
   };
 };
 
@@ -566,16 +607,14 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
 const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeLayoutState(context.state);
-  console.log('[Handler] handlePresetHydrate called');
+  const baseFollowUps = toFollowUps(payload);
 
   // Check if presets were passed directly (from async Firestore load)
   const providedPresets = payload.presets as LayoutPresets | undefined;
   if (providedPresets) {
-    console.log('[Handler] Hydrating from provided presets (Firestore):', Object.keys(providedPresets));
     // Merge with existing presets (Firestore presets as base, existing as overrides)
     const existingPresets = normalizedState.layout.presets ?? {};
     const mergedPresets = { ...providedPresets, ...existingPresets };
-    console.log('[Handler] Merged presets:', Object.keys(mergedPresets));
     return {
       state: {
         ...context,
@@ -587,19 +626,27 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
           },
         },
       },
-      followUps: toFollowUps(payload),
+      followUps: withLog(
+        baseFollowUps,
+        'info',
+        'Presets hydrated from payload.',
+        {
+          providedCount: Object.keys(providedPresets).length,
+          mergedCount: Object.keys(mergedPresets).length,
+        },
+      ),
     };
   }
 
   // Fallback to localStorage (existing behavior)
-  console.log('[Handler] Loading presets from localStorage...');
   const loadedPresets = presetPersistence.loadAll();
   if (!loadedPresets) {
-    console.warn('[Handler] No presets loaded from localStorage');
-    return { state: context, followUps: toFollowUps(payload) };
+    return {
+      state: context,
+      followUps: withLog(baseFollowUps, 'warn', 'No presets loaded from localStorage.'),
+    };
   }
 
-  console.log('[Handler] Loaded presets from localStorage:', Object.keys(loadedPresets));
   return {
     state: {
       ...context,
@@ -611,7 +658,12 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
         },
       },
     },
-    followUps: toFollowUps(payload),
+    followUps: withLog(
+      baseFollowUps,
+      'info',
+      'Presets loaded from localStorage.',
+      { count: Object.keys(loadedPresets).length },
+    ),
   };
 };
 

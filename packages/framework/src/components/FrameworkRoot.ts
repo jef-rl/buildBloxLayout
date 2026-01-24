@@ -35,6 +35,8 @@ type UiDispatchPayload = {
   [key: string]: unknown;
 };
 
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
 const summarizeUpdate = (previousState: UIState, nextState: UIState) => {
   const previousKeys = Object.keys(previousState);
   const nextKeys = Object.keys(nextState);
@@ -45,6 +47,22 @@ const summarizeUpdate = (previousState: UIState, nextState: UIState) => {
     changedKeys,
   };
 };
+
+const shouldLogAction = (actionType: string) => !actionType.startsWith('logs/');
+
+const createLogAction = (
+  level: LogLevel,
+  message: string,
+  data?: Record<string, unknown>,
+): HandlerAction => ({
+  type: 'logs/append',
+  payload: {
+    level,
+    message,
+    data,
+    source: 'framework',
+  },
+});
 
 const wrapCoreHandler = (
   handler: ReducerHandler<UIState>,
@@ -188,29 +206,14 @@ export class FrameworkRoot extends LitElement {
         hybridPersistence.setUserId(userId);
       }
 
-      // Check auto-show on initial auth state (only once)
+      const logger = getFrameworkLogger();
       if (!initialAuthCheckDone) {
         initialAuthCheckDone = true;
-
-        const logger = getFrameworkLogger();
         logger?.info?.('Initial auth state check', {
           hasUser: !!user,
           authEnabled: this.authConfig?.enabled,
           autoShowOnStartup: this.authConfig?.autoShowOnStartup,
         });
-
-        if (!user && this.authConfig?.enabled && this.authConfig?.autoShowOnStartup) {
-          const authViewId = this.authConfig.authViewId ?? 'firebase-auth';
-          logger?.info?.('Auto-showing auth overlay', { authViewId });
-
-          // Small delay to ensure views are registered and state is ready
-          setTimeout(() => {
-            this.dispatchActions([{
-              type: 'layout/setOverlayView',
-              payload: { viewId: authViewId }
-            }]);
-          }, 200);
-        }
       }
     });
   }
@@ -313,17 +316,46 @@ export class FrameworkRoot extends LitElement {
       actionTypes: queue.map((action) => action.type),
     });
 
+    const hasNonLogAction = queue.some((action) => shouldLogAction(action.type));
+    if (hasNonLogAction) {
+      queue.unshift(createLogAction('info', 'Dispatch start.', {
+        actionCount: queue.length,
+        actionTypes: queue.map((action) => action.type),
+      }));
+    }
+
     while (queue.length > 0) {
       const action = queue.shift();
       if (!action) {
         continue;
       }
 
+      if (shouldLogAction(action.type)) {
+        queue.unshift(createLogAction('debug', 'Handling action.', {
+          type: action.type,
+        }));
+      }
+
       const previousState = uiState.getState();
       const context: FrameworkContextState = {
         state: previousState,
       };
-      const result = frameworkHandlers.handle(context, action);
+      let result: ReturnType<typeof frameworkHandlers.handle> | null = null;
+      try {
+        result = frameworkHandlers.handle(context, action);
+      } catch (error) {
+        logger?.error?.('FrameworkRoot handler error.', {
+          actionType: action.type,
+          error,
+        });
+        if (shouldLogAction(action.type)) {
+          queue.unshift(createLogAction('error', 'Handler error.', {
+            type: action.type,
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+        continue;
+      }
       const nextContext = result.state;
       const nextState = nextContext.state;
       const actionFollowUps = result.followUps;
@@ -334,6 +366,12 @@ export class FrameworkRoot extends LitElement {
                 validateState(nextState);
             } catch (error) {
                 console.error(`State validation failed after action: ${action.type}`, error);
+                if (shouldLogAction(action.type)) {
+                  queue.unshift(createLogAction('error', 'State validation failed.', {
+                    type: action.type,
+                    error: error instanceof Error ? error.message : String(error),
+                  }));
+                }
                 continue; // Skip state update if validation fails
             }
         }
