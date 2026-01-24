@@ -323,12 +323,11 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     accentColor: '#8b5cf6'
   },
 
-  // Authentication state
+  // Authentication state (isAdmin will be determined by handlers)
   auth: {
     isLoggedIn: false,
-    isAdmin: false,
     user: null
-  },
+  } as any,
 
   // Panel state tracking
   panelState: {

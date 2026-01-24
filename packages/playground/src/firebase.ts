@@ -23,8 +23,12 @@ const validateFirebaseConfig = (): boolean => {
   const missingFields = requiredFields.filter(field => !firebaseConfig[field as keyof typeof firebaseConfig]);
 
   if (missingFields.length > 0) {
-    console.error('❌ Firebase configuration incomplete. Missing fields:', missingFields);
-    console.error('Please check your .env file and ensure all VITE_FIREBASE_* variables are set.');
+    console.warn('⚠️ Firebase configuration incomplete. Missing fields:', missingFields);
+    console.warn('To enable Firebase features, create a .env file in packages/playground/ with:');
+    console.warn('  VITE_FIREBASE_API_KEY=...');
+    console.warn('  VITE_FIREBASE_AUTH_DOMAIN=...');
+    console.warn('  VITE_FIREBASE_PROJECT_ID=...');
+    console.warn('  VITE_FIREBASE_APP_ID=...');
     return false;
   }
 
@@ -32,14 +36,19 @@ const validateFirebaseConfig = (): boolean => {
   return true;
 };
 
-// Validate and initialize Firebase
-if (!validateFirebaseConfig()) {
-  throw new Error('Firebase configuration is invalid. Check console for details.');
+// Initialize Firebase only if configuration is complete
+let firebaseApp: FirebaseApp | null = null;
+let firebaseAuth: Auth | null = null;
+
+if (validateFirebaseConfig()) {
+  firebaseApp = initializeApp(firebaseConfig);
+  firebaseAuth = getAuth(firebaseApp);
+
+  console.log('✓ Firebase initialized successfully');
+  console.log('  • Project ID:', firebaseConfig.projectId);
+  console.log('  • Auth Domain:', firebaseConfig.authDomain);
+} else {
+  console.log('ℹ️ Firebase disabled - app will run without authentication features');
 }
 
-export const firebaseApp: FirebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth: Auth = getAuth(firebaseApp);
-
-console.log('✓ Firebase initialized successfully');
-console.log('  • Project ID:', firebaseConfig.projectId);
-console.log('  • Auth Domain:', firebaseConfig.authDomain);
+export { firebaseApp, firebaseAuth };

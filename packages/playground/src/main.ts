@@ -1,5 +1,4 @@
 import { bootstrapFramework, setFrameworkLogger } from '@project/framework';
-import { getFirestore } from 'firebase/firestore';
 import { IMPROVED_DEMO_LAYOUT, VIEW_REGISTRATIONS } from './data/demo-layout';
 import { firebaseApp, firebaseAuth } from './firebase';
 
@@ -65,24 +64,29 @@ const root = bootstrapFramework({
     component: loadDemoView  // Use unified demo component
   })),
 
-  // Hydrate initial state 
+  // Hydrate initial state
   state: IMPROVED_DEMO_LAYOUT,
-
-  // Configure authentication behavior
-  auth: {
-    enabled: true,                     // Enable auth features
-    authViewId: 'firebase-auth',       // ID of the auth overlay view
-    autoShowOnStartup: true,           // Show login on startup if not logged in
-    requireAuthForActions: [],         // Actions that require authentication
-    adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((e: string) => e.trim())
-      .filter(Boolean),                // System administrator emails from .env
-  },
 
   // Optional: specify mount point (defaults to document.body)
   // mount: document.getElementById('app')
 });
+
+// Configure authentication behavior on the framework root after bootstrap
+setTimeout(() => {
+  const frameworkRoot = root as any;
+  if (frameworkRoot) {
+    frameworkRoot.authConfig = {
+      enabled: true,                     // Enable auth features
+      authViewId: 'firebase-auth',       // ID of the auth overlay view
+      autoShowOnStartup: true,           // Show login on startup if not logged in
+      requireAuthForActions: [],         // Actions that require authentication
+      adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
+        .split(',')
+        .map((e: string) => e.trim())
+        .filter(Boolean),                // System administrator emails from .env
+    };
+  }
+}, 0);
 
 // ====================
 // FIREBASE INITIALIZATION
@@ -102,12 +106,16 @@ const initializeFirebaseServices = () => {
 
   // Wait for framework-root to be connected to the DOM
   if (frameworkRoot.isConnected) {
-    setupFirebase(frameworkRoot);
+    setupFirebase(frameworkRoot).catch((error) => {
+      console.error('Firebase initialization failed:', error);
+    });
   } else {
     // If not yet connected, wait for it
     const observer = new MutationObserver(() => {
       if (frameworkRoot.isConnected) {
-        setupFirebase(frameworkRoot);
+        setupFirebase(frameworkRoot).catch((error) => {
+          console.error('Firebase initialization failed:', error);
+        });
         observer.disconnect();
       }
     });
@@ -118,18 +126,65 @@ const initializeFirebaseServices = () => {
 /**
  * Configure Firestore and Firebase Authentication
  */
-const setupFirebase = (frameworkRoot: any) => {
+const setupFirebase = async (frameworkRoot: any) => {
+  console.log('[Firebase Setup] setupFirebase called', {
+    frameworkRootReady: !!frameworkRoot,
+    firestoreHook: typeof frameworkRoot.configureFirestore === 'function',
+    authHook: typeof frameworkRoot.configureFirebaseAuth === 'function',
+    firebaseAppReady: !!firebaseApp,
+    authConfig: frameworkRoot.authConfig,
+  });
+
+  // Check if Firebase is initialized
+  if (!firebaseApp) {
+    console.warn('%c Firebase Not Initialized ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+    console.warn('Skipping Firestore and Authentication setup. To enable Firebase features, add your Firebase configuration to packages/playground/.env');
+    return;
+  }
+
   // Initialize Firestore for preset persistence
-  if (frameworkRoot.configureFirestore) {
-    const db = getFirestore(firebaseApp);
-    frameworkRoot.configureFirestore(db);
-    console.log('%c Firestore Persistence Enabled ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+  if (frameworkRoot.configureFirestore && firebaseApp) {
+    try {
+      console.log('[Firebase Setup] Initializing Firestore...');
+      // Import Firestore modules
+      const { getFirestore: initGetFirestore } = await import('firebase/firestore');
+      console.log('[Firebase Setup] Firestore modules imported');
+
+      // Get the Firestore instance
+      const db = initGetFirestore(firebaseApp);
+      console.log('[Firebase Setup] Firestore instance created:', !!db);
+
+      frameworkRoot.configureFirestore(db);
+      console.log('%c Firestore Persistence Enabled ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+      console.log('[Firebase Setup] Framework root configured with Firestore');
+    } catch (error) {
+      console.error('%c Firestore Initialization Failed ', 'background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px;');
+      console.error('Error details:', error);
+      console.warn('Firestore is not available. This might mean:');
+      console.warn('1. Firestore is not enabled in your Firebase project');
+      console.warn('2. There is a network issue connecting to Firebase');
+      console.warn('3. Your Firebase credentials are invalid');
+      console.warn('Presets will be stored locally only (no Firestore sync)');
+    }
+  } else {
+    console.warn('%c Firestore Configuration Skipped ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+    if (!frameworkRoot.configureFirestore) {
+      console.warn('Framework root does not have configureFirestore method');
+    }
+    if (!firebaseApp) {
+      console.warn('Firebase app is not initialized');
+    }
   }
 
   // Initialize Firebase Authentication
   if (frameworkRoot.configureFirebaseAuth) {
-    frameworkRoot.configureFirebaseAuth(firebaseAuth);
-    console.log('%c Firebase Auth Initialized ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
+    try {
+      frameworkRoot.configureFirebaseAuth(firebaseAuth);
+      console.log('%c Firebase Auth Initialized ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
+    } catch (error) {
+      console.warn('%c Firebase Auth Setup Failed ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
+      console.warn('Error details:', error);
+    }
   }
 
   // Log authentication configuration

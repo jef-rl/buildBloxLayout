@@ -69,26 +69,34 @@ export const firestorePersistence = {
 
   async loadAll(): Promise<LayoutPresets | null> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping loadAll');
+      console.warn('[FirestorePersistence] Firestore not initialized, skipping loadAll');
       return null;
     }
 
     try {
+      console.log('[FirestorePersistence] Loading presets from Firestore...', { currentUserId });
       const presetsCollection = collection(firestoreDb, COLLECTION_NAME);
       const userIds = currentUserId ? [null, currentUserId] : [null];
       const q = query(presetsCollection, where('userId', 'in', userIds));
       const snapshot = await getDocs(q);
+
+      console.log('[FirestorePersistence] Firestore snapshot received:', {
+        docsCount: snapshot.docs.length,
+        userIds,
+      });
 
       const presets: LayoutPresets = {};
       snapshot.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
         const data = docSnap.data() as FirestorePreset;
         const { userId: _userId, updatedAt: _updatedAt, ...preset } = data;
         presets[preset.name] = preset;
+        console.log('[FirestorePersistence] Loaded preset:', preset.name);
       });
 
+      console.log('[FirestorePersistence] Total presets loaded:', Object.keys(presets).length);
       return Object.keys(presets).length > 0 ? presets : null;
     } catch (error: unknown) {
-      console.warn('Failed to load presets from Firestore:', error);
+      console.error('[FirestorePersistence] Failed to load presets from Firestore:', error);
       return null;
     }
   },

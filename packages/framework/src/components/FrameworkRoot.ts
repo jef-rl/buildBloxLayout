@@ -153,9 +153,12 @@ export class FrameworkRoot extends LitElement {
   }
 
   configureFirestore(firestore: Firestore): void {
+    console.log('[FrameworkRoot] configureFirestore called');
     this.firestore = firestore;
     const userId = this.state.auth?.user?.uid ?? null;
+    console.log('[FrameworkRoot] Configuring hybrid persistence with userId:', userId);
     hybridPersistence.configure({ firestore, userId });
+    console.log('[FrameworkRoot] Hybrid persistence configured, initializing...');
     this.initializeFirestorePersistence();
   }
 
@@ -214,13 +217,25 @@ export class FrameworkRoot extends LitElement {
 
   private async initializeFirestorePersistence(): Promise<void> {
     if (!hybridPersistence.isConfigured()) {
+      console.log('[FrameworkRoot] Hybrid persistence not configured, skipping initialization');
       return;
     }
 
     try {
+      console.log('[FrameworkRoot] Starting Firestore persistence initialization...');
       // Load presets from Firestore and merge with localStorage
       const firestorePresets = await hybridPersistence.syncFromFirestore();
+      const firestorePresetCount = firestorePresets ? Object.keys(firestorePresets).length : 0;
+      console.log('[FrameworkRoot] Firestore presets loaded:', {
+        count: firestorePresetCount,
+        presets: firestorePresets ? Object.keys(firestorePresets) : [],
+      });
+      if (!firestorePresets) {
+        console.log('[FrameworkRoot] No presets returned from Firestore (count 0)');
+      }
+
       if (firestorePresets && Object.keys(firestorePresets).length > 0) {
+        console.log('[FrameworkRoot] Dispatching presets/hydrate action with Firestore presets');
         this.dispatchActions([{
           type: 'presets/hydrate',
           payload: { presets: firestorePresets },
@@ -228,14 +243,17 @@ export class FrameworkRoot extends LitElement {
       }
 
       // Set up real-time listener for cross-device sync
+      console.log('[FrameworkRoot] Setting up real-time Firestore listener');
       this.firestoreUnsubscribe = hybridPersistence.onPresetsChanged((presets) => {
+        console.log('[FrameworkRoot] Firestore preset change detected:', Object.keys(presets));
         this.dispatchActions([{
           type: 'presets/hydrate',
           payload: { presets },
         }]);
       });
+      console.log('[FrameworkRoot] Firestore persistence initialization complete');
     } catch (error) {
-      console.warn('Firestore persistence initialization failed:', error);
+      console.error('[FrameworkRoot] Firestore persistence initialization failed:', error);
     }
   }
 

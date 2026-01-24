@@ -89,10 +89,18 @@ export const hybridPersistence = {
   },
 
   async syncFromFirestore(): Promise<LayoutPresets | null> {
+    console.log('[HybridPersistence] syncFromFirestore called', { isConfigured });
     if (!isConfigured) {
+      console.log('[HybridPersistence] Not configured yet, returning null');
       return null;
     }
-    return firestorePersistence.loadAll();
+
+    const results = await firestorePersistence.loadAll();
+    console.log('[HybridPersistence] syncFromFirestore result', {
+      presetsLoaded: results ? Object.keys(results).length : 0,
+      hasPresets: !!results,
+    });
+    return results;
   },
 
   async syncToFirestore(): Promise<void> {
@@ -125,12 +133,22 @@ export const hybridPersistence = {
 
   onPresetsChanged(callback: (presets: LayoutPresets) => void): () => void {
     if (!isConfigured) {
+      console.log('[HybridPersistence] onPresetsChanged skipped (not configured)');
       return () => {};
     }
+
+    console.log('[HybridPersistence] onPresetsChanged registered', {
+      currentUserId: firestorePersistence.getUserId(),
+    });
 
     return firestorePersistence.onPresetsChanged((firestorePresets) => {
       const localPresets = presetPersistence.loadAll() ?? {};
       const merged = { ...firestorePresets, ...localPresets };
+      console.log('[HybridPersistence] onPresetsChanged merged presets', {
+        firestoreCount: Object.keys(firestorePresets).length,
+        localCount: Object.keys(localPresets).length,
+        mergedCount: Object.keys(merged).length,
+      });
       presetPersistence.saveAll(merged);
       callback(merged);
     });

@@ -70,6 +70,11 @@ export class LoginOverlay extends LitElement {
     this.errorMessage = '';
 
     try {
+      if (!firebaseAuth) {
+        this.errorMessage = 'Firebase authentication is not available';
+        return;
+      }
+
       const credentials = await signInWithEmailAndPassword(
         firebaseAuth,
         this.email,

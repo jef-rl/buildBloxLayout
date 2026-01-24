@@ -327,8 +327,8 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
   const implementationAdmins = normalizedState.authConfig?.adminEmails ?? [];
   const userEmail = nextUser?.email?.toLowerCase();
   const isAdmin = !!userEmail && (
-    frameworkAdmins.some((email) => email.toLowerCase() === userEmail) ||
-    implementationAdmins.some((email) => email.toLowerCase() === userEmail)
+    frameworkAdmins.some((email: string) => email.toLowerCase() === userEmail) ||
+    implementationAdmins.some((email: string) => email.toLowerCase() === userEmail)
   );
 
   return {
