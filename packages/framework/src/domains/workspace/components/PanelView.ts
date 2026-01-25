@@ -1,14 +1,17 @@
 import { LitElement, html, css, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { View } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
+import { dispatchUiEvent } from '../../../utils/dispatcher';
 
 export class PanelView extends LitElement {
+    @property({ type: String }) panelId: string | null = null;
     @property({ type: String }) viewId: string | null = null;
     @property({ type: String }) viewInstanceId: string | null = null;
+    @state() private isDragReady = false;
 
     private uiState: UiStateContextValue['state'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
@@ -27,11 +30,14 @@ export class PanelView extends LitElement {
             display: block;
             height: 100%;
             width: 100%;
+            position: relative;
         }
 
         .view-container {
             height: 100%;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
         .fallback {
@@ -40,6 +46,30 @@ export class PanelView extends LitElement {
             height: 100%;
             color: #9ca3af;
             font-size: 0.9rem;
+        }
+
+        .design-overlay {
+            position: absolute;
+            inset: 0;
+            border: 2px dashed transparent;
+            border-radius: 8px;
+            background: transparent;
+            z-index: 2;
+            pointer-events: none;
+            transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+            opacity: 0;
+        }
+
+        .design-overlay.active {
+            pointer-events: auto;
+            opacity: 1;
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .design-overlay.ready {
+            border-color: #22d3ee;
+            background: rgba(34, 211, 238, 0.12);
         }
     `;
 
@@ -166,6 +196,72 @@ export class PanelView extends LitElement {
         }
     }
 
+    private isDesignOverlayActive(): boolean {
+        return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
+    }
+
+    private extractViewId(event: DragEvent): string | null {
+        const dataTransfer = event.dataTransfer;
+        if (!dataTransfer) return null;
+        const viewId =
+            dataTransfer.getData('application/x-view-id') ||
+            dataTransfer.getData('text/plain');
+        return viewId || null;
+    }
+
+    private handleDragOver(event: DragEvent) {
+        if (!this.isDesignOverlayActive()) return;
+        const viewId = this.extractViewId(event);
+        if (!viewId) return;
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+        this.isDragReady = true;
+    }
+
+    private handleDragEnter(event: DragEvent) {
+        if (!this.isDesignOverlayActive()) return;
+        const viewId = this.extractViewId(event);
+        if (!viewId) return;
+        event.preventDefault();
+        this.isDragReady = true;
+    }
+
+    private handleDragLeave() {
+        this.isDragReady = false;
+    }
+
+    private handleDrop(event: DragEvent) {
+        if (!this.isDesignOverlayActive()) return;
+        event.preventDefault();
+        const viewId = this.extractViewId(event);
+        this.isDragReady = false;
+        if (!viewId || !this.panelId) return;
+        dispatchUiEvent(this, 'panels/assignView', { viewId, panelId: this.panelId });
+    }
+
+    private renderDesignOverlay() {
+        const active = this.isDesignOverlayActive();
+        const classes = [
+            'design-overlay',
+            active ? 'active' : '',
+            active && this.isDragReady ? 'ready' : '',
+        ]
+            .filter(Boolean)
+            .join(' ');
+
+        return html`
+            <div
+                class="${classes}"
+                @dragover=${(event: DragEvent) => this.handleDragOver(event)}
+                @dragenter=${(event: DragEvent) => this.handleDragEnter(event)}
+                @dragleave=${() => this.handleDragLeave()}
+                @drop=${(event: DragEvent) => this.handleDrop(event)}
+            ></div>
+        `;
+    }
+
     private renderFallback() {
         let message = '';
         if (!this.viewId) {
@@ -194,6 +290,7 @@ export class PanelView extends LitElement {
         // Fallback content is now determined purely within the render cycle.
         return html`
             <div class="view-container"></div>
+            ${this.renderDesignOverlay()}
             ${this.renderFallback()}
         `;
     }

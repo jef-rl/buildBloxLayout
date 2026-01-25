@@ -200,6 +200,7 @@ export class WorkspaceRoot extends LitElement {
                         @click=${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}
                     >
                         <panel-view
+                            .panelId="${leftPanel?.id ?? null}"
                             .viewId="${getPanelViewId(leftPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(leftPanel)}"
                         ></panel-view>
@@ -212,6 +213,7 @@ export class WorkspaceRoot extends LitElement {
                                 @click=${() => panel && this.dispatch({ type: 'panels/selectPanel', panelId: panel.id })}
                             >
                                 <panel-view
+                                    .panelId="${panel.id}"
                                     .viewId="${getPanelViewId(panel)}"
                                     .viewInstanceId="${getPanelViewInstanceId(panel)}"
                                 ></panel-view>
@@ -224,6 +226,7 @@ export class WorkspaceRoot extends LitElement {
                         @click=${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}
                     >
                         <panel-view
+                            .panelId="${rightPanel?.id ?? null}"
                             .viewId="${getPanelViewId(rightPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(rightPanel)}"
                         ></panel-view>
@@ -234,6 +237,7 @@ export class WorkspaceRoot extends LitElement {
                         @click=${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}
                     >
                         <panel-view
+                            .panelId="${bottomPanel?.id ?? null}"
                             .viewId="${getPanelViewId(bottomPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(bottomPanel)}"
                         ></panel-view>
