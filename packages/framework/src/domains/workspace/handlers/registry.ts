@@ -76,12 +76,50 @@ const normalizeLayoutState = (state: UIState): UIState => {
       ...layout,
       expansion,
       overlayView: layout.overlayView ?? null,
+      inDesign: typeof layout.inDesign === 'boolean' ? layout.inDesign : false,
       viewportWidthMode: layout.viewportWidthMode ?? '1x',
       mainAreaCount: layout.mainAreaCount ?? 1,
       mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
       presets: layout.presets ?? {},
       activePreset: layout.activePreset ?? null,
     },
+  };
+};
+
+const handleToggleInDesign: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload & { overlayViewId?: string; inDesign?: boolean };
+  const normalizedState = normalizeLayoutState(context.state);
+
+  if (!normalizedState.auth?.isAdmin) {
+    return {
+      state: context,
+      followUps: withLog(toFollowUps(payload), 'warn', 'In-design toggle ignored: admin only.'),
+    };
+  }
+
+  const nextInDesign = typeof payload.inDesign === 'boolean'
+    ? payload.inDesign
+    : !normalizedState.layout.inDesign;
+  const followUps = toFollowUps(payload);
+  if (nextInDesign && payload.overlayViewId) {
+    followUps.push({
+      type: 'layout/setOverlayView',
+      payload: { viewId: payload.overlayViewId },
+    });
+  }
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        layout: {
+          ...normalizedState.layout,
+          inDesign: nextInDesign,
+        },
+      },
+    },
+    followUps,
   };
 };
 
@@ -807,6 +845,7 @@ export const registerWorkspaceHandlers = (
     registerHandler(registry, type, handleLayoutAction),
   );
   registerHandler(registry, 'layout/setMainAreaCount', handleMainAreaCount);
+  registerHandler(registry, 'layout/toggleInDesign', handleToggleInDesign);
   registerHandler(registry, 'panels/selectPanel', handleSelectPanel);
   registerHandler(registry, 'panels/assignView', handleAssignView);
   registerHandler(registry, 'panels/setMainViewOrder', handleSetMainViewOrder);

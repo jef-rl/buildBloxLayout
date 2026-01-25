@@ -39,8 +39,10 @@ export const generateAuthMenuItems = (
         type: 'action',
         label: 'Designer',
         icon: 'designer',
-        actionType: 'layout/setOverlayView',
-        payload: { viewId: 'visual-editor' },
+        actionType: 'layout/toggleInDesign',
+        payload: {
+          overlayViewId: 'visual-editor',
+        },
         order: 0,
       });
     }
