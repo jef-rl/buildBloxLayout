@@ -11,17 +11,25 @@ export class PanelView extends LitElement {
     @property({ type: String }) panelId: string | null = null;
     @property({ type: String }) viewId: string | null = null;
     @property({ type: String }) viewInstanceId: string | null = null;
+<<<<<<< HEAD
     @state() private isDragReady = false;
+=======
+    @property({ type: String }) panelId: string | null = null;
+>>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
 
     private uiState: UiStateContextValue['state'] | null = null;
+    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
+    @state() private isDropReady = false;
 
     private _consumer = new ContextConsumer(this, {
         context: uiStateContext,
         subscribe: true,
         callback: (value: UiStateContextValue | undefined) => {
             this.uiState = value?.state ?? null;
+            this.uiDispatch = value?.dispatch ?? null;
             this.updateElementData();
+            this.requestUpdate();
         },
     });
 
@@ -31,6 +39,15 @@ export class PanelView extends LitElement {
             height: 100%;
             width: 100%;
             position: relative;
+<<<<<<< HEAD
+=======
+        }
+
+        .view-wrapper {
+            position: relative;
+            height: 100%;
+            width: 100%;
+>>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
         }
 
         .view-container {
@@ -38,6 +55,40 @@ export class PanelView extends LitElement {
             width: 100%;
             position: relative;
             z-index: 1;
+        }
+
+        .drop-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed transparent;
+            background: rgba(59, 130, 246, 0);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .drop-overlay.active {
+            pointer-events: auto;
+        }
+
+        .drop-overlay.ready {
+            border-color: rgba(59, 130, 246, 0.9);
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .drop-overlay-label {
+            color: #93c5fd;
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .drop-overlay.ready .drop-overlay-label {
+            opacity: 1;
         }
 
         .fallback {
@@ -196,6 +247,7 @@ export class PanelView extends LitElement {
         }
     }
 
+<<<<<<< HEAD
     private isDesignOverlayActive(): boolean {
         return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
     }
@@ -213,10 +265,45 @@ export class PanelView extends LitElement {
         if (!this.isDesignOverlayActive()) return;
         const viewId = this.extractViewId(event);
         if (!viewId) return;
+=======
+    private isDropOverlayActive(): boolean {
+        return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
+    }
+
+    private resolveDraggedViewId(event: DragEvent): string | null {
+        return (
+            event.dataTransfer?.getData('application/x-view-id') ||
+            event.dataTransfer?.getData('text/plain') ||
+            null
+        );
+    }
+
+    private handleDragEnter(event: DragEvent) {
+        if (!this.isDropOverlayActive()) {
+            return;
+        }
+        const viewId = this.resolveDraggedViewId(event);
+        if (!viewId) {
+            return;
+        }
+        event.preventDefault();
+        this.isDropReady = true;
+    }
+
+    private handleDragOver(event: DragEvent) {
+        if (!this.isDropOverlayActive()) {
+            return;
+        }
+        const viewId = this.resolveDraggedViewId(event);
+        if (!viewId) {
+            return;
+        }
+>>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
         event.preventDefault();
         if (event.dataTransfer) {
             event.dataTransfer.dropEffect = 'move';
         }
+<<<<<<< HEAD
         this.isDragReady = true;
     }
 
@@ -260,6 +347,32 @@ export class PanelView extends LitElement {
                 @drop=${(event: DragEvent) => this.handleDrop(event)}
             ></div>
         `;
+=======
+        this.isDropReady = true;
+    }
+
+    private handleDragLeave(event: DragEvent) {
+        const overlay = event.currentTarget as HTMLElement | null;
+        const relatedTarget = event.relatedTarget as Node | null;
+        if (overlay && relatedTarget && overlay.contains(relatedTarget)) {
+            return;
+        }
+        this.isDropReady = false;
+    }
+
+    private handleDrop(event: DragEvent) {
+        if (!this.isDropOverlayActive()) {
+            return;
+        }
+        event.preventDefault();
+        const viewId = this.resolveDraggedViewId(event);
+        const panelId = this.panelId;
+        this.isDropReady = false;
+        if (!viewId || !panelId) {
+            return;
+        }
+        this.uiDispatch?.({ type: 'panels/assignView', viewId, panelId });
+>>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
     }
 
     private renderFallback() {
@@ -286,11 +399,27 @@ export class PanelView extends LitElement {
     }
 
     render() {
+        const overlayActive = this.isDropOverlayActive();
         // The container is always rendered.
         // Fallback content is now determined purely within the render cycle.
         return html`
+<<<<<<< HEAD
             <div class="view-container"></div>
             ${this.renderDesignOverlay()}
+=======
+            <div class="view-wrapper">
+                <div class="view-container"></div>
+                <div
+                    class="drop-overlay ${overlayActive ? 'active' : ''} ${this.isDropReady ? 'ready' : ''}"
+                    @dragenter=${this.handleDragEnter}
+                    @dragover=${this.handleDragOver}
+                    @dragleave=${this.handleDragLeave}
+                    @drop=${this.handleDrop}
+                >
+                    <span class="drop-overlay-label">Drop view to assign</span>
+                </div>
+            </div>
+>>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
             ${this.renderFallback()}
         `;
     }

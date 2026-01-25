@@ -203,6 +203,7 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${leftPanel?.id ?? null}"
                             .viewId="${getPanelViewId(leftPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(leftPanel)}"
+                            .panelId="${leftPanel?.id ?? null}"
                         ></panel-view>
                     </div>
 
@@ -216,6 +217,7 @@ export class WorkspaceRoot extends LitElement {
                                     .panelId="${panel.id}"
                                     .viewId="${getPanelViewId(panel)}"
                                     .viewInstanceId="${getPanelViewInstanceId(panel)}"
+                                    .panelId="${panel?.id ?? null}"
                                 ></panel-view>
                             </div>
                         `)}
@@ -229,6 +231,7 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${rightPanel?.id ?? null}"
                             .viewId="${getPanelViewId(rightPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(rightPanel)}"
+                            .panelId="${rightPanel?.id ?? null}"
                         ></panel-view>
                     </div>
 
@@ -240,6 +243,7 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${bottomPanel?.id ?? null}"
                             .viewId="${getPanelViewId(bottomPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(bottomPanel)}"
+                            .panelId="${bottomPanel?.id ?? null}"
                         ></panel-view>
                     </div>
                 </div>
