@@ -62,6 +62,58 @@ export class PresetManager extends LitElement {
             letter-spacing: 0.5px;
         }
 
+        .header__actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .designer-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            background: rgba(17, 24, 39, 0.6);
+            color: #9ca3af;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .designer-toggle:hover:not(:disabled) {
+            border-color: #60a5fa;
+            color: #ffffff;
+            box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.3);
+        }
+
+        .designer-toggle:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .designer-toggle.active {
+            color: #dbeafe;
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.15);
+            box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.3);
+        }
+
+        .designer-toggle__dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #9ca3af;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        .designer-toggle.active .designer-toggle__dot {
+            background: #34d399;
+        }
+
         .save-button {
             display: inline-flex;
             align-items: center;
@@ -290,6 +342,21 @@ export class PresetManager extends LitElement {
         this.handlers.deletePreset(name);
     }
 
+    private get isDesignModeActive(): boolean {
+        return Boolean(this.uiState?.layout?.inDesign);
+    }
+
+    private get isAdmin(): boolean {
+        return Boolean(this.uiState?.auth?.isAdmin);
+    }
+
+    private toggleDesignMode() {
+        if (!this.isAdmin) {
+            return;
+        }
+        this.handlers.toggleDesignMode(!this.isDesignModeActive);
+    }
+
     private startRename(name: string) {
         this.editingPresetName = name;
         this.editedName = name;
@@ -328,13 +395,24 @@ export class PresetManager extends LitElement {
             <div class="preset-manager" @click=${this.handlers.stopClickPropagation}>
                 <div class="header">
                     <span class="header__title">Layout Presets</span>
-                    <button
-                        class="save-button"
-                        @click=${() => this.openSaveDialog()}
-                        title="Save current layout as preset"
-                    >
-                        Save
-                    </button>
+                    <div class="header__actions">
+                        <button
+                            class="designer-toggle ${this.isDesignModeActive ? 'active' : ''}"
+                            @click=${() => this.toggleDesignMode()}
+                            ?disabled=${!this.isAdmin}
+                            title=${this.isAdmin ? 'Toggle designer mode to show panel drop layers' : 'Designer mode is available to admins only'}
+                        >
+                            <span class="designer-toggle__dot"></span>
+                            <span>Designer</span>
+                        </button>
+                        <button
+                            class="save-button"
+                            @click=${() => this.openSaveDialog()}
+                            title="Save current layout as preset"
+                        >
+                            Save
+                        </button>
+                    </div>
                 </div>
 
                 ${this.showSaveDialog ? html`

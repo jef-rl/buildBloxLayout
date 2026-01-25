@@ -15,6 +15,8 @@ import type { MainAreaPanelCount, Panel, UIState, View } from '@project/framewor
 // VIEW DEFINITIONS
 // ====================
 
+const PLACEHOLDER_COLOR = '#0b0b0b';
+
 /**
  * Main area views - Primary workspace views
  * Each view demonstrates a different aspect of the framework
@@ -26,7 +28,7 @@ const MAIN_VIEWS: View[] = [
     component: 'canvas-editor',
     data: { 
       label: 'Canvas Editor',
-      color: '#1e40af',
+      color: PLACEHOLDER_COLOR,
       description: 'Interactive design canvas with tools'
     }
   },
@@ -36,7 +38,7 @@ const MAIN_VIEWS: View[] = [
     component: 'code-editor',
     data: { 
       label: 'Code Editor',
-      color: '#7c3aed',
+      color: PLACEHOLDER_COLOR,
       description: 'Code editing with syntax highlighting'
     }
   },
@@ -46,7 +48,7 @@ const MAIN_VIEWS: View[] = [
     component: 'preview-panel',
     data: { 
       label: 'Live Preview',
-      color: '#0891b2',
+      color: PLACEHOLDER_COLOR,
       description: 'Real-time preview of changes'
     }
   },
@@ -56,7 +58,7 @@ const MAIN_VIEWS: View[] = [
     component: 'data-inspector',
     data: { 
       label: 'Data Inspector',
-      color: '#059669',
+      color: PLACEHOLDER_COLOR,
       description: 'Inspect and modify data structures'
     }
   },
@@ -66,7 +68,7 @@ const MAIN_VIEWS: View[] = [
     component: 'timeline-view',
     data: { 
       label: 'Timeline',
-      color: '#dc2626',
+      color: PLACEHOLDER_COLOR,
       description: 'History and version control'
     }
   }
@@ -82,7 +84,7 @@ const LEFT_PANEL_VIEWS: View[] = [
     component: 'project-explorer',
     data: {
       label: 'Project Explorer',
-      color: '#475569',
+      color: PLACEHOLDER_COLOR,
       description: 'File tree and project structure'
     }
   },
@@ -92,7 +94,7 @@ const LEFT_PANEL_VIEWS: View[] = [
     component: 'asset-library',
     data: {
       label: 'Asset Library',
-      color: '#64748b',
+      color: PLACEHOLDER_COLOR,
       description: 'Reusable assets and components'
     }
   }
@@ -105,7 +107,7 @@ const RIGHT_PANEL_VIEWS: View[] = [
     component: 'properties-panel',
     data: {
       label: 'Properties',
-      color: '#334155',
+      color: PLACEHOLDER_COLOR,
       description: 'Selected element properties'
     }
   },
@@ -115,7 +117,7 @@ const RIGHT_PANEL_VIEWS: View[] = [
     component: 'style-editor',
     data: {
       label: 'Style Editor',
-      color: '#1e293b',
+      color: PLACEHOLDER_COLOR,
       description: 'CSS and styling controls'
     }
   }
@@ -128,7 +130,7 @@ const BOTTOM_PANEL_VIEWS: View[] = [
     component: 'console-output',
     data: {
       label: 'Console',
-      color: '#0f172a',
+      color: PLACEHOLDER_COLOR,
       description: 'Logs and debugging output'
     }
   },
@@ -138,7 +140,7 @@ const BOTTOM_PANEL_VIEWS: View[] = [
     component: 'framework-logs',
     data: {
       label: 'Framework Logs',
-      color: '#0f172a',
+      color: PLACEHOLDER_COLOR,
       description: 'Framework log stream'
     }
   },
@@ -148,7 +150,7 @@ const BOTTOM_PANEL_VIEWS: View[] = [
     component: 'ai-assistant',
     data: {
       label: 'AI Assistant',
-      color: '#18181b',
+      color: PLACEHOLDER_COLOR,
       description: 'AI-powered help and generation'
     }
   }
@@ -164,7 +166,7 @@ const OVERLAY_VIEWS: View[] = [
     component: 'auth-view',
     data: {
       label: 'Authentication',
-      color: '#1e40af',
+      color: PLACEHOLDER_COLOR,
       description: 'Firebase authentication view'
     }
   },
@@ -174,7 +176,7 @@ const OVERLAY_VIEWS: View[] = [
     component: 'project-settings',
     data: {
       label: 'Project Settings',
-      color: '#1f2937',
+      color: PLACEHOLDER_COLOR,
       description: 'Configure project options'
     }
   },
@@ -184,7 +186,7 @@ const OVERLAY_VIEWS: View[] = [
     component: 'export-dialog',
     data: {
       label: 'Export',
-      color: '#111827',
+      color: PLACEHOLDER_COLOR,
       description: 'Export and publish options'
     }
   }

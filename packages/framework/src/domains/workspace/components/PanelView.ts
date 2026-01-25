@@ -5,18 +5,11 @@ import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { View } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
 
 export class PanelView extends LitElement {
     @property({ type: String }) panelId: string | null = null;
     @property({ type: String }) viewId: string | null = null;
     @property({ type: String }) viewInstanceId: string | null = null;
-<<<<<<< HEAD
-    @state() private isDragReady = false;
-=======
-    @property({ type: String }) panelId: string | null = null;
->>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
-
     private uiState: UiStateContextValue['state'] | null = null;
     private uiDispatch: UiStateContextValue['dispatch'] | null = null;
     private registryUnsubscribe: (() => void) | null = null;
@@ -39,15 +32,12 @@ export class PanelView extends LitElement {
             height: 100%;
             width: 100%;
             position: relative;
-<<<<<<< HEAD
-=======
         }
 
         .view-wrapper {
             position: relative;
             height: 100%;
             width: 100%;
->>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
         }
 
         .view-container {
@@ -59,24 +49,21 @@ export class PanelView extends LitElement {
 
         .drop-overlay {
             position: absolute;
-            inset: 0;
+            inset: 2px;
             z-index: 2;
             pointer-events: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px dashed transparent;
-            background: rgba(59, 130, 246, 0);
-            transition: background 0.2s ease, border-color 0.2s ease;
-        }
-
-        .drop-overlay.active {
-            pointer-events: auto;
+            border: 2px dotted #ffffff;
+            background: #ffffff11;
+            transition: background 0.2s ease, border-color 0.2s ease, inset 0.2s ease;
         }
 
         .drop-overlay.ready {
-            border-color: rgba(59, 130, 246, 0.9);
-            background: rgba(59, 130, 246, 0.15);
+            border-color: #ffffff;
+            background: #ffffff11;
+            pointer-events: auto;
         }
 
         .drop-overlay-label {
@@ -247,25 +234,6 @@ export class PanelView extends LitElement {
         }
     }
 
-<<<<<<< HEAD
-    private isDesignOverlayActive(): boolean {
-        return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
-    }
-
-    private extractViewId(event: DragEvent): string | null {
-        const dataTransfer = event.dataTransfer;
-        if (!dataTransfer) return null;
-        const viewId =
-            dataTransfer.getData('application/x-view-id') ||
-            dataTransfer.getData('text/plain');
-        return viewId || null;
-    }
-
-    private handleDragOver(event: DragEvent) {
-        if (!this.isDesignOverlayActive()) return;
-        const viewId = this.extractViewId(event);
-        if (!viewId) return;
-=======
     private isDropOverlayActive(): boolean {
         return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
     }
@@ -282,10 +250,6 @@ export class PanelView extends LitElement {
         if (!this.isDropOverlayActive()) {
             return;
         }
-        const viewId = this.resolveDraggedViewId(event);
-        if (!viewId) {
-            return;
-        }
         event.preventDefault();
         this.isDropReady = true;
     }
@@ -294,60 +258,10 @@ export class PanelView extends LitElement {
         if (!this.isDropOverlayActive()) {
             return;
         }
-        const viewId = this.resolveDraggedViewId(event);
-        if (!viewId) {
-            return;
-        }
->>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
         event.preventDefault();
         if (event.dataTransfer) {
             event.dataTransfer.dropEffect = 'move';
         }
-<<<<<<< HEAD
-        this.isDragReady = true;
-    }
-
-    private handleDragEnter(event: DragEvent) {
-        if (!this.isDesignOverlayActive()) return;
-        const viewId = this.extractViewId(event);
-        if (!viewId) return;
-        event.preventDefault();
-        this.isDragReady = true;
-    }
-
-    private handleDragLeave() {
-        this.isDragReady = false;
-    }
-
-    private handleDrop(event: DragEvent) {
-        if (!this.isDesignOverlayActive()) return;
-        event.preventDefault();
-        const viewId = this.extractViewId(event);
-        this.isDragReady = false;
-        if (!viewId || !this.panelId) return;
-        dispatchUiEvent(this, 'panels/assignView', { viewId, panelId: this.panelId });
-    }
-
-    private renderDesignOverlay() {
-        const active = this.isDesignOverlayActive();
-        const classes = [
-            'design-overlay',
-            active ? 'active' : '',
-            active && this.isDragReady ? 'ready' : '',
-        ]
-            .filter(Boolean)
-            .join(' ');
-
-        return html`
-            <div
-                class="${classes}"
-                @dragover=${(event: DragEvent) => this.handleDragOver(event)}
-                @dragenter=${(event: DragEvent) => this.handleDragEnter(event)}
-                @dragleave=${() => this.handleDragLeave()}
-                @drop=${(event: DragEvent) => this.handleDrop(event)}
-            ></div>
-        `;
-=======
         this.isDropReady = true;
     }
 
@@ -372,7 +286,6 @@ export class PanelView extends LitElement {
             return;
         }
         this.uiDispatch?.({ type: 'panels/assignView', viewId, panelId });
->>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
     }
 
     private renderFallback() {
@@ -403,23 +316,22 @@ export class PanelView extends LitElement {
         // The container is always rendered.
         // Fallback content is now determined purely within the render cycle.
         return html`
-<<<<<<< HEAD
-            <div class="view-container"></div>
-            ${this.renderDesignOverlay()}
-=======
-            <div class="view-wrapper">
+            <div
+                class="view-wrapper"
+                @dragenter=${this.handleDragEnter}
+                @dragover=${this.handleDragOver}
+                @dragleave=${this.handleDragLeave}
+                @drop=${this.handleDrop}
+            >
                 <div class="view-container"></div>
-                <div
-                    class="drop-overlay ${overlayActive ? 'active' : ''} ${this.isDropReady ? 'ready' : ''}"
-                    @dragenter=${this.handleDragEnter}
-                    @dragover=${this.handleDragOver}
-                    @dragleave=${this.handleDragLeave}
-                    @drop=${this.handleDrop}
-                >
-                    <span class="drop-overlay-label">Drop view to assign</span>
-                </div>
+                ${overlayActive ? html`
+                    <div
+                        class="drop-overlay ${this.isDropReady ? 'ready' : ''}"
+                    >
+                        <span class="drop-overlay-label">Drop view to assign</span>
+                    </div>
+                ` : nothing}
             </div>
->>>>>>> e13264946d8dccb88d8e6f4d1cc125c092fb5d8f
             ${this.renderFallback()}
         `;
     }

@@ -3,6 +3,7 @@ export * from './components/ViewControls';
 export * from './components/Workspace';
 export * from './components/PresetManager';
 export * from './components/FrameworkMenu';
+export * from './components/ViewRegistryPanel';
 
 // Layout handlers
 export * from './handlers/resize';

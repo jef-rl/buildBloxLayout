@@ -45,4 +45,12 @@ export const createPresetManagerHandlers = (
         }
         dispatch({ type: 'presets/rename', oldName, newName: newName.trim() });
     },
+
+    toggleDesignMode: (inDesign?: boolean) => {
+        const dispatch = getDispatch();
+        if (!dispatch) {
+            return;
+        }
+        dispatch({ type: 'layout/toggleInDesign', inDesign });
+    },
 });

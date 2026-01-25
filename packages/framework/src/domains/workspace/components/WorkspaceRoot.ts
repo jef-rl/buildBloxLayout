@@ -5,6 +5,7 @@ import { DockManager } from '../../dock/components/DockManager.js';
 import '../../layout/components/ControlToolbar.js';
 import '../../layout/components/PresetManager.js';
 import '../../layout/components/FrameworkMenu.js';
+import '../../layout/components/ViewRegistryPanel.js';
 import '../../dock/components/DockContainer.js';
 import './OverlayLayer.js';
 import './PanelView.js';
@@ -203,7 +204,6 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${leftPanel?.id ?? null}"
                             .viewId="${getPanelViewId(leftPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(leftPanel)}"
-                            .panelId="${leftPanel?.id ?? null}"
                         ></panel-view>
                     </div>
 
@@ -217,7 +217,6 @@ export class WorkspaceRoot extends LitElement {
                                     .panelId="${panel.id}"
                                     .viewId="${getPanelViewId(panel)}"
                                     .viewInstanceId="${getPanelViewInstanceId(panel)}"
-                                    .panelId="${panel?.id ?? null}"
                                 ></panel-view>
                             </div>
                         `)}
@@ -231,7 +230,6 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${rightPanel?.id ?? null}"
                             .viewId="${getPanelViewId(rightPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(rightPanel)}"
-                            .panelId="${rightPanel?.id ?? null}"
                         ></panel-view>
                     </div>
 
@@ -243,7 +241,6 @@ export class WorkspaceRoot extends LitElement {
                             .panelId="${bottomPanel?.id ?? null}"
                             .viewId="${getPanelViewId(bottomPanel)}"
                             .viewInstanceId="${getPanelViewInstanceId(bottomPanel)}"
-                            .panelId="${bottomPanel?.id ?? null}"
                         ></panel-view>
                     </div>
                 </div>
@@ -254,6 +251,10 @@ export class WorkspaceRoot extends LitElement {
 
                 <dock-container .manager=${this.dockManager} toolbarId="views">
                     <view-controls></view-controls>
+                </dock-container>
+
+                <dock-container .manager=${this.dockManager} toolbarId="registry" fallbackPosition="bottom-right">
+                    <view-registry-panel></view-registry-panel>
                 </dock-container>
 
                 <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center">
