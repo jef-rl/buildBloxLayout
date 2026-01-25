@@ -71,6 +71,7 @@ export interface FrameworkMenuConfig {
 export type LayoutState = {
   expansion: LayoutExpansion;
   overlayView: string | null;
+  inDesign: boolean;
   viewportWidthMode: ViewportWidthMode;
   mainAreaCount: MainAreaPanelCount;
   mainViewOrder: string[];

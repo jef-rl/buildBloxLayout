@@ -35,6 +35,7 @@ export class UiState {
         layout: {
             expansion: { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' },
             overlayView: null,
+            inDesign: false,
             viewportWidthMode: '1x',
             mainAreaCount: 1,
             mainViewOrder: [],
