@@ -310,6 +310,7 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       expanderBottom: 'Closed'  // Start closed
     },
     overlayView: null,  // No overlay initially
+    inDesign: false,    // Start in regular (non-design) mode
     viewportWidthMode: '3x',  // Show 3 main panels by default
     mainAreaCount: 3 as MainAreaPanelCount,
     mainViewOrder: MAIN_VIEWS.slice(0, 3).map(v => v.id)
