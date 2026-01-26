@@ -24,9 +24,9 @@
     workspace = {
       # Runs when a workspace is first created with this `dev.nix` file
       onCreate = {
-        npm-install = "npm ci --no-audit --prefer-offline --no-progress --timing";
+        npm-install = "npm install";
         # Open editors for the following files by default, if they exist:
-        default.openFiles = [ "index.html" "src/my-element.js" "src/my-element.ts" ];
+        default.openFiles = [ "index.html" "packages/app/src/main.ts" ];
       };
       # To run something each time the workspace is (re)started, use the `onStart` hook
     };
@@ -35,7 +35,7 @@
       enable = true;
       previews = {
         web = {
-          command = [ "npm" "run" "dev" ];
+          command = [ "npm" "run" "dev:app" "--" "--port" "$PORT" "--host" "0.0.0.0" ];
           manager = "web";
         };
       };
