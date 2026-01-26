@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p . && node ../../scripts/copy-package-dist.js framework"
   },
   "files": [
     "dist"

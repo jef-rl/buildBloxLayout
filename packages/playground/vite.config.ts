@@ -22,4 +22,8 @@ export default defineConfig({
       '@project/framework': path.resolve(__dirname, '../framework/src'),
     },
   },
+  build: {
+    outDir: path.resolve(__dirname, '../../dist/playground'),
+    emptyOutDir: false,
+  },
 });
