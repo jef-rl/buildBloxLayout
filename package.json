@@ -10,12 +10,11 @@
   ],
   "scripts": {
     "dev": "node index.js",
-    "dev:app": "npm run dev -w packages/app",
     "dev:playground": "npm run dev -w packages/playground",
-    "build": "tsc -b && npm run build -w packages/app && npm run build -w packages/playground",
+    "build": "npm run build:framework && npm run build:playground",
     "build:framework": "npm run build -w packages/framework",
-    "build:app": "npm run build -w packages/app",
-    "build:playground": "npm run build -w packages/playground"
+    "build:playground": "npm run build -w packages/playground",
+    "clean": "rm -rf dist"
   },
   "keywords": [],
   "author": "",
