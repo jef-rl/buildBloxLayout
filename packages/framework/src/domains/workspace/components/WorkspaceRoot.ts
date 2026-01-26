@@ -78,7 +78,7 @@ export class WorkspaceRoot extends LitElement {
             display: grid;
             grid-auto-flow: column;
             grid-auto-columns: var(--main-panel-width);
-            grid-template-columns: repeat(var(--main-panel-count), var(--main-panel-width));
+            grid-template-columns: repeat(auto-fit, var(--main-panel-width));
             height: 100%;
             min-width: 0;
             width: 100%;
@@ -149,11 +149,11 @@ export class WorkspaceRoot extends LitElement {
         const viewportMode = layout.viewportWidthMode ?? '1x';
         const viewportCount = Number.parseInt(viewportMode, 10);
         const viewportWidthMap: Record<string, string> = {
-            '1x': '100vw',
-            '2x': '50vw',
-            '3x': '33vw',
-            '4x': '25vw',
-            '5x': '20vw',
+            '1x': '100%',
+            '2x': '50%',
+            '3x': '33.333%',
+            '4x': '25%',
+            '5x': '20%',
         };
 
         // Use helper functions to determine panel state
@@ -174,7 +174,7 @@ export class WorkspaceRoot extends LitElement {
             1,
             5,
         );
-        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `calc(100% / ${visibleCount})`;
+        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / visibleCount}%`;
         const leftPanel = panels.find((panel) => panel.region === 'left');
         const rightPanel = panels.find((panel) => panel.region === 'right');
         const bottomPanel = panels.find((panel) => panel.region === 'bottom');
