@@ -391,8 +391,7 @@ export class Workspace extends LitElement {
         const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
         const currentState = this.uiState?.layout?.expansion?.[key] ?? 'Closed';
         const newState = toggleExpanderState(currentState);
-        // Dispatch with boolean for backward compatibility
-        this.expanderHandlers.setExpansion(side, newState === 'Opened');
+        this.expanderHandlers.setExpansion(side, newState);
     }
 
     toggleOverlay() {

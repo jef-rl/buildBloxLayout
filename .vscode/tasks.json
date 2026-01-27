@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev:playground",
+			"problemMatcher": [],
+			"label": "npm: dev:playground",
+			"detail": "npm run dev -w packages/playground"
+		}
+	]
+}

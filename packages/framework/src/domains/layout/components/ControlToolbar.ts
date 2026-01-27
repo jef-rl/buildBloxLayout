@@ -5,11 +5,12 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import { createControlToolbarHandlers } from '../handlers/control-toolbar.handlers';
-import { toggleExpanderState, isExpanderButtonVisible, isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
+import { toggleExpanderState, isExpanderButtonVisible, isExpanderPanelOpen, ExpanderState } from '../../../utils/expansion-helpers.js';
 import type { LayoutExpansion } from '../../../types/state.js';
 
 export class ControlToolbar extends LitElement {
     @property({ type: String }) orientation = 'row';
+    @property({ state: true }) private activeControl: 'left' | 'right' | 'bottom' | null = null;
 
     private uiState: UiStateContextValue['state'] | null = null;
     private uiDispatch: UiStateContextValue['dispatch'] | null = null;
@@ -51,6 +52,7 @@ export class ControlToolbar extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .icon-button:hover {
@@ -121,14 +123,32 @@ export class ControlToolbar extends LitElement {
             height: 1px;
             margin: 4px 0;
         }
+        
+        .control-panel {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            background-color: #2d3748;
+            border-radius: 6px;
+            padding: 4px;
+            z-index: 10;
+            gap: 4px;
+        }
     `;
 
-    toggleSide(side: 'left' | 'right' | 'bottom') {
-        const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
-        const currentState = this.uiState?.layout?.expansion?.[key] ?? 'Closed';
-        const newState = toggleExpanderState(currentState);
-        // Dispatch with boolean for backward compatibility
-        this.handlers.setExpansion(side, newState === 'Opened');
+    private toggleControlPanel(side: 'left' | 'right' | 'bottom' | null) {
+        if (this.activeControl === side) {
+            this.activeControl = null;
+        } else {
+            this.activeControl = side;
+        }
+    }
+
+    private handleStateSelection(side: 'left' | 'right' | 'bottom', state: ExpanderState) {
+        this.handlers.setExpansion(side, state);
+        this.activeControl = null;
     }
 
     toggleOverlay() {
@@ -149,6 +169,50 @@ export class ControlToolbar extends LitElement {
             : requestedMode;
 
         this.handlers.setViewport(actualMode);
+    }
+    
+    renderControlPanel(side: 'left' | 'right' | 'bottom') {
+        const states: ExpanderState[] = ['Collapsed', 'Closed', 'Opened', 'Expanded'];
+        return html`
+            <div class="control-panel">
+                ${states.map(state => html`
+                    <button class="icon-button" @click=${() => this.handleStateSelection(side, state)} title=${state}>
+                        ${this.renderStateIcon(state, side)}
+                    </button>
+                `)}
+            </div>
+        `;
+    }
+
+    private _renderBaseIcon(side: 'left' | 'right' | 'bottom', isOpen: boolean) {
+        const greyRect = html`<rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />`;
+        let sideRect = nothing;
+
+        if (isOpen) {
+            if (side === 'left') sideRect = html`<rect x="3" y="3" width="5" height="18" fill="#0284c7" stroke="none" />`;
+            if (side === 'right') sideRect = html`<rect x="16" y="3" width="5" height="18" fill="#0284c7" stroke="none" />`;
+            if (side === 'bottom') sideRect = html`<rect x="3" y="18" width="18" height="3" fill="#0284c7" stroke="none" />`;
+        }
+
+        return html`${greyRect}${sideRect}`;
+    }
+
+    renderStateIcon(state: ExpanderState, side: 'left' | 'right' | 'bottom') {
+        const isOpen = state === 'Opened' || state === 'Expanded';
+        const isLocked = state === 'Collapsed' || state === 'Expanded';
+
+        const lockIcon = isLocked
+            ? html`<path d="M400-333q-14.45 0-23.73-9.27Q367-351.55 367-366v-120q0-14.45 11.5-23.98 11.5-9.52 28.5-9.52V-566q0-30.03 21.49-51.76Q449.98-639.5 480-639.5t51.76 21.74Q553.5-596.03 553.5-566v46.5q16.5 0 28.25 9.52 11.75 9.53 11.75 23.98v120q0 14.45-9.53 23.73Q574.45-333 560-333H400Zm33.5-186.5H527v-46.11q0-19.89-13.75-33.64T480-613q-19.5 0-33 13.75t-13.5 33.64v46.11Z"/>`
+            : nothing;
+
+        return html`
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                ${this._renderBaseIcon(side, isOpen)}
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+                    ${lockIcon}
+                </svg>
+            </svg>
+        `;
     }
 
     render() {
@@ -195,43 +259,49 @@ export class ControlToolbar extends LitElement {
             <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
                 <!-- Expander Controls Section -->
                 ${leftVisible ? html`
-                    <button class="icon-button ${leftExpanded ? 'active' : ''}" @click=${() => this.toggleSide('left')} title="Toggle Left Panel">
-                        <!-- Left Sidebar Icon (Left Block) -->
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="3" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
-                           ${leftExpanded
-                             ? html`<path d="M12 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Left
-                             : html`<path d="M10 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Right
-                           }
-                        </svg>
-                    </button>
+                    <div style="position: relative;">
+                        <button class="icon-button ${leftExpanded ? 'active' : ''}" @click=${() => this.toggleControlPanel('left')} title="Toggle Left Panel">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
+                               <rect x="3" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
+                               ${leftExpanded
+                                 ? html`<path d="M12 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                                 : html`<path d="M10 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                               }
+                            </svg>
+                        </button>
+                        ${this.activeControl === 'left' ? this.renderControlPanel('left') : nothing}
+                    </div>
                 ` : nothing}
                 ${bottomVisible ? html`
-                    <button class="icon-button ${bottomExpanded ? 'active' : ''}" @click=${() => this.toggleSide('bottom')} title="Toggle Bottom Panel">
-                        <!-- Bottom Panel Icon (Bottom Block) -->
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="3" y="18" width="18" height="3" fill="#0284c7" stroke="none" />
-                           ${bottomExpanded
-                             ? html`<path d="M12 12l0 3m0 0l-1.5 -1.5m1.5 1.5l1.5 -1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Down
-                             : html`<path d="M12 15l0 -3m0 0l-1.5 1.5m1.5 -1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Up
-                           }
-                        </svg>
-                    </button>
+                    <div style="position: relative;">
+                        <button class="icon-button ${bottomExpanded ? 'active' : ''}" @click=${() => this.toggleControlPanel('bottom')} title="Toggle Bottom Panel">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
+                               <rect x="3" y="18" width="18" height="3" fill="#0284c7" stroke="none" />
+                               ${bottomExpanded
+                                 ? html`<path d="M12 12l0 3m0 0l-1.5 -1.5m1.5 1.5l1.5 -1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                                 : html`<path d="M12 15l0 -3m0 0l-1.5 1.5m1.5 -1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                               }
+                            </svg>
+                        </button>
+                        ${this.activeControl === 'bottom' ? this.renderControlPanel('bottom') : nothing}
+                    </div>
                 ` : nothing}
                 ${rightVisible ? html`
-                    <button class="icon-button ${rightExpanded ? 'active' : ''}" @click=${() => this.toggleSide('right')} title="Toggle Right Panel">
-                        <!-- Right Sidebar Icon (Right Block) -->
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="16" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
-                           ${rightExpanded
-                             ? html`<path d="M12 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Right
-                             : html`<path d="M14 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` // Arrow Left
-                           }
-                        </svg>
-                    </button>
+                    <div style="position: relative;">
+                        <button class="icon-button ${rightExpanded ? 'active' : ''}" @click=${() => this.toggleControlPanel('right')} title="Toggle Right Panel">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
+                               <rect x="16" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
+                               ${rightExpanded
+                                 ? html`<path d="M12 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                                 : html`<path d="M14 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
+                               }
+                            </svg>
+                        </button>
+                        ${this.activeControl === 'right' ? this.renderControlPanel('right') : nothing}
+                    </div>
                 ` : nothing}
                 <button class="icon-button ${overlayOpen ? 'active' : ''}" @click=${() => this.toggleOverlay()} title="Toggle Overlay (Test)">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

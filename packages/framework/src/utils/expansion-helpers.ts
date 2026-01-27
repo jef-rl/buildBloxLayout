@@ -10,14 +10,13 @@ export type LegacyLayoutExpansion = {
 
 /**
  * Check if the expander button should be visible for the given state.
- * Buttons are visible for Closed and Opened states only.
- * Collapsed and Expanded states hide the button.
+ * Buttons are visible for all states.
  *
  * @param state - The current expander state
  * @returns true if button should be visible
  */
 export function isExpanderButtonVisible(state: ExpanderState): boolean {
-	return state === 'Closed' || state === 'Opened';
+	return true;
 }
 
 /**
