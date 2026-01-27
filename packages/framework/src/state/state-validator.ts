@@ -1,4 +1,5 @@
 import type { UIState, View, Panel } from '../types';
+import { ExpanderState } from '../utils/expansion-helpers';
 
 /**
  * A collection of validation functions to verify the integrity of the UI state.
@@ -81,6 +82,25 @@ const validators: ((state: UIState) => string[])[] = [
         });
         return errors;
     },
+
+    // Validates the layout expansion states.
+    (state) => {
+        const errors: string[] = [];
+        const validStates: ExpanderState[] = ['Collapsed', 'Closed', 'Opened', 'Expanded'];
+        const expansion = state.layout?.expansion;
+        if (!expansion) return ['state.layout.expansion is missing.'];
+
+        if (!validStates.includes(expansion.expanderLeft)) {
+            errors.push(`Invalid expanderLeft state: ${expansion.expanderLeft}`);
+        }
+        if (!validStates.includes(expansion.expanderRight)) {
+            errors.push(`Invalid expanderRight state: ${expansion.expanderRight}`);
+        }
+        if (!validStates.includes(expansion.expanderBottom)) {
+            errors.push(`Invalid expanderBottom state: ${expansion.expanderBottom}`);
+        }
+        return errors;
+    }
 ];
 
 /**
