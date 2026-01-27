@@ -47,37 +47,6 @@ export class PanelView extends LitElement {
             z-index: 1;
         }
 
-        .drop-overlay {
-            position: absolute;
-            inset: 2px;
-            z-index: 2;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dotted #ffffff;
-            background: #ffffff11;
-            transition: background 0.2s ease, border-color 0.2s ease, inset 0.2s ease;
-        }
-
-        .drop-overlay.ready {
-            border-color: #ffffff;
-            background: #ffffff11;
-            pointer-events: auto;
-        }
-
-        .drop-overlay-label {
-            color: #93c5fd;
-            font-size: 0.85rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .drop-overlay.ready .drop-overlay-label {
-            opacity: 1;
-        }
-
         .fallback {
             display: grid;
             place-items: center;
@@ -235,7 +204,11 @@ export class PanelView extends LitElement {
     }
 
     private isDropOverlayActive(): boolean {
-        return Boolean(this.uiState?.layout?.inDesign && this.uiState?.auth?.isAdmin);
+        return Boolean(
+            this.uiState?.layout?.inDesign &&
+            this.uiState?.auth?.isAdmin &&
+            this.uiState?.layout?.draggedViewId
+        );
     }
 
     private resolveDraggedViewId(event: DragEvent): string | null {
@@ -313,8 +286,6 @@ export class PanelView extends LitElement {
 
     render() {
         const overlayActive = this.isDropOverlayActive();
-        // The container is always rendered.
-        // Fallback content is now determined purely within the render cycle.
         return html`
             <div
                 class="view-wrapper"
@@ -324,13 +295,9 @@ export class PanelView extends LitElement {
                 @drop=${this.handleDrop}
             >
                 <div class="view-container"></div>
-                ${overlayActive ? html`
-                    <div
-                        class="drop-overlay ${this.isDropReady ? 'ready' : ''}"
-                    >
-                        <span class="drop-overlay-label">Drop view to assign</span>
-                    </div>
-                ` : nothing}
+                <div
+                    class="design-overlay ${overlayActive ? 'active' : ''} ${this.isDropReady ? 'ready' : ''}"
+                ></div>
             </div>
             ${this.renderFallback()}
         `;

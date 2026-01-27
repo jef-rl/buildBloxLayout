@@ -29,7 +29,8 @@ export const hybridPersistence = {
   },
 
   saveAll(presets: LayoutPresets): void {
-    presetPersistence.saveAll(presets);
+    // Skip sync callback because we handle Firestore sync explicitly below
+    presetPersistence.saveAll(presets, { skipSync: true });
     if (isConfigured) {
       firestorePersistence.saveAll(presets).catch((error) => {
         console.warn('Background Firestore sync failed:', error);
@@ -43,7 +44,8 @@ export const hybridPersistence = {
 
   savePreset(name: string, preset: LayoutPreset): void {
     console.log('[HybridPersistence] savePreset called:', { name, isConfigured });
-    presetPersistence.savePreset(name, preset);
+    // Skip sync callback because we handle Firestore sync explicitly below
+    presetPersistence.savePreset(name, preset, { skipSync: true });
     if (isConfigured) {
       console.log('[HybridPersistence] Syncing to Firestore...');
       firestorePersistence.savePreset(name, preset).catch((error) => {
@@ -55,7 +57,8 @@ export const hybridPersistence = {
   },
 
   deletePreset(name: string): void {
-    presetPersistence.deletePreset(name);
+    // Skip sync callback because we handle Firestore sync explicitly below
+    presetPersistence.deletePreset(name, { skipSync: true });
     if (isConfigured) {
       firestorePersistence.deletePreset(name).catch((error) => {
         console.warn('Background Firestore delete failed:', error);
@@ -69,7 +72,8 @@ export const hybridPersistence = {
     if (preset) {
       delete current[oldName];
       current[newName] = { ...preset, name: newName };
-      presetPersistence.saveAll(current);
+      // Skip sync callback because we handle Firestore sync explicitly below
+      presetPersistence.saveAll(current, { skipSync: true });
 
       if (isConfigured) {
         firestorePersistence.renamePreset(oldName, newName).catch((error) => {
@@ -126,7 +130,8 @@ export const hybridPersistence = {
     }
 
     const merged: LayoutPresets = { ...firestorePresets, ...localPresets };
-    presetPersistence.saveAll(merged);
+    // Skip sync because this is merging FROM Firestore, we don't want to echo it back immediately
+    presetPersistence.saveAll(merged, { skipSync: true });
 
     return merged;
   },
@@ -149,7 +154,8 @@ export const hybridPersistence = {
         localCount: Object.keys(localPresets).length,
         mergedCount: Object.keys(merged).length,
       });
-      presetPersistence.saveAll(merged);
+      // Skip sync because this is coming FROM Firestore
+      presetPersistence.saveAll(merged, { skipSync: true });
       callback(merged);
     });
   },

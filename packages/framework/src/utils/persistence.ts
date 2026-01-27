@@ -18,8 +18,12 @@ export const setFirestoreSyncCallback = (
   firestoreSyncCallback = callback;
 };
 
+export interface PersistenceOptions {
+  skipSync?: boolean;
+}
+
 export const presetPersistence = {
-  saveAll: (presets: LayoutPresets): void => {
+  saveAll: (presets: LayoutPresets, options?: PersistenceOptions): void => {
     try {
       console.log('[Persistence] saveAll called with presets:', Object.keys(presets));
       const data: PersistedPresets = {
@@ -28,7 +32,9 @@ export const presetPersistence = {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       console.log('[Persistence] Saved to localStorage with key:', STORAGE_KEY);
-      firestoreSyncCallback?.(presets);
+      if (!options?.skipSync) {
+        firestoreSyncCallback?.(presets);
+      }
     } catch (error) {
       console.warn('Failed to persist layout presets:', error);
     }
@@ -72,18 +78,18 @@ export const presetPersistence = {
     }
   },
 
-  savePreset: (name: string, preset: LayoutPreset): void => {
+  savePreset: (name: string, preset: LayoutPreset, options?: PersistenceOptions): void => {
     console.log('[Persistence] savePreset called:', { name, preset });
     const current = presetPersistence.loadAll() ?? {};
     current[name] = preset;
-    presetPersistence.saveAll(current);
+    presetPersistence.saveAll(current, options);
     console.log('[Persistence] savePreset completed, total presets:', Object.keys(current).length);
   },
 
-  deletePreset: (name: string): void => {
+  deletePreset: (name: string, options?: PersistenceOptions): void => {
     const current = presetPersistence.loadAll() ?? {};
     delete current[name];
-    presetPersistence.saveAll(current);
+    presetPersistence.saveAll(current, options);
   },
 
   clear: (): void => {

@@ -1,6 +1,7 @@
 
 import type { Panel, PanelContainer, PanelState, UIState, View } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
+import { ReducerHandler } from '../../../core/registry/handler-registry';
 
 const MIN_MAIN_PANELS = 1;
 const MAX_MAIN_PANELS = 5;
@@ -150,4 +151,25 @@ const assignViewToPanel = (
             mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
         },
     };
+};
+
+// === Handler Implementation ===
+
+const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
+    const payload = action.payload as { panelId: string; viewId: string; data?: unknown } | undefined;
+    if (!payload || !payload.panelId || !payload.viewId) {
+        return { state, followUps: [] };
+    }
+
+    const panel = state.panels.find((p) => p.id === payload.panelId);
+    if (!panel) {
+        return { state, followUps: [] };
+    }
+
+    const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data);
+    return { state: nextState, followUps: [] };
+};
+
+export const workspacePanelHandlers = {
+    'panels/assignView': assignViewHandler,
 };

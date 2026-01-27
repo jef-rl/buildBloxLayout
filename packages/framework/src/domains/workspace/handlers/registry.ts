@@ -2,7 +2,8 @@ import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutE
 import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
-import { applyMainViewOrder, deriveMainViewOrderFromPanels } from './workspace-panels.handlers';
+import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
+import { dragHandlers } from '../../layout/handlers/drag.handlers';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
@@ -83,6 +84,20 @@ const normalizeLayoutState = (state: UIState): UIState => {
       presets: layout.presets ?? {},
       activePreset: layout.activePreset ?? null,
     },
+  };
+};
+
+// Wrapper helper to convert UIState handlers to FrameworkContextState handlers
+const wrapHandler = (handler: ReducerHandler<UIState>): ReducerHandler<FrameworkContextState> => {
+  return (context, action) => {
+    const result = handler(context.state, action);
+    return {
+      state: {
+        ...context,
+        state: result.state,
+      },
+      followUps: result.followUps,
+    };
   };
 };
 
@@ -243,61 +258,6 @@ const handleSelectPanel: ReducerHandler<FrameworkContextState> = (context, actio
             ...context.state.panelState.data,
             targetPanelId: panelId,
           },
-        },
-      },
-    },
-    followUps: toFollowUps(payload),
-  };
-};
-
-const handleAssignView: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload;
-  const viewId = payload.viewId as string | undefined;
-  const targetPanelId =
-    (payload.panelId as string | undefined) ??
-    (context.state.panelState.data?.targetPanelId as string | undefined);
-  const panels = context.state.panels ?? [];
-  const fallbackPanel = panels.find((panel) => panel.region === 'main') ?? panels[0];
-  const panelId = targetPanelId ?? fallbackPanel?.id;
-  const panel = panels.find((item) => item.id === panelId);
-
-  if (!panel || !viewId) {
-    return { state: context, followUps: toFollowUps(payload) };
-  }
-
-  const nextCounter = (context.state.viewInstanceCounter ?? 0) + 1;
-  const instanceId = `${viewId}-${nextCounter}`;
-  const view = viewRegistry.createView(viewId, undefined, instanceId);
-  if (!view) {
-    return { state: context, followUps: toFollowUps(payload) };
-  }
-
-  const nextPanels = panels.map((item) =>
-    item.id === panel.id
-      ? {
-          ...item,
-          view,
-          viewId,
-          activeViewId: viewId,
-        }
-      : item,
-  );
-  const nextViews = context.state.views
-    .filter((existing) => existing.id !== view.id)
-    .concat(view);
-
-  return {
-    state: {
-      ...context,
-      state: {
-        ...context.state,
-        panels: nextPanels,
-        views: nextViews,
-        activeView: view.id,
-        viewInstanceCounter: nextCounter,
-        layout: {
-          ...context.state.layout,
-          mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
         },
       },
     },
@@ -847,7 +807,10 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'layout/setMainAreaCount', handleMainAreaCount);
   registerHandler(registry, 'layout/toggleInDesign', handleToggleInDesign);
   registerHandler(registry, 'panels/selectPanel', handleSelectPanel);
-  registerHandler(registry, 'panels/assignView', handleAssignView);
+  
+  // Use the robust handler from workspace-panels.handlers
+  registerHandler(registry, 'panels/assignView', wrapHandler(workspacePanelHandlers['panels/assignView']));
+  
   registerHandler(registry, 'panels/setMainViewOrder', handleSetMainViewOrder);
   registerHandler(registry, 'panels/togglePanel', handleTogglePanel);
   registerHandler(registry, 'panels/setScopeMode', handleSetScopeMode);
@@ -855,6 +818,11 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, 'auth/setUser', handleAuthSetUser);
   registerHandler(registry, 'auth/logout', handleAuthLogout);
   registerHandler(registry, 'auth/setUi', handleAuthSetUi);
+
+  // Register Drag Handlers
+  Object.entries(dragHandlers).forEach(([type, handler]) => {
+      registerHandler(registry, type, wrapHandler(handler));
+  });
 
   // Preset handlers
   registerHandler(registry, 'presets/save', handlePresetSave);

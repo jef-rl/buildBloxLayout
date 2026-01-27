@@ -78,6 +78,7 @@ export type LayoutState = {
   presets?: LayoutPresets;
   activePreset?: string | null;
   frameworkMenu?: FrameworkMenuConfig;
+  draggedViewId?: string | null;
 };
 
 export type RegisteredViewSummary = {
