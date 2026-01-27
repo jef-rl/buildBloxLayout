@@ -493,24 +493,43 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
     return { state: context, followUps: toFollowUps(payload) };
   }
 
+  // === CLEAN SLATE: CLEAR ALL PANEL ASSIGNMENTS BEFORE LOADING PRESET ===
+  // This ensures we don't have conflicts with the 1:1 view-to-panel constraint
+  // but we keep the view instances alive in the background.
+  const clearedPanels = normalizedState.panels.map(p => ({
+      ...p,
+      view: null,
+      viewId: undefined,
+      activeViewId: undefined
+  }));
+
+  const intermediateState = {
+      ...normalizedState,
+      panels: clearedPanels,
+      layout: {
+          ...normalizedState.layout,
+          mainViewOrder: []
+      }
+  };
+
   // Build follow-up actions for view assignments
   const followUps: HandlerAction[] = [...toFollowUps(payload)];
 
   // Assign views to side panels if specified
   if (preset.leftViewId) {
-    const leftPanel = normalizedState.panels.find(p => p.region === 'left');
+    const leftPanel = clearedPanels.find(p => p.region === 'left');
     if (leftPanel) {
       followUps.push({ type: 'panels/assignView', payload: { viewId: preset.leftViewId, panelId: leftPanel.id } });
     }
   }
   if (preset.rightViewId) {
-    const rightPanel = normalizedState.panels.find(p => p.region === 'right');
+    const rightPanel = clearedPanels.find(p => p.region === 'right');
     if (rightPanel) {
       followUps.push({ type: 'panels/assignView', payload: { viewId: preset.rightViewId, panelId: rightPanel.id } });
     }
   }
   if (preset.bottomViewId) {
-    const bottomPanel = normalizedState.panels.find(p => p.region === 'bottom');
+    const bottomPanel = clearedPanels.find(p => p.region === 'bottom');
     if (bottomPanel) {
       followUps.push({ type: 'panels/assignView', payload: { viewId: preset.bottomViewId, panelId: bottomPanel.id } });
     }
@@ -532,9 +551,9 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
     state: {
       ...context,
       state: {
-        ...normalizedState,
+        ...intermediateState,
         layout: {
-          ...normalizedState.layout,
+          ...intermediateState.layout,
           expansion,
           viewportWidthMode: preset.viewportWidthMode,
           mainAreaCount: preset.mainAreaCount,

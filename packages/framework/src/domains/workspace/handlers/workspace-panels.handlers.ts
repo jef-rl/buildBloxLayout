@@ -45,13 +45,20 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
     const capacity = Math.min(MAX_MAIN_PANELS, Math.max(MIN_MAIN_PANELS, Number(state.layout.mainAreaCount ?? 1)));
     const uniqueOrder = [...new Set(viewOrder)];
     const effectiveOrder = uniqueOrder.slice(0, capacity);
+    const viewIdsInMainArea = new Set(effectiveOrder);
 
     const mainPanels = state.panels.filter((panel) => panel.region === 'main');
     const mainPanelIds = mainPanels.map((panel) => panel.id);
 
     let viewInstanceCounter = Number.isFinite(state.viewInstanceCounter) ? state.viewInstanceCounter : 0;
     const nextPanels = state.panels.map((panel) => {
-        if (panel.region !== 'main') return panel;
+        if (panel.region !== 'main') {
+            // Enforce 1:1 rule: if this view is now in the main area, remove it from side panels
+            if (panel.viewId && viewIdsInMainArea.has(panel.viewId)) {
+                return { ...panel, view: null, viewId: undefined, activeViewId: undefined };
+            }
+            return panel;
+        }
 
         const slotIndex = mainPanelIds.indexOf(panel.id);
         const viewDefId = effectiveOrder[slotIndex];
