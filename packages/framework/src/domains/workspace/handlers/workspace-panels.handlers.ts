@@ -136,7 +136,23 @@ const assignViewToPanel = (
         activeViewId: viewDefId,
     };
 
-    const nextPanels = state.panels.map(p => p.id === panel.id ? nextPanel : p);
+    // Unassign this view from any other panels to ensure 1:1 relationship
+    // This prevents "ghost" views where multiple panels think they own the same view instance
+    const nextPanels = state.panels.map(p => {
+        if (p.id === panel.id) {
+            return nextPanel;
+        }
+        // If this panel was holding the view we just assigned, clear it
+        if (p.viewId === viewDefId || p.activeViewId === viewDefId || (p.view && p.view.id === viewInstance?.id)) {
+            return {
+                ...p,
+                view: null,
+                viewId: undefined,
+                activeViewId: undefined
+            };
+        }
+        return p;
+    });
 
     const otherViews = state.views.filter((v) => v.id !== viewInstance!.id);
     const nextViews = viewNeedsUpdate ? [...otherViews, viewInstance] : state.views;
