@@ -97,7 +97,7 @@ export class ControlToolbar extends LitElement {
             color: #ffffff;
         }
 
-        .viewport-button:disabled {
+        .viewport-button.disabled {
             color: #4b5563;
             cursor: not-allowed;
             opacity: 0.6;
@@ -184,34 +184,23 @@ export class ControlToolbar extends LitElement {
         `;
     }
 
-    private _renderBaseIcon(side: 'left' | 'right' | 'bottom', isOpen: boolean) {
-        const greyRect = html`<rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />`;
-        let sideRect = nothing;
-
-        if (isOpen) {
-            if (side === 'left') sideRect = html`<rect x="3" y="3" width="5" height="18" fill="#0284c7" stroke="none" />`;
-            if (side === 'right') sideRect = html`<rect x="16" y="3" width="5" height="18" fill="#0284c7" stroke="none" />`;
-            if (side === 'bottom') sideRect = html`<rect x="3" y="18" width="18" height="3" fill="#0284c7" stroke="none" />`;
-        }
-
-        return html`${greyRect}${sideRect}`;
-    }
-
     renderStateIcon(state: ExpanderState, side: 'left' | 'right' | 'bottom') {
-        const isOpen = state === 'Opened' || state === 'Expanded';
-        const isLocked = state === 'Collapsed' || state === 'Expanded';
+        const baseUrl = 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons';
+        
+        // Map internal state to filename segments
+        // Collapsed -> hidden
+        // Closed -> closed
+        // Opened -> open
+        // Expanded -> expanded
+        let stateSegment = state.toLowerCase();
+        if (state === 'Collapsed') stateSegment = 'hidden';
+        if (state === 'Opened') stateSegment = 'open';
 
-        const lockIcon = isLocked
-            ? html`<path d="M400-333q-14.45 0-23.73-9.27Q367-351.55 367-366v-120q0-14.45 11.5-23.98 11.5-9.52 28.5-9.52V-566q0-30.03 21.49-51.76Q449.98-639.5 480-639.5t51.76 21.74Q553.5-596.03 553.5-566v46.5q16.5 0 28.25 9.52 11.75 9.53 11.75 23.98v120q0 14.45-9.53 23.73Q574.45-333 560-333H400Zm33.5-186.5H527v-46.11q0-19.89-13.75-33.64T480-613q-19.5 0-33 13.75t-13.5 33.64v46.11Z"/>`
-            : nothing;
+        const filename = `expander-${side}-${stateSegment}-48.png`;
+        const iconUrl = `${baseUrl}/${filename}`;
 
         return html`
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                ${this._renderBaseIcon(side, isOpen)}
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
-                    ${lockIcon}
-                </svg>
-            </svg>
+            <img class="icon" src="${iconUrl}" alt="${side} ${state}" />
         `;
     }
 
