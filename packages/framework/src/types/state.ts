@@ -21,6 +21,9 @@ export type LayoutPreset = {
   viewportWidthMode: ViewportWidthMode;
   expansion: LayoutExpansion;
   mainViewOrder: string[];
+  leftViewOrder?: string[];
+  rightViewOrder?: string[];
+  bottomViewOrder?: string[];
   leftViewId?: string | null;
   rightViewId?: string | null;
   bottomViewId?: string | null;
@@ -30,6 +33,7 @@ export type LayoutPreset = {
     bottom?: PanelSizeConfig;
   };
   isSystemPreset?: boolean;
+  viewInstances?: Record<string, ViewInstance>;
 };
 
 export type LayoutPresets = Record<string, LayoutPreset>;
@@ -75,6 +79,9 @@ export type LayoutState = {
   viewportWidthMode: ViewportWidthMode;
   mainAreaCount: MainAreaPanelCount;
   mainViewOrder: string[];
+  leftViewOrder: string[];
+  rightViewOrder: string[];
+  bottomViewOrder: string[];
   presets?: LayoutPresets;
   activePreset?: string | null;
   frameworkMenu?: FrameworkMenuConfig;
@@ -84,7 +91,7 @@ export type LayoutState = {
 export type RegisteredViewSummary = {
   id: string;
   label: string;
-};
+  };
 
 export type ViewTokenState = {
   registered: RegisteredViewSummary[];

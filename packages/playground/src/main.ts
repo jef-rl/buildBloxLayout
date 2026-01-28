@@ -44,7 +44,7 @@ setFrameworkLogger({
 const authConfig = {
   enabled: true,                     // Enable auth features
   authViewId: 'firebase-auth',       // ID of the auth overlay view
-  autoShowOnStartup: true,           // Show login on startup if not logged in
+  autoShowOnStartup: false,          // Disable auto-show to prevent annoyance if not configured
   requireAuthForActions: [],         // Actions that require authentication
   adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
     .split(',')

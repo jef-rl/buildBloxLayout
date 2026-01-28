@@ -6,7 +6,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext, dispatchUiEvent } from '../../../index';
+import { uiStateContext } from '../../../state/context';
+import { dispatchUiEvent } from '../../../utils/dispatcher';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { AuthMode, AuthConfig } from '../../../types/auth';
 
@@ -204,6 +205,11 @@ export class AuthView extends LitElement {
       this.requestUpdate();
     },
   });
+
+  connectedCallback() {
+    super.connectedCallback();
+    console.log('[AuthView] connectedCallback executed');
+  }
 
   private get isAuthenticated(): boolean {
     return this.uiState?.auth?.isLoggedIn ?? false;

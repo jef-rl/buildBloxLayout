@@ -82,6 +82,9 @@ const normalizeLayoutState = (state: UIState): UIState => {
       viewportWidthMode: layout.viewportWidthMode ?? '1x',
       mainAreaCount: layout.mainAreaCount ?? 1,
       mainViewOrder: Array.isArray(layout.mainViewOrder) ? layout.mainViewOrder : [],
+      leftViewOrder: Array.isArray(layout.leftViewOrder) ? layout.leftViewOrder : [],
+      rightViewOrder: Array.isArray(layout.rightViewOrder) ? layout.rightViewOrder : [],
+      bottomViewOrder: Array.isArray(layout.bottomViewOrder) ? layout.bottomViewOrder : [],
       presets: layout.presets ?? {},
       activePreset: layout.activePreset ?? null,
     },
@@ -438,15 +441,45 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
   const rightPanel = panels.find(p => p.region === 'right');
   const bottomPanel = panels.find(p => p.region === 'bottom');
 
+  // Filter instances logic
+  const allUsedViewIds = new Set<string>();
+  
+  // From Main
+  normalizedState.layout.mainViewOrder.forEach(id => allUsedViewIds.add(id));
+  
+  // From Side Panels (New Orders)
+  normalizedState.layout.leftViewOrder.forEach(id => allUsedViewIds.add(id));
+  normalizedState.layout.rightViewOrder.forEach(id => allUsedViewIds.add(id));
+  normalizedState.layout.bottomViewOrder.forEach(id => allUsedViewIds.add(id));
+  
+  // From active IDs (just in case they aren't in order list, though they should be)
+  panels.forEach(p => {
+      if (p.viewId) allUsedViewIds.add(p.viewId);
+      if (p.activeViewId) allUsedViewIds.add(p.activeViewId);
+  });
+
+  const capturedInstances: Record<string, any> = {};
+  const currentInstances = normalizedState.viewInstances || {};
+  
+  allUsedViewIds.forEach(id => {
+      if (currentInstances[id]) {
+          capturedInstances[id] = currentInstances[id];
+      }
+  });
+
   const preset: LayoutPreset = {
     name,
     mainAreaCount: normalizedState.layout.mainAreaCount,
     viewportWidthMode: normalizedState.layout.viewportWidthMode,
     expansion: { ...normalizedState.layout.expansion },
     mainViewOrder: [...normalizedState.layout.mainViewOrder],
+    leftViewOrder: [...normalizedState.layout.leftViewOrder],
+    rightViewOrder: [...normalizedState.layout.rightViewOrder],
+    bottomViewOrder: [...normalizedState.layout.bottomViewOrder],
     leftViewId: leftPanel?.viewId ?? leftPanel?.activeViewId ?? null,
     rightViewId: rightPanel?.viewId ?? rightPanel?.activeViewId ?? null,
     bottomViewId: bottomPanel?.viewId ?? bottomPanel?.activeViewId ?? null,
+    viewInstances: capturedInstances,
   };
 
   const nextPresets = {
@@ -504,9 +537,13 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
       activeViewId: undefined
   }));
 
+  // Restore Instances
+  const restoredInstances = { ...(normalizedState.viewInstances || {}), ...(preset.viewInstances || {}) };
+
   const intermediateState = {
       ...normalizedState,
       panels: clearedPanels,
+      viewInstances: restoredInstances,
       layout: {
           ...normalizedState.layout,
           mainViewOrder: []
@@ -559,6 +596,9 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
           viewportWidthMode: preset.viewportWidthMode,
           mainAreaCount: preset.mainAreaCount,
           activePreset: name,
+          leftViewOrder: preset.leftViewOrder || [],
+          rightViewOrder: preset.rightViewOrder || [],
+          bottomViewOrder: preset.bottomViewOrder || [],
         },
       },
     },

@@ -138,7 +138,7 @@ const BOTTOM_PANEL_VIEWS: View[] = [
   {
     id: 'framework-logs',
     name: 'Framework Logs',
-    component: 'framework-logs',
+    component: 'framework-logs', // Fixed: matches ID (was framework-logs)
     data: {
       label: 'Framework Logs',
       color: PLACEHOLDER_COLOR,
@@ -164,7 +164,7 @@ const OVERLAY_VIEWS: View[] = [
   {
     id: 'firebase-auth',
     name: 'Authentication',
-    component: 'auth-view',
+    component: 'firebase-auth', // Fixed: matches ID (was auth-view)
     data: {
       label: 'Authentication',
       color: PLACEHOLDER_COLOR,
@@ -363,7 +363,10 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     viewportWidthMode: '3x',  // Show 3 main panels by default
     mainAreaCount: 3 as MainAreaPanelCount,
     // Use INSTANCE IDs for the initial state order
-    mainViewOrder: ['counter-demo-1', 'stock-ticker-1', 'config-panel-1']
+    mainViewOrder: ['counter-demo-1', 'stock-ticker-1', 'config-panel-1'],
+    leftViewOrder: [],
+    rightViewOrder: [],
+    bottomViewOrder: ['system-logs-1'],
   },
 
   // Toolbar positioning
@@ -473,7 +476,13 @@ function getComponentLoader(viewId: string): () => Promise<any> {
 
   // Firebase auth view loads from framework
   if (viewId === 'firebase-auth') {
-    return () => import('@project/framework').then(m => m.AuthView);
+    return () => {
+      console.log('[DemoLayout] Loading AuthView...');
+      return import('@project/framework').then(m => {
+        console.log('[DemoLayout] AuthView Loaded:', m.AuthView);
+        return m.AuthView;
+      });
+    };
   }
   if (viewId === 'framework-logs') {
     return () => import('@project/framework').then(m => m.LogView);
