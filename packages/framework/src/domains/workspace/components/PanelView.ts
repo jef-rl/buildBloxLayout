@@ -228,6 +228,43 @@ export class PanelView extends LitElement {
         );
     }
 
+    private handleDragStart(event: DragEvent) {
+        // Only allow dragging if we have a view
+        const { instance } = this.resolveViewData();
+        const draggableId = instance?.instanceId || this.viewId;
+        
+        if (!draggableId) {
+            event.preventDefault();
+            return;
+        }
+
+        if (event.dataTransfer) {
+            event.dataTransfer.setData('application/x-view-id', draggableId);
+            event.dataTransfer.setData('text/plain', draggableId);
+            event.dataTransfer.effectAllowed = 'move';
+            
+            // Custom Drag Image
+            const ghost = this.cloneNode(true) as HTMLElement;
+            ghost.style.position = 'absolute';
+            ghost.style.top = '-1000px';
+            ghost.style.left = '-1000px';
+            ghost.style.width = '200px'; // Approx width
+            ghost.style.height = '40px'; // Approx header height
+            ghost.style.background = '#1e293b';
+            ghost.style.border = '2px solid #3b82f6';
+            ghost.style.borderRadius = '4px';
+            ghost.style.opacity = '1';
+            ghost.style.zIndex = '9999';
+            
+            // Just show the ID/Title if possible
+            ghost.innerHTML = `<div style="padding: 8px; color: white;">${instance?.title || 'View'}</div>`;
+            
+            document.body.appendChild(ghost);
+            event.dataTransfer.setDragImage(ghost, 10, 10);
+            setTimeout(() => document.body.removeChild(ghost), 0);
+        }
+    }
+
     private handleDragEnter(event: DragEvent) {
         if (!this.isDropOverlayActive()) {
             return;
@@ -303,9 +340,14 @@ export class PanelView extends LitElement {
 
     render() {
         const overlayActive = this.isDropOverlayActive();
+        // Allow dragging if a view is present
+        const canDrag = !!this.viewId;
+
         return html`
             <div
                 class="view-wrapper"
+                draggable="${canDrag ? 'true' : 'false'}"
+                @dragstart=${this.handleDragStart}
                 @dragenter=${this.handleDragEnter}
                 @dragover=${this.handleDragOver}
                 @dragleave=${this.handleDragLeave}

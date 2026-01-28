@@ -48,6 +48,8 @@ export class WorkspaceRoot extends LitElement {
             border: 1px solid #1f2937;
             overflow: hidden;
             transition: opacity 0.2s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .expander.collapsed {
@@ -96,6 +98,104 @@ export class WorkspaceRoot extends LitElement {
         .main-panel:first-child {
             border-left: none;
         }
+
+        /* Stack Styles */
+        .side-panel-stack {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        .stack-item {
+            flex: 0 0 auto;
+            min-height: 200px;
+            border-bottom: 1px solid #1f2937;
+            position: relative;
+        }
+
+        .drop-zone {
+            height: 10px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            height: 40px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px dashed #3b82f6;
+        }
+        
+        .drop-zone.top {
+            border-bottom: none;
+        }
+        
+        .drop-zone.bottom {
+            border-top: none;
+            flex-grow: 1; /* Allow bottom drop zone to fill remaining space */
+            min-height: 20px;
+        }
+        
+        .drop-zone.hidden {
+            height: 0;
+            max-height: 0;
+            border: none;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Sash Toggles */
+        .sash-toggle {
+            position: absolute;
+            z-index: 50; /* Above panels */
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #94a3b8;
+            padding: 0;
+        }
+
+        .sash-toggle:hover {
+            background-color: #334155;
+            color: white;
+        }
+
+        .sash-toggle.left {
+            left: var(--left-width, 0px);
+            top: 120px; /* Y offset */
+            width: 16px;
+            height: 32px;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            transition: left 0.2s ease;
+        }
+
+        .sash-toggle.right {
+            right: var(--right-width, 0px);
+            top: 120px; /* Y offset */
+            width: 16px;
+            height: 32px;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            transition: right 0.2s ease;
+        }
+
+        .sash-toggle.bottom {
+            bottom: var(--bottom-height, 0px);
+            left: 280px; /* X offset */
+            width: 32px;
+            height: 16px;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            transition: bottom 0.2s ease;
+        }
     `;
 
     private dockManager = new DockManager();
@@ -137,6 +237,108 @@ export class WorkspaceRoot extends LitElement {
         return view?.component ?? view?.viewType ?? view?.id ?? null;
     }
 
+    private handleDragOver(e: DragEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'move';
+        }
+        (e.target as HTMLElement).classList.add('drag-over');
+    }
+
+    private handleDragLeave(e: DragEvent) {
+        (e.target as HTMLElement).classList.remove('drag-over');
+    }
+
+    private handleDrop(e: DragEvent, region: string, panelId: string, placement: 'top' | 'bottom') {
+        e.preventDefault();
+        e.stopPropagation();
+        (e.target as HTMLElement).classList.remove('drag-over');
+
+        const viewId = e.dataTransfer?.getData('application/x-view-id');
+        if (viewId) {
+            this.dispatch({ 
+                type: 'panels/assignView', 
+                viewId, 
+                panelId,
+                placement
+            });
+        }
+    }
+
+    private renderSidePanelStack(region: 'left' | 'right' | 'bottom', viewOrder: string[], panelId: string) {
+        const inDesign = this.state?.layout?.inDesign;
+        const isAdmin = this.state?.auth?.isAdmin;
+        const showDropZones = inDesign && isAdmin;
+        const isEmpty = viewOrder.length === 0;
+
+        return html`
+            <div class="side-panel-stack">
+                ${showDropZones ? html`
+                <div 
+                    class="drop-zone top"
+                    @dragover=${this.handleDragOver}
+                    @dragleave=${this.handleDragLeave}
+                    @drop=${(e: DragEvent) => this.handleDrop(e, region, panelId, 'top')}
+                    title="Drop to add to top"
+                ></div>
+                ` : nothing}
+                
+                ${viewOrder.map(viewId => html`
+                    <div class="stack-item">
+                        <panel-view .viewId="${viewId}"></panel-view>
+                    </div>
+                `)}
+                
+                ${showDropZones ? html`
+                <div 
+                    class="drop-zone bottom"
+                    @dragover=${this.handleDragOver}
+                    @dragleave=${this.handleDragLeave}
+                    @drop=${(e: DragEvent) => this.handleDrop(e, region, panelId, 'bottom')}
+                    title="Drop to add to bottom"
+                    style="${isEmpty ? 'height: 100%;' : ''}"
+                ></div>
+                ` : nothing}
+            </div>
+        `;
+    }
+
+    private renderSash(side: 'left' | 'right' | 'bottom') {
+        const expansion = this.state?.layout?.expansion;
+        const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof typeof expansion;
+        const state = expansion?.[key] ?? 'Closed';
+
+        // Only show if Closed or Opened
+        if (state !== 'Closed' && state !== 'Opened') {
+            return nothing;
+        }
+
+        const isClosed = state === 'Closed';
+        const newState = isClosed ? 'Opened' : 'Closed';
+        
+        let iconPath = '';
+        if (side === 'left') {
+            iconPath = isClosed ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7";
+        } else if (side === 'right') {
+            iconPath = isClosed ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7";
+        } else {
+            iconPath = isClosed ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7";
+        }
+
+        return html`
+            <button 
+                class="sash-toggle ${side}" 
+                @click=${() => this.dispatch({ type: 'layout/setExpansion', side, state: newState })}
+                title="${isClosed ? 'Open' : 'Close'} ${side} panel"
+            >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="${iconPath}" />
+                </svg>
+            </button>
+        `;
+    }
+
     render() {
         const layout = this.state?.layout ?? {};
         const expansion = layout.expansion ?? {
@@ -156,7 +358,6 @@ export class WorkspaceRoot extends LitElement {
             '5x': '20%',
         };
 
-        // Use helper functions to determine panel state
         const leftOpen = isExpanderPanelOpen(expansion.expanderLeft);
         const rightOpen = isExpanderPanelOpen(expansion.expanderRight);
         const bottomOpen = isExpanderPanelOpen(expansion.expanderBottom);
@@ -168,13 +369,7 @@ export class WorkspaceRoot extends LitElement {
         const overlayView = layout.overlayView ?? null;
         const mainPanels = panels.filter((panel) => panel.region === 'main');
         const totalMainPanels = mainPanels.length;
-        const fallbackCount = totalMainPanels || clamp(Number(layout.mainAreaCount ?? 1), 1, 5);
-        const visibleCount = clamp(
-            Number.isFinite(viewportCount) ? viewportCount : fallbackCount,
-            1,
-            5,
-        );
-        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / visibleCount}%`;
+        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / clamp(Number.isFinite(viewportCount) ? viewportCount : (totalMainPanels || 1), 1, 5)}%`;
         const leftPanel = panels.find((panel) => panel.region === 'left');
         const rightPanel = panels.find((panel) => panel.region === 'right');
         const bottomPanel = panels.find((panel) => panel.region === 'bottom');
@@ -183,6 +378,10 @@ export class WorkspaceRoot extends LitElement {
             panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
         const getPanelViewInstanceId = (panel: { view?: { id?: string } | null } | null) =>
             panel?.view?.id ?? null;
+
+        const leftViewOrder = layout.leftViewOrder || (leftPanel?.viewId ? [leftPanel.viewId] : []);
+        const rightViewOrder = layout.rightViewOrder || (rightPanel?.viewId ? [rightPanel.viewId] : []);
+        const bottomViewOrder = layout.bottomViewOrder || (bottomPanel?.viewId ? [bottomPanel.viewId] : []);
 
         return html`
             <div class="workspace">
@@ -196,15 +395,8 @@ export class WorkspaceRoot extends LitElement {
                         --main-panel-width: ${mainPanelWidth};
                     "
                 >
-                    <div
-                        class="expander expander-left ${leftOpen ? '' : 'collapsed'}"
-                        @click=${() => leftPanel && this.dispatch({ type: 'panels/selectPanel', panelId: leftPanel.id })}
-                    >
-                        <panel-view
-                            .panelId="${leftPanel?.id ?? null}"
-                            .viewId="${getPanelViewId(leftPanel)}"
-                            .viewInstanceId="${getPanelViewInstanceId(leftPanel)}"
-                        ></panel-view>
+                    <div class="expander expander-left ${leftOpen ? '' : 'collapsed'}">
+                        ${leftPanel ? this.renderSidePanelStack('left', leftViewOrder, leftPanel.id) : nothing}
                     </div>
 
                     <div class="main-area">
@@ -222,27 +414,17 @@ export class WorkspaceRoot extends LitElement {
                         `)}
                     </div>
 
-                    <div
-                        class="expander expander-right ${rightOpen ? '' : 'collapsed'}"
-                        @click=${() => rightPanel && this.dispatch({ type: 'panels/selectPanel', panelId: rightPanel.id })}
-                    >
-                        <panel-view
-                            .panelId="${rightPanel?.id ?? null}"
-                            .viewId="${getPanelViewId(rightPanel)}"
-                            .viewInstanceId="${getPanelViewInstanceId(rightPanel)}"
-                        ></panel-view>
+                    <div class="expander expander-right ${rightOpen ? '' : 'collapsed'}">
+                        ${rightPanel ? this.renderSidePanelStack('right', rightViewOrder, rightPanel.id) : nothing}
                     </div>
 
-                    <div
-                        class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}"
-                        @click=${() => bottomPanel && this.dispatch({ type: 'panels/selectPanel', panelId: bottomPanel.id })}
-                    >
-                        <panel-view
-                            .panelId="${bottomPanel?.id ?? null}"
-                            .viewId="${getPanelViewId(bottomPanel)}"
-                            .viewInstanceId="${getPanelViewInstanceId(bottomPanel)}"
-                        ></panel-view>
+                    <div class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}">
+                        ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id) : nothing}
                     </div>
+
+                    ${this.renderSash('left')}
+                    ${this.renderSash('right')}
+                    ${this.renderSash('bottom')}
                 </div>
 
                 <dock-container .manager=${this.dockManager} toolbarId="burger" fallbackPosition="top-left" disablePositionPicker>

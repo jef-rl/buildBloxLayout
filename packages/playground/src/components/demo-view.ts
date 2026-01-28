@@ -79,9 +79,6 @@ export class ImprovedDemoView extends LitElement {
     overflow: auto;
     }
 
-    .view-container:hover {
-      transform: scale(1.01);
-    }
 
     .header {
       display: flex;

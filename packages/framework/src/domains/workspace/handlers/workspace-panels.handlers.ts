@@ -1,5 +1,5 @@
 
-import type { Panel, PanelContainer, PanelState, UIState, View } from '../../../types/index';
+import type { Panel, PanelContainer, PanelState, UIState, View, LayoutState } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { ReducerHandler } from '../../../core/registry/handler-registry';
 
@@ -92,39 +92,18 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         // It might be a definition ID, or a legacy view ID
         const definition = viewRegistry.get(targetId);
         if (definition) {
-             // Create new instance
-             const newInstance = viewRegistry.createInstance(targetId);
-             if (newInstance) {
-                 // We need to mutate state here (conceptually), but we are inside map.
-                 // This is tricky. We'll handle state update after map.
-                 // For now, mark as needing creation.
-                 // Actually, let's use the legacy allocateViewInstance for now if we can't easily update state.viewInstances here.
-                 // But we want to use the new system.
-                 
-                 // LIMITATION: This function is pure. We can't update state.viewInstances easily while iterating.
-                 // However, we can return the new instance info and merge it later.
-                 // To simplify, we will fall back to legacy behavior for "applying main view order" if it involves creation, 
-                 // or we accept that "mainViewOrder" should ideally contain Instance IDs.
-                 
-                 // If `viewOrder` contains Definition IDs (e.g. from a Preset), we MUST create instances.
-                 const allocation = allocateViewInstance(state, targetId, undefined, viewInstanceCounter);
-                 viewInstanceCounter = allocation.nextCounter;
-                 const v = allocation.view!;
-                 
-                 // Create proper ViewInstance entry too (hacky but needed for transition)
-                 // We'll rely on the caller or side-effects to persist this if we were truly strict, 
-                 // but here we are returning a new UIState.
-                 
-                 // let's return a "placeholder" and we'll fix the viewInstances map at the end of function.
-                 return {
-                    ...panel,
-                    view: v,
-                    viewId: v.id,
-                    activeViewId: v.id,
-                    _pendingCreation: true, // Marker
-                    _definitionId: targetId
-                 };
-             }
+             const allocation = allocateViewInstance(state, targetId, undefined, viewInstanceCounter);
+             viewInstanceCounter = allocation.nextCounter;
+             const v = allocation.view!;
+             
+             return {
+                ...panel,
+                view: v,
+                viewId: v.id,
+                activeViewId: v.id,
+                _pendingCreation: true, // Marker
+                _definitionId: targetId
+             };
         }
         
         // Check legacy views array
@@ -179,6 +158,7 @@ const assignViewToPanel = (
     panel: Panel,
     inputViewId: string,
     data?: unknown,
+    placement?: 'top' | 'bottom',
 ): UIState => {
     let instanceId = inputViewId;
     let definitionId = inputViewId;
@@ -240,23 +220,54 @@ const assignViewToPanel = (
     const otherViews = state.views.filter((v) => v.id !== instanceId);
     const nextViews = [...otherViews, viewInstanceObject];
 
+    // NEW: Update region view order for side panels
+    let nextLayout: LayoutState = {
+        ...state.layout,
+        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+    };
+
+    if (['left', 'right', 'bottom'].includes(panel.region)) {
+        const key = `${panel.region}ViewOrder` as keyof LayoutState;
+        // @ts-ignore - TS might complain about dynamic key access
+        const currentOrder = (state.layout[key] as string[]) || [];
+        const nextOrder = [instanceId, ...currentOrder.filter(id => id !== instanceId)];
+        
+        // Re-order based on placement if specified (for drop zones)
+        if (placement === 'top') {
+            const others = nextOrder.filter(id => id !== instanceId);
+            nextLayout = {
+                ...nextLayout,
+                [key]: [instanceId, ...others]
+            };
+        } else if (placement === 'bottom') {
+            const others = nextOrder.filter(id => id !== instanceId);
+            nextLayout = {
+                ...nextLayout,
+                [key]: [...others, instanceId]
+            };
+        } else {
+            // Default behavior (add to top/active) is already covered by nextOrder construction above
+             nextLayout = {
+                ...nextLayout,
+                [key]: nextOrder
+            };
+        }
+    }
+
     return {
         ...state,
         panels: nextPanels,
         views: uniqueViews(nextViews),
         viewInstances: nextViewInstances,
         activeView: instanceId,
-        layout: {
-            ...state.layout,
-            mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
-        },
+        layout: nextLayout,
     };
 };
 
 // === Handler Implementation ===
 
 const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
-    const payload = action.payload as { panelId: string; viewId: string; data?: unknown } | undefined;
+    const payload = action.payload as { panelId: string; viewId: string; data?: unknown; placement?: 'top' | 'bottom' } | undefined;
     if (!payload || !payload.panelId || !payload.viewId) {
         return { state, followUps: [] };
     }
@@ -266,7 +277,7 @@ const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
         return { state, followUps: [] };
     }
 
-    const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data);
+    const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data, payload.placement);
     return { state: nextState, followUps: [] };
 };
 
