@@ -18,10 +18,41 @@ import type { MainAreaPanelCount, Panel, UIState, View } from '@project/framewor
 const PLACEHOLDER_COLOR = '#0b0b0b';
 
 /**
+ * Interactive Demo Views
+ * Showcasing multiple instances and local context
+ */
+const INTERACTIVE_VIEWS: View[] = [
+  {
+    id: 'counter-demo',
+    name: 'Counter Demo',
+    component: 'counter-demo', // Fixed: matches ID
+    data: { count: 10 }
+  },
+  {
+    id: 'stock-ticker',
+    name: 'Stock Ticker',
+    component: 'stock-ticker', // Fixed: matches ID
+    data: { topic: 'Stocks', speed: 800 }
+  },
+  {
+    id: 'system-logs',
+    name: 'System Logs',
+    component: 'system-logs', // Fixed: matches ID
+    data: { topic: 'System', speed: 2000 }
+  },
+  {
+    id: 'config-panel',
+    name: 'Configurator',
+    component: 'config-panel', // Fixed: matches ID
+    data: { customTitle: 'My Settings', bgColor: '#fffbeb' }
+  }
+];
+
+/**
  * Main area views - Primary workspace views
- * Each view demonstrates a different aspect of the framework
  */
 const MAIN_VIEWS: View[] = [
+  ...INTERACTIVE_VIEWS,
   {
     id: 'canvas-editor',
     name: 'Canvas Editor',
@@ -40,36 +71,6 @@ const MAIN_VIEWS: View[] = [
       label: 'Code Editor',
       color: PLACEHOLDER_COLOR,
       description: 'Code editing with syntax highlighting'
-    }
-  },
-  {
-    id: 'preview-panel',
-    name: 'Live Preview',
-    component: 'preview-panel',
-    data: { 
-      label: 'Live Preview',
-      color: PLACEHOLDER_COLOR,
-      description: 'Real-time preview of changes'
-    }
-  },
-  {
-    id: 'data-inspector',
-    name: 'Data Inspector',
-    component: 'data-inspector',
-    data: { 
-      label: 'Data Inspector',
-      color: PLACEHOLDER_COLOR,
-      description: 'Inspect and modify data structures'
-    }
-  },
-  {
-    id: 'timeline-view',
-    name: 'Timeline',
-    component: 'timeline-view',
-    data: { 
-      label: 'Timeline',
-      color: PLACEHOLDER_COLOR,
-      description: 'History and version control'
     }
   }
 ];
@@ -199,13 +200,29 @@ const OVERLAY_VIEWS: View[] = [
 /**
  * Main area panels - equal-width horizontal layout
  */
-const MAIN_PANELS: Panel[] = MAIN_VIEWS.slice(0, 3).map((view, index) => ({
-  id: `panel-main-${index + 1}`,
-  name: `Main Panel ${index + 1}`,
-  region: 'main',
-  viewId: view.id,
-  view
-}));
+const MAIN_PANELS: Panel[] = [
+  {
+    id: 'panel-main-1',
+    name: 'Counter',
+    region: 'main',
+    viewId: 'counter-demo-1', // Points to Instance
+    view: INTERACTIVE_VIEWS[0] // Note: this view object will be replaced by hydration but serves as placeholder
+  },
+  {
+    id: 'panel-main-2',
+    name: 'Ticker',
+    region: 'main',
+    viewId: 'stock-ticker-1', // Points to Instance
+    view: INTERACTIVE_VIEWS[1]
+  },
+  {
+    id: 'panel-main-3',
+    name: 'Config',
+    region: 'main',
+    viewId: 'config-panel-1', // Points to Instance
+    view: INTERACTIVE_VIEWS[3]
+  }
+];
 
 /**
  * Expansion panels - docked secondary areas
@@ -229,8 +246,8 @@ const EXPANSION_PANELS: Panel[] = [
     id: 'panel-bottom',
     name: 'Bottom Panel',
     region: 'bottom',
-    viewId: BOTTOM_PANEL_VIEWS[1].id,
-    view: BOTTOM_PANEL_VIEWS[1]
+    viewId: 'system-logs-1', // Points to Instance
+    view: INTERACTIVE_VIEWS[2]
   }
 ];
 
@@ -284,6 +301,36 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   // All available views
   views: ALL_VIEWS,
 
+  // Map to new viewInstances format for our interactive views
+  // NOTE: Keys are INSTANCE IDs (e.g. counter-demo-1)
+  // definitionId is the View Definition (e.g. counter-demo)
+  viewInstances: {
+    'counter-demo-1': {
+      instanceId: 'counter-demo-1',
+      definitionId: 'counter-demo',
+      title: 'Counter Demo',
+      localContext: { count: 10 }
+    },
+    'stock-ticker-1': {
+      instanceId: 'stock-ticker-1',
+      definitionId: 'stock-ticker',
+      title: 'Stock Ticker',
+      localContext: { topic: 'Stocks', speed: 800 }
+    },
+    'system-logs-1': {
+      instanceId: 'system-logs-1',
+      definitionId: 'system-logs',
+      title: 'System Logs',
+      localContext: { topic: 'System', speed: 2000 }
+    },
+    'config-panel-1': {
+      instanceId: 'config-panel-1',
+      definitionId: 'config-panel',
+      title: 'Configurator',
+      localContext: { customTitle: 'My Settings', bgColor: '#fffbeb' }
+    }
+  },
+
   // View definitions for context-driven UI
   viewDefinitions: ALL_VIEWS.map((view) => ({
     id: view.id,
@@ -309,13 +356,14 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     expansion: {
       expanderLeft: 'Closed',   // Start closed
       expanderRight: 'Closed',  // Start closed
-      expanderBottom: 'Closed'  // Start closed
+      expanderBottom: 'Opened'  // Start Opened to show logs
     },
     overlayView: null,  // No overlay initially
     inDesign: false,    // Start in regular (non-design) mode
     viewportWidthMode: '3x',  // Show 3 main panels by default
     mainAreaCount: 3 as MainAreaPanelCount,
-    mainViewOrder: MAIN_VIEWS.slice(0, 3).map(v => v.id)
+    // Use INSTANCE IDs for the initial state order
+    mainViewOrder: ['counter-demo-1', 'stock-ticker-1', 'config-panel-1']
   },
 
   // Toolbar positioning
@@ -391,6 +439,10 @@ export const VIEW_REGISTRATIONS = ALL_VIEWS.map((view) => ({
  */
 function getIconForView(viewId: string): string {
   const iconMap: Record<string, string> = {
+    'counter-demo': 'calculate',
+    'stock-ticker': 'trending_up',
+    'system-logs': 'dvr',
+    'config-panel': 'tune',
     'firebase-auth': 'person',
     'canvas-editor': 'edit',
     'code-editor': 'code',
@@ -414,6 +466,11 @@ function getIconForView(viewId: string): string {
  * Map view IDs to their component loaders
  */
 function getComponentLoader(viewId: string): () => Promise<any> {
+  // New Interactive Views
+  if (viewId === 'counter-demo') return () => import('../components/counter-view');
+  if (viewId === 'stock-ticker' || viewId === 'system-logs') return () => import('../components/data-feed-view');
+  if (viewId === 'config-panel') return () => import('../components/configurator-view');
+
   // Firebase auth view loads from framework
   if (viewId === 'firebase-auth') {
     return () => import('@project/framework').then(m => m.AuthView);
@@ -428,6 +485,10 @@ function getComponentLoader(viewId: string): () => Promise<any> {
 }
 
 function getTagForView(viewId: string): string {
+  if (viewId === 'counter-demo') return 'counter-view';
+  if (viewId === 'stock-ticker' || viewId === 'system-logs') return 'data-feed-view';
+  if (viewId === 'config-panel') return 'configurator-view';
+  
   if (viewId === 'firebase-auth') {
     return 'auth-view';
   }
@@ -436,32 +497,3 @@ function getTagForView(viewId: string): string {
   }
   return 'demo-view';
 }
-
-/**
- * Example use cases for the improved demo:
- * 
- * 1. CONTEXT CONSUMPTION:
- *    - Views read layout state via ContextConsumer
- *    - Views never mutate context directly
- *    - All state is derived from UIState
- * 
- * 2. HANDLER DISPATCH:
- *    - Use dispatchUiEvent to trigger state changes
- *    - Actions flow through handler registry
- *    - State updates are centralized
- * 
- * 3. VIEW COMMUNICATION:
- *    - Views communicate via shared context state
- *    - Selection state flows through panels
- *    - No direct view-to-view coupling
- * 
- * 4. PANEL MANAGEMENT:
- *    - Panels are structural containers
- *    - Views can be swapped within panels
- *    - Layout adapts to expansion states
- * 
- * 5. EXTENSIBILITY:
- *    - New views register with ViewRegistry
- *    - Custom handlers extend behavior
- *    - Theme and dock properties are open
- */

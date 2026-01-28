@@ -1,4 +1,4 @@
-import type { View, ViewDefinition } from '../../types/index';
+import type { View, ViewDefinition, ViewInstance } from '../../types/index';
 import { getFrameworkLogger } from '../../utils/logger';
 
 export type ViewRegistryChangeDetail = {
@@ -81,6 +81,26 @@ class ViewRegistryImpl extends EventTarget {
         };
     }
 
+    createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined {
+        const definition = this.get(definitionId);
+        if (!definition) {
+            console.warn(`View definition not found for '${definitionId}'`);
+            return undefined;
+        }
+
+        const instanceId = overrides?.instanceId ?? `${definitionId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+        return {
+            instanceId,
+            definitionId,
+            title: overrides?.title ?? definition.title,
+            localContext: {
+                ...(definition.defaultContext || {}),
+                ...(overrides?.localContext || {})
+            }
+        };
+    }
+
     getAllViews(): ViewDefinition[] {
         return Array.from(this.viewDefinitions.values());
     }
@@ -113,6 +133,7 @@ export interface ViewRegistryApi {
     get(id: string): ViewDefinition | undefined;
     getComponent(id: string): Promise<any | undefined>;
     createView(viewId: string, data?: unknown, instanceId?: string): View | undefined;
+    createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined;
     getAllViews(): ViewDefinition[];
     getElement(instanceId: string): HTMLElement | undefined;
     setElement(instanceId: string, element: HTMLElement): void;

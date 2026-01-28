@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
-import type { View } from '../../../types/index';
+import type { View, ViewInstance } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
 
 export class PanelView extends LitElement {
@@ -53,6 +53,9 @@ export class PanelView extends LitElement {
             height: 100%;
             color: #9ca3af;
             font-size: 0.9rem;
+            position: absolute;
+            inset: 0;
+            z-index: 0;
         }
 
         .design-overlay {
@@ -103,95 +106,100 @@ export class PanelView extends LitElement {
         }
     }
 
+    private resolveViewData(): { definitionId: string | null; instance: ViewInstance | null } {
+        if (!this.uiState || !this.viewId) {
+            return { definitionId: null, instance: null };
+        }
+
+        // 1. Check new View Instances
+        const instance = this.uiState.viewInstances?.[this.viewId];
+        if (instance) {
+            return { definitionId: instance.definitionId, instance };
+        }
+
+        // 2. Check Legacy View Array
+        const legacyView = this.uiState.views?.find(v => v.id === this.viewId);
+        if (legacyView) {
+             return { 
+                 definitionId: legacyView.component, 
+                 instance: {
+                     instanceId: legacyView.id,
+                     definitionId: legacyView.component,
+                     title: legacyView.name,
+                     localContext: (legacyView.data as Record<string, any>) || {}
+                 }
+             };
+        }
+
+        // 3. Fallback: viewId IS the definitionId
+        const def = viewRegistry.get(this.viewId);
+        if (def) {
+            return { definitionId: this.viewId, instance: null };
+        }
+
+        return { definitionId: null, instance: null };
+    }
+
     private async loadView() {
         const container = this.shadowRoot?.querySelector('.view-container');
         if (!container) return;
 
-        // Only reload if the viewId has actually changed
+        const { definitionId, instance } = this.resolveViewData();
+        const definition = definitionId ? viewRegistry.get(definitionId) : null;
+        
+        // Only reload if the viewId has actually changed or definition changed
         const currentElement = container.firstElementChild as HTMLElement | null;
-        const definition = this.viewId ? viewRegistry.get(this.viewId) : null;
-        const instanceId = this.viewInstanceId ?? null;
+        
+        // Cache Key: Instance ID (preferred) or View ID (fallback)
+        const cacheKey = instance?.instanceId ?? this.viewId;
 
-        const cachedElement = instanceId ? viewRegistry.getElement(instanceId) : undefined;
+        const cachedElement = cacheKey ? viewRegistry.getElement(cacheKey) : undefined;
         if (cachedElement && definition && cachedElement.tagName.toLowerCase() === definition.tag) {
-            this.applyViewData(cachedElement);
-            container.innerHTML = '';
-            container.appendChild(cachedElement);
+            this.applyViewData(cachedElement, instance);
+            if (container.firstElementChild !== cachedElement) {
+                container.innerHTML = '';
+                container.appendChild(cachedElement);
+            }
             return;
         }
+        
+        // Re-use current element if it matches (optimistic update)
         if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
-            this.applyViewData(currentElement);
+            this.applyViewData(currentElement, instance);
             return;
         }
         
         container.innerHTML = '';
-        if (!this.viewId || !definition?.tag) {
-            this.requestUpdate(); // Request a render to show the fallback message
+        if (!definition?.tag) {
+            // Avoid calling requestUpdate() here to prevent update loops.
+            // The renderFallback() method handles UI for missing definitions.
             return;
         }
 
-        await viewRegistry.getComponent(this.viewId);
+        await viewRegistry.getComponent(definition.id);
         const element = document.createElement(definition.tag);
-        if (instanceId) {
-            viewRegistry.setElement(instanceId, element);
+        if (cacheKey) {
+            viewRegistry.setElement(cacheKey, element);
         }
-        this.applyViewData(element);
+        this.applyViewData(element, instance);
         container.appendChild(element);
     }
 
-    private resolveViewData(): View | null {
-        if (!this.uiState) {
-            return null;
-        }
-
-        if (this.viewInstanceId) {
-            const viewByInstance = this.uiState.views?.find(
-                (view) => view.id === this.viewInstanceId
-            );
-            if (viewByInstance) return viewByInstance;
-        }
-
-        if (!this.viewId) {
-            return null;
-        }
-
-        // Prioritize finding the view instance in the central state.views array
-        const viewMatch = this.uiState.views?.find(
-            (view) => view.component === this.viewId || view.id === this.viewId
-        );
-        if (viewMatch) return viewMatch;
-
-        // Fallback for cases where panels might have transient view objects
-        const panels = this.uiState.panels ?? [];
-        const panelMatch = panels.find(
-            (panel) =>
-                panel?.viewId === this.viewId ||
-                panel?.activeViewId === this.viewId ||
-                panel?.view?.id === this.viewId ||
-                panel?.view?.component === this.viewId
-        );
-
-        return panelMatch?.view ?? null;
-    }
-
-    private applyViewData(element: HTMLElement) {
-        const view = this.resolveViewData();
-        if (!view) {
-            return;
-        }
-
-        const data = view.data;
-        if (data && typeof data === 'object') {
-            const viewData = data as { label?: unknown; color?: unknown };
-            if (typeof viewData.label === 'string') {
-                (element as { label?: string }).label = viewData.label;
+    private applyViewData(element: HTMLElement, instance: ViewInstance | null) {
+        if (instance) {
+            (element as any).instanceId = instance.instanceId;
+            (element as any).context = instance.localContext;
+            // Legacy data support
+            (element as any).data = instance.localContext;
+            
+            // Apply common props if they exist on the element type
+            const ctx = instance.localContext || {};
+            if (typeof ctx.label === 'string') {
+                (element as { label?: string }).label = ctx.label;
             }
-            if (typeof viewData.color === 'string') {
-                (element as { color?: string }).color = viewData.color;
+            if (typeof ctx.color === 'string') {
+                (element as { color?: string }).color = ctx.color;
             }
-            (element as { data?: unknown }).data = data;
-        } else if (data !== undefined) {
-            (element as { data?: unknown }).data = data;
         }
     }
 
@@ -199,7 +207,8 @@ export class PanelView extends LitElement {
         const container = this.shadowRoot?.querySelector('.view-container');
         const element = container?.firstElementChild as HTMLElement | null;
         if (element) {
-            this.applyViewData(element);
+            const { instance } = this.resolveViewData();
+            this.applyViewData(element, instance);
         }
     }
 
@@ -266,11 +275,19 @@ export class PanelView extends LitElement {
         if (!this.viewId) {
             message = 'No view selected.';
         } else {
-            const definition = viewRegistry.get(this.viewId);
-            if (!definition) {
-                message = `View "${this.viewId}" is not registered.`;
-            } else if (!definition.tag) {
-                message = `View "${this.viewId}" is missing a tag.`;
+            // Check if we have an instance or def
+            const { definitionId } = this.resolveViewData();
+            
+            if (!definitionId) {
+                // message = `View "${this.viewId}" cannot be resolved.`;
+                // Don't show error immediately, as it might be loading state
+            } else {
+                const definition = viewRegistry.get(definitionId);
+                if (!definition) {
+                     // message = `View definition "${definitionId}" is not registered.`;
+                } else if (!definition.tag) {
+                     message = `View definition "${definitionId}" is missing a tag.`;
+                }
             }
         }
 
@@ -298,8 +315,8 @@ export class PanelView extends LitElement {
                 <div
                     class="design-overlay ${overlayActive ? 'active' : ''} ${this.isDropReady ? 'ready' : ''}"
                 ></div>
+                ${this.renderFallback()}
             </div>
-            ${this.renderFallback()}
         `;
     }
 }

@@ -24,6 +24,7 @@ export class UiState {
         containers: [],
         panels: [],
         views: [],
+        viewInstances: {},
         viewDefinitions: [],
         viewInstanceCounter: 0,
         viewTokens: {

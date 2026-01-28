@@ -44,4 +44,12 @@ export interface ViewDefinition {
   title: string;
   tag: string;
   icon: string;
+  defaultContext?: Record<string, any>;
+}
+
+export interface ViewInstance {
+  instanceId: string;
+  definitionId: string;
+  title?: string;
+  localContext: Record<string, any>;
 }

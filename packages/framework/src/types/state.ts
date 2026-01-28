@@ -1,5 +1,5 @@
 import type { ToolbarPos, ViewportWidthMode } from './core';
-import type { Panel, PanelContainer, View } from '../domains/panels/types';
+import type { Panel, PanelContainer, View, ViewInstance } from '../domains/panels/types';
 import type { ExpanderState } from '../utils/expansion-helpers.js';
 
 export type LayoutExpansion = {
@@ -156,6 +156,7 @@ export type UIState = {
   containers: PanelContainer[];
   panels: Panel[];
   views: View[];
+  viewInstances: Record<string, ViewInstance>;
   viewDefinitions: ViewDefinitionSummary[];
   viewInstanceCounter: number;
   viewTokens: ViewTokenState;

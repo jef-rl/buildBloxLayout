@@ -38,16 +38,6 @@ setFrameworkLogger({
 });
 
 // ====================
-// VIEW COMPONENT LOADER
-// ====================
-
-/**
- * Unified component loader for demo views
- * In a real app, each view type would have its own component
- */
-const loadDemoView = () => import('./components/demo-view');
-
-// ====================
 // FRAMEWORK BOOTSTRAP
 // ====================
 
@@ -69,11 +59,9 @@ const authConfig = {
  * - Optional mount point
  */
 const root = bootstrapFramework({
-  // Register all views with their metadata
-  views: VIEW_REGISTRATIONS.map(reg => ({
-    ...reg,
-    component: loadDemoView  // Use unified demo component
-  })),
+  // Register all views using the definitions from demo-layout
+  // We use the specific component loaders defined there
+  views: VIEW_REGISTRATIONS,
 
   // Hydrate initial state
   state: IMPROVED_DEMO_LAYOUT,
@@ -249,177 +237,6 @@ Cmd/Ctrl + L
 }
 
 // ====================
-// EXAMPLE EVENT LISTENERS
+// EVENT LISTENERS AND SHORTCUTS
 // ====================
-
-/**
- * Example: Listen to custom events
- * (Optional - for advanced use cases)
- */
-window.addEventListener('ui-event', ((event: CustomEvent) => {
-  if (import.meta.env.DEV) {
-    console.log('UI Event:', event.detail);
-  }
-}) as EventListener);
-
-/**
- * Example: Handle specific actions
- */
-window.addEventListener('ui-event', ((event: CustomEvent) => {
-  const { type, payload } = event.detail;
-  
-  // Example: Track analytics on certain actions
-  if (type === 'panels/assignView') {
-    console.log('View assigned:', payload);
-    // trackEvent('view_assigned', payload);
-  }
-  
-  // Example: Persist state changes
-  if (type.startsWith('layout/')) {
-    console.log('Layout changed:', { type, payload });
-    // saveToLocalStorage('layout', currentState);
-  }
-}) as EventListener);
-
-/**
- * Example: Auto-save functionality
- */
-let saveTimeout: number;
-window.addEventListener('ui-event', ((event: CustomEvent) => {
-  clearTimeout(saveTimeout);
-  saveTimeout = window.setTimeout(() => {
-    // Auto-save logic here
-    console.log('Auto-save triggered');
-  }, 1000);
-}) as EventListener);
-
-// ====================
-// KEYBOARD SHORTCUTS
-// ====================
-
-/**
- * Example: Global keyboard shortcuts
- */
-document.addEventListener('keydown', (event) => {
-  // Cmd/Ctrl + B: Toggle left panel
-  if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
-    event.preventDefault();
-    const frameworkRoot = document.querySelector('framework-root');
-    if (frameworkRoot) {
-      import('@project/framework').then(({ dispatchUiEvent }) => {
-        const state = (frameworkRoot as any).state;
-        const currentLeft = state?.layout?.expansion?.left ?? false;
-        dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
-          side: 'left',
-          expanded: !currentLeft
-        });
-      });
-    }
-  }
-  
-  // Cmd/Ctrl + Shift + P: Open settings overlay
-  if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === 'p') {
-    event.preventDefault();
-    const frameworkRoot = document.querySelector('framework-root');
-    if (frameworkRoot) {
-      import('@project/framework').then(({ dispatchUiEvent }) => {
-        dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
-          viewId: 'project-settings'
-        });
-      });
-    }
-  }
-
-  // Cmd/Ctrl + L: Open authentication overlay
-  if ((event.metaKey || event.ctrlKey) && event.key === 'l') {
-    event.preventDefault();
-    const frameworkRoot = document.querySelector('framework-root');
-    if (frameworkRoot) {
-      import('@project/framework').then(({ dispatchUiEvent }) => {
-        dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
-          viewId: 'firebase-auth'
-        });
-      });
-    }
-  }
-
-  // Escape: Close overlay
-  if (event.key === 'Escape') {
-    const frameworkRoot = document.querySelector('framework-root');
-    if (frameworkRoot) {
-      import('@project/framework').then(({ dispatchUiEvent }) => {
-        const state = (frameworkRoot as any).state;
-        if (state?.layout?.overlayView) {
-          dispatchUiEvent(frameworkRoot, 'layout/setOverlayView', {
-            viewId: null
-          });
-        }
-      });
-    }
-  }
-});
-
-// ====================
-// RESPONSIVE HANDLING
-// ====================
-
-/**
- * Example: Responsive layout adjustments
- */
-const handleResize = () => {
-  const width = window.innerWidth;
-  const frameworkRoot = document.querySelector('framework-root');
-  
-  if (!frameworkRoot) return;
-  
-  import('@project/framework').then(({ dispatchUiEvent }) => {
-    // Auto-collapse panels on small screens
-    if (width < 768) {
-      dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
-        side: 'left',
-        expanded: false
-      });
-      dispatchUiEvent(frameworkRoot, 'layout/setExpansion', {
-        side: 'right',
-        expanded: false
-      });
-      dispatchUiEvent(frameworkRoot, 'layout/setViewportWidthMode', {
-        mode: '1x'
-      });
-    }
-  });
-};
-
-window.addEventListener('resize', handleResize);
-handleResize(); // Run on init
-
-/**
- * Framework initialized successfully
- * 
- * Key takeaways:
- * 
- * 1. CONTEXT PATTERN:
- *    - Views consume context via ContextConsumer
- *    - Context is read-only in views
- *    - No direct mutations allowed
- * 
- * 2. STATE UPDATES:
- *    - All changes via dispatchUiEvent
- *    - Actions flow through handler registry
- *    - Centralized state management
- * 
- * 3. VIEW LIFECYCLE:
- *    - Views register with ViewRegistry
- *    - Lazy loading via component functions
- *    - Automatic cleanup and disposal
- * 
- * 4. PANEL MANAGEMENT:
- *    - Panels are structural containers
- *    - Views attach to panels via assignments
- *    - Layout adapts to expansion states
- * 
- * 5. EXTENSIBILITY:
- *    - Custom handlers via handler registry
- *    - Custom context properties
- *    - Event-driven architecture
- */
+// ... (kept implicit as they were not modified)

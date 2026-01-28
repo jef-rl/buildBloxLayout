@@ -37,7 +37,7 @@ const allocateViewInstance = (
 export const deriveMainViewOrderFromPanels = (panels: Panel[]): string[] =>
     [...new Set(panels
         .filter((panel) => panel.region === 'main')
-        .map(getPanelViewDefinitionId)
+        .map(p => p.viewId ?? p.activeViewId ?? p.view?.component)
         .filter((viewId): viewId is string => Boolean(viewId))
     )];
 
@@ -51,6 +51,10 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
     const mainPanelIds = mainPanels.map((panel) => panel.id);
 
     let viewInstanceCounter = Number.isFinite(state.viewInstanceCounter) ? state.viewInstanceCounter : 0;
+    
+    // Create map for fast lookup
+    const viewInstances = state.viewInstances || {};
+
     const nextPanels = state.panels.map((panel) => {
         if (panel.region !== 'main') {
             // Enforce 1:1 rule: if this view is now in the main area, remove it from side panels
@@ -61,32 +65,96 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         }
 
         const slotIndex = mainPanelIds.indexOf(panel.id);
-        const viewDefId = effectiveOrder[slotIndex];
+        const targetId = effectiveOrder[slotIndex]; // Could be InstanceId or DefinitionId
 
-        if (!viewDefId) {
+        if (!targetId) {
             return { ...panel, view: null, viewId: undefined, activeViewId: undefined };
         }
 
-        const existingView = state.views.find((v) => v.component === viewDefId);
-
-        if (panel.view && panel.view.id === existingView?.id) return panel;
-
-        if (existingView) {
-            return { ...panel, view: existingView, viewId: viewDefId, activeViewId: viewDefId };
+        // Check if targetId is an existing instance
+        const existingInstance = viewInstances[targetId];
+        
+        if (existingInstance) {
+            // It's an instance, assign it
+             return { 
+                 ...panel, 
+                 viewId: targetId, 
+                 activeViewId: targetId,
+                 view: {
+                     id: targetId,
+                     name: existingInstance.title || existingInstance.definitionId,
+                     component: existingInstance.definitionId,
+                     data: existingInstance.localContext
+                 }
+             };
         }
 
-        const allocation = allocateViewInstance(state, viewDefId, undefined, viewInstanceCounter);
-        const newView = allocation.view;
-        viewInstanceCounter = allocation.nextCounter;
-        return {
-            ...panel,
-            view: newView ?? null,
-            viewId: newView ? viewDefId : undefined,
-            activeViewId: newView ? viewDefId : undefined,
-        };
+        // It might be a definition ID, or a legacy view ID
+        const definition = viewRegistry.get(targetId);
+        if (definition) {
+             // Create new instance
+             const newInstance = viewRegistry.createInstance(targetId);
+             if (newInstance) {
+                 // We need to mutate state here (conceptually), but we are inside map.
+                 // This is tricky. We'll handle state update after map.
+                 // For now, mark as needing creation.
+                 // Actually, let's use the legacy allocateViewInstance for now if we can't easily update state.viewInstances here.
+                 // But we want to use the new system.
+                 
+                 // LIMITATION: This function is pure. We can't update state.viewInstances easily while iterating.
+                 // However, we can return the new instance info and merge it later.
+                 // To simplify, we will fall back to legacy behavior for "applying main view order" if it involves creation, 
+                 // or we accept that "mainViewOrder" should ideally contain Instance IDs.
+                 
+                 // If `viewOrder` contains Definition IDs (e.g. from a Preset), we MUST create instances.
+                 const allocation = allocateViewInstance(state, targetId, undefined, viewInstanceCounter);
+                 viewInstanceCounter = allocation.nextCounter;
+                 const v = allocation.view!;
+                 
+                 // Create proper ViewInstance entry too (hacky but needed for transition)
+                 // We'll rely on the caller or side-effects to persist this if we were truly strict, 
+                 // but here we are returning a new UIState.
+                 
+                 // let's return a "placeholder" and we'll fix the viewInstances map at the end of function.
+                 return {
+                    ...panel,
+                    view: v,
+                    viewId: v.id,
+                    activeViewId: v.id,
+                    _pendingCreation: true, // Marker
+                    _definitionId: targetId
+                 };
+             }
+        }
+        
+        // Check legacy views array
+        const existingView = state.views.find((v) => v.component === targetId);
+        if (existingView) {
+             return { ...panel, view: existingView, viewId: targetId, activeViewId: targetId };
+        }
+
+        return { ...panel, view: null, viewId: undefined, activeViewId: undefined };
+    });
+    
+    // Post-process to collect new instances
+    const nextViewInstances = { ...(state.viewInstances || {}) };
+    const finalPanels = nextPanels.map((p: any) => {
+        if (p._pendingCreation) {
+            const v = p.view!;
+            // Register in new system
+            nextViewInstances[v.id] = {
+                instanceId: v.id,
+                definitionId: p._definitionId,
+                title: v.name,
+                localContext: v.data as Record<string, any> || {}
+            };
+            const { _pendingCreation, _definitionId, ...rest } = p;
+            return rest;
+        }
+        return p;
     });
 
-    const activePanelViews = nextPanels.map((p) => p.view).filter((v): v is View => Boolean(v));
+    const activePanelViews = finalPanels.map((p) => p.view).filter((v): v is View => Boolean(v));
     const inactiveViews = state.views.filter(v => !activePanelViews.some(av => av.id === v.id));
     const nextViews = uniqueViews([...activePanelViews, ...inactiveViews]);
     
@@ -94,8 +162,9 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
 
     return {
         ...state,
-        panels: nextPanels,
+        panels: finalPanels,
         views: nextViews,
+        viewInstances: nextViewInstances,
         activeView: nextActiveView,
         viewInstanceCounter,
         layout: {
@@ -108,67 +177,75 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
 const assignViewToPanel = (
     state: UIState,
     panel: Panel,
-    viewDefId: string,
+    inputViewId: string,
     data?: unknown,
 ): UIState => {
-    let viewInstance = state.views.find((v) => v.component === viewDefId);
+    let instanceId = inputViewId;
+    let definitionId = inputViewId;
+    let nextViewInstances = { ...(state.viewInstances || {}) };
     let viewNeedsUpdate = false;
-
-    if (viewInstance) {
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-            const existingData = (typeof viewInstance.data === 'object' && !Array.isArray(viewInstance.data)) ? viewInstance.data as Record<string, unknown> : {};
-            viewInstance = {
-                ...viewInstance,
-                data: { ...existingData, ...data as Record<string, unknown> },
-            };
-            viewNeedsUpdate = true;
+    
+    // Check if it's already an instance
+    const existingInstance = nextViewInstances[inputViewId];
+    
+    if (existingInstance) {
+        definitionId = existingInstance.definitionId;
+        if (data) {
+             nextViewInstances[instanceId] = {
+                 ...existingInstance,
+                 localContext: { ...existingInstance.localContext, ...(data as any) }
+             };
         }
     } else {
-        const allocation = allocateViewInstance(state, viewDefId, data);
-        viewInstance = allocation.view;
-        if (viewInstance) {
-            state = {
-                ...state,
-                viewInstanceCounter: allocation.nextCounter,
-            };
+        // Assume it's a definition ID or legacy logic needed
+        const definition = viewRegistry.get(inputViewId);
+        if (definition) {
+             const newInstance = viewRegistry.createInstance(inputViewId, {
+                 localContext: data as Record<string, any>
+             });
+             if (newInstance) {
+                 instanceId = newInstance.instanceId;
+                 definitionId = inputViewId;
+                 nextViewInstances[instanceId] = newInstance;
+             }
         }
-        if (!viewInstance) return state;
-        viewNeedsUpdate = true;
     }
 
     const nextPanel = {
         ...panel,
-        view: viewInstance,
-        viewId: viewDefId,
-        activeViewId: viewDefId,
+        viewId: instanceId,
+        activeViewId: instanceId,
+        // Sync legacy view object
+        view: {
+            id: instanceId,
+            name: nextViewInstances[instanceId]?.title || definitionId,
+            component: definitionId,
+            data: nextViewInstances[instanceId]?.localContext
+        }
     };
 
-    // Unassign this view from any other panels to ensure 1:1 relationship
-    // This prevents "ghost" views where multiple panels think they own the same view instance
     const nextPanels = state.panels.map(p => {
         if (p.id === panel.id) {
             return nextPanel;
         }
-        // If this panel was holding the view we just assigned, clear it
-        if (p.viewId === viewDefId || p.activeViewId === viewDefId || (p.view && p.view.id === viewInstance?.id)) {
-            return {
-                ...p,
-                view: null,
-                viewId: undefined,
-                activeViewId: undefined
-            };
+        // Enforce 1:1 rule
+        if (p.viewId === instanceId || p.activeViewId === instanceId) {
+             return { ...p, view: null, viewId: undefined, activeViewId: undefined };
         }
         return p;
     });
 
-    const otherViews = state.views.filter((v) => v.id !== viewInstance!.id);
-    const nextViews = viewNeedsUpdate ? [...otherViews, viewInstance] : state.views;
+    // Sync legacy views array
+    const viewInstanceObject = nextPanel.view!;
+    const otherViews = state.views.filter((v) => v.id !== instanceId);
+    const nextViews = [...otherViews, viewInstanceObject];
 
     return {
         ...state,
         panels: nextPanels,
         views: uniqueViews(nextViews),
-        activeView: viewInstance.id,
+        viewInstances: nextViewInstances,
+        activeView: instanceId,
         layout: {
             ...state.layout,
             mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),

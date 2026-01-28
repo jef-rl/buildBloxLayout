@@ -339,11 +339,48 @@ export class Workspace extends LitElement {
     }
 
     private handleTokenDragStart(event: DragEvent, viewId: string) {
-        event.dataTransfer?.setData('application/x-view-id', viewId);
-        event.dataTransfer?.setData('text/plain', viewId);
-        if (event.dataTransfer) {
-            event.dataTransfer.effectAllowed = 'move';
+        if (!event.dataTransfer) return;
+
+        event.dataTransfer.setData('application/x-view-id', viewId);
+        event.dataTransfer.setData('text/plain', viewId);
+        event.dataTransfer.effectAllowed = 'move';
+
+        // Create a custom ghost element
+        const target = event.currentTarget as HTMLElement;
+        const ghost = target.cloneNode(true) as HTMLElement;
+        
+        // Style the ghost
+        Object.assign(ghost.style, {
+            position: 'absolute',
+            top: '-1000px',
+            left: '-1000px',
+            width: '40px',
+            height: '40px',
+            background: '#1e293b',
+            border: '2px solid #3b82f6',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: '9999',
+            pointerEvents: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+        });
+
+        // Ensure the icon inside is visible and sized
+        const icon = ghost.querySelector('img');
+        if (icon) {
+            icon.style.width = '24px';
+            icon.style.height = '24px';
         }
+
+        document.body.appendChild(ghost);
+        
+        event.dataTransfer.setDragImage(ghost, 20, 20);
+        
+        setTimeout(() => {
+            document.body.removeChild(ghost);
+        }, 0);
     }
 
     private handleTokenDragOver(event: DragEvent) {
