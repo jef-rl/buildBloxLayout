@@ -2,7 +2,6 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { uiState } from '../../../state/ui-state.js';
 import { DockManager } from '../../dock/components/DockManager.js';
-import '../../layout/components/ControlToolbar.js';
 import '../../layout/components/PresetManager.js';
 import '../../layout/components/FrameworkMenu.js';
 import '../../layout/components/ViewRegistryPanel.js';
@@ -440,7 +439,7 @@ export class WorkspaceRoot extends LitElement {
                 </dock-container>
 
                 <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center">
-                    <control-toolbar></control-toolbar>
+                    <panel-view viewId="main-toolbar-1" class="workspace-toolbar"></panel-view>
                 </dock-container>
 
                 <dock-container .manager=${this.dockManager} toolbarId="presets" fallbackPosition="top-right">

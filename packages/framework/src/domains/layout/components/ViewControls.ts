@@ -9,6 +9,8 @@ import { Icons } from '../../../components/Icons';
 
 export class ViewControls extends LitElement {
     @property({ type: String }) orientation = 'row';
+    @property({ type: String }) instanceId = '';
+    @property({ type: Object }) context: Record<string, any> = {};
 
     private uiState: UiStateContextValue['state'] | null = null;
     private uiDispatch: UiStateContextValue['dispatch'] | null = null;
@@ -385,7 +387,8 @@ export class ViewControls extends LitElement {
     }
 
     render() {
-        const isRow = this.orientation === 'row';
+        const resolvedOrientation = this.context?.orientation ?? this.orientation;
+        const isRow = resolvedOrientation === 'row';
         const views = this.uiState?.viewDefinitions ?? [];
         const viewMap = new Map(views.map((view: ViewDefinitionSummary) => [view.id, view]));
         const activeOrder = this.resolveActiveMainViews();
