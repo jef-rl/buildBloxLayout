@@ -193,6 +193,36 @@ const OVERLAY_VIEWS: View[] = [
   }
 ];
 
+/**
+ * Toolbar views - composable toolbar instances
+ */
+const TOOLBAR_VIEWS: View[] = [
+  {
+    id: 'generic-toolbar',
+    name: 'Toolbar Container',
+    component: 'generic-toolbar',
+    data: { viewIds: [] }
+  },
+  {
+    id: 'expander-controls',
+    name: 'Expander Controls',
+    component: 'expander-controls',
+    data: {}
+  },
+  {
+    id: 'viewport-controls',
+    name: 'Viewport Controls',
+    component: 'viewport-controls',
+    data: {}
+  },
+  {
+    id: 'view-token-strip',
+    name: 'View Token Strip',
+    component: 'view-token-strip',
+    data: {}
+  }
+];
+
 // ====================
 // PANEL DEFINITIONS
 // ====================
@@ -259,7 +289,8 @@ const ALL_VIEWS = [
   ...LEFT_PANEL_VIEWS,
   ...RIGHT_PANEL_VIEWS,
   ...BOTTOM_PANEL_VIEWS,
-  ...OVERLAY_VIEWS
+  ...OVERLAY_VIEWS,
+  ...TOOLBAR_VIEWS
 ];
 
 // ====================
@@ -328,6 +359,30 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       definitionId: 'config-panel',
       title: 'Configurator',
       localContext: { customTitle: 'My Settings', bgColor: '#fffbeb' }
+    },
+    'main-toolbar-1': {
+      instanceId: 'main-toolbar-1',
+      definitionId: 'generic-toolbar',
+      title: 'Main Toolbar',
+      localContext: { viewIds: ['expander-1', 'tokens-1', 'viewport-1'], stretchViewIds: ['tokens-1'] }
+    },
+    'expander-1': {
+      instanceId: 'expander-1',
+      definitionId: 'expander-controls',
+      title: 'Expanders',
+      localContext: {}
+    },
+    'tokens-1': {
+      instanceId: 'tokens-1',
+      definitionId: 'view-token-strip',
+      title: 'View Tokens',
+      localContext: { orientation: 'row' }
+    },
+    'viewport-1': {
+      instanceId: 'viewport-1',
+      definitionId: 'viewport-controls',
+      title: 'Viewport Controls',
+      localContext: {}
     }
   },
 
@@ -460,7 +515,11 @@ function getIconForView(viewId: string): string {
     'framework-logs': 'terminal',
     'ai-assistant': 'psychology',
     'project-settings': 'settings',
-    'export-dialog': 'file_download'
+    'export-dialog': 'file_download',
+    'generic-toolbar': 'view_compact',
+    'expander-controls': 'panel_left',
+    'viewport-controls': 'aspect_ratio',
+    'view-token-strip': 'view_list'
   };
   return iconMap[viewId] || 'apps';
 }
@@ -487,6 +546,18 @@ function getComponentLoader(viewId: string): () => Promise<any> {
   if (viewId === 'framework-logs') {
     return () => import('@project/framework').then(m => m.LogView);
   }
+  if (viewId === 'generic-toolbar') {
+    return () => import('@project/framework').then(m => m.ToolbarContainer);
+  }
+  if (viewId === 'expander-controls') {
+    return () => import('@project/framework').then(m => m.ExpanderControls);
+  }
+  if (viewId === 'viewport-controls') {
+    return () => import('@project/framework').then(m => m.ViewportControls);
+  }
+  if (viewId === 'view-token-strip') {
+    return () => import('@project/framework').then(m => m.ViewControls);
+  }
 
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
@@ -503,6 +574,18 @@ function getTagForView(viewId: string): string {
   }
   if (viewId === 'framework-logs') {
     return 'log-view';
+  }
+  if (viewId === 'generic-toolbar') {
+    return 'toolbar-container';
+  }
+  if (viewId === 'expander-controls') {
+    return 'expander-controls';
+  }
+  if (viewId === 'viewport-controls') {
+    return 'viewport-controls';
+  }
+  if (viewId === 'view-token-strip') {
+    return 'view-controls';
   }
   return 'demo-view';
 }
