@@ -204,13 +204,29 @@ const assignViewToPanel = (
         }
     };
 
+    // --- LOGIC FOR REMOVING SOURCE PANEL IF DRAGGING FROM SIDE PANEL (WITHOUT CTRL) ---
+    let panelIdToRemove: string | null = null;
+    const sourcePanel = state.panels.find(p => p.viewId === instanceId || p.activeViewId === instanceId);
+    
+    if (sourcePanel && !swap && sourcePanel.id !== panel.id) {
+         const isSideRegion = ['left', 'right', 'bottom'].includes(sourcePanel.region);
+         if (isSideRegion) {
+             const panelsInRegion = state.panels.filter(p => p.region === sourcePanel.region).length;
+             // Only remove if there is more than 1 panel in that region
+             if (panelsInRegion > 1) {
+                 panelIdToRemove = sourcePanel.id;
+             }
+         }
+    }
+    // ----------------------------------------------------------------------------------
+
     const targetPanelViewId = panel.viewId;
 
     let nextPanels = state.panels.map(p => {
         if (p.id === panel.id) {
             return nextPanel;
         }
-        // Enforce 1:1 rule
+        // Enforce 1:1 rule: remove view from its old position
         if (p.viewId === instanceId || p.activeViewId === instanceId) {
              if (swap && targetPanelViewId) {
                  // Swap: put the view that was in the target panel into the source panel
@@ -227,10 +243,15 @@ const assignViewToPanel = (
                      } : p.view // Fallback to existing if not found (should be rare)
                  };
              }
+             // If not swapping, clear the source panel (it will be removed later if panelIdToRemove matches)
              return { ...p, view: null, viewId: undefined, activeViewId: undefined };
         }
         return p;
     });
+
+    if (panelIdToRemove) {
+        nextPanels = nextPanels.filter(p => p.id !== panelIdToRemove);
+    }
 
     // Sync legacy views array
     const viewInstanceObject = nextPanel.view!;
@@ -243,33 +264,59 @@ const assignViewToPanel = (
         mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
     };
 
-    if (['left', 'right', 'bottom'].includes(panel.region)) {
-        const key = `${panel.region}ViewOrder` as keyof LayoutState;
-        // @ts-ignore - TS might complain about dynamic key access
-        const currentOrder = (state.layout[key] as string[]) || [];
-        const nextOrder = [instanceId, ...currentOrder.filter(id => id !== instanceId)];
-        
-        // Re-order based on placement if specified (for drop zones)
-        if (placement === 'top') {
-            const others = nextOrder.filter(id => id !== instanceId);
-            nextLayout = {
-                ...nextLayout,
-                [key]: [instanceId, ...others]
-            };
-        } else if (placement === 'bottom') {
-            const others = nextOrder.filter(id => id !== instanceId);
-            nextLayout = {
-                ...nextLayout,
-                [key]: [...others, instanceId]
-            };
-        } else {
-            // Default behavior (add to top/active) is already covered by nextOrder construction above
-             nextLayout = {
-                ...nextLayout,
-                [key]: nextOrder
-            };
-        }
+    // Update view orders for side panels if panels were removed
+    if (panelIdToRemove) {
+         const removedRegion = sourcePanel!.region;
+         if (['left', 'right', 'bottom'].includes(removedRegion)) {
+             const key = `${removedRegion}ViewOrder` as keyof LayoutState;
+             // @ts-ignore
+             const currentOrder = (state.layout[key] as string[]) || [];
+             // Filter out any view IDs that might have been associated with the removed panel 
+             // (though we moved the view, so strictly speaking the ID is still valid, but the *slot* is gone.
+             //  Actually, 'ViewOrder' in side panels is less about slots and more about the views themselves,
+             //  but if we remove a panel, we rely on the panel count to drive the layout.
+             //  The view order array tracks view IDs. Since we moved the view `instanceId` to a new panel (or region),
+             //  we should update the order arrays.)
+         }
     }
+
+    // Helper to update order for a specific region
+    const updateRegionOrder = (region: string, addedId: string, removedId?: string) => {
+        if (!['left', 'right', 'bottom'].includes(region)) return;
+        
+        const key = `${region}ViewOrder` as keyof LayoutState;
+        // @ts-ignore
+        let order = (state.layout[key] as string[]) || [];
+        
+        // Remove the view ID if it was already in this region (it's moving within or away)
+        order = order.filter(id => id !== addedId);
+        
+        // If we are strictly removing a view from this region (e.g. moved to another region),
+        // filtering above handles it.
+        
+        // If this region is the TARGET, add the view ID
+        if (panel.region === region) {
+             if (placement === 'top') {
+                order = [addedId, ...order];
+             } else if (placement === 'bottom') {
+                order = [...order, addedId];
+             } else {
+                 // Default to top/start if unspecified, or maintain relative pos if we knew it?
+                 // For now, prepend is safe default for "add to this region"
+                 order = [addedId, ...order];
+             }
+        }
+        
+        // If we removed a source panel from this region, we might need to cleanup
+        // (The filtering of `addedId` handles the case where the view moved out).
+        
+        // @ts-ignore
+        nextLayout[key] = order;
+    };
+
+    // Update all side regions to ensure consistency
+    ['left', 'right', 'bottom'].forEach(r => updateRegionOrder(r, instanceId));
+
 
     return {
         ...state,
