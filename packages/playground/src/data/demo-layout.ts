@@ -364,7 +364,7 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       instanceId: 'main-toolbar-1',
       definitionId: 'generic-toolbar',
       title: 'Main Toolbar',
-      localContext: { viewIds: ['expander-1', 'tokens-1', 'viewport-1'], stretchViewIds: ['tokens-1'] }
+      localContext: { viewIds: ['expander-1', 'viewport-1'], stretchViewIds: [] }
     },
     'expander-1': {
       instanceId: 'expander-1',

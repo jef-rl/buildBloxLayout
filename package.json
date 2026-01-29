@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "node index.js",
-    "dev:playground": "npm run dev -w packages/playground",
+    "dev:playground": "npm run  build -w packages/framework && npm run  build -w packages/playground && npm run dev -w packages/playground",
     "build": "npm run build:framework && npm run build:playground",
     "build:framework": "npm run build -w packages/framework",
     "build:playground": "npm run build -w packages/playground",
