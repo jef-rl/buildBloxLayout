@@ -439,47 +439,7 @@ export class ViewControls extends LitElement {
         })}
                 </div>
 
-                <div
-                    class="${tokenPoolClass}"
-                    role="list"
-                    aria-label="View tokens"
-                    @dragover=${this.handleTokenDragOver}
-                    @drop=${(event: DragEvent) => this.handleDrop(event)}
-                >
-                    ${tokenOrder
-                .map((viewId: string) => viewMap.get(viewId))
-                .filter((view?: ViewDefinitionSummary): view is ViewDefinitionSummary => !!view)
-                .map((view: ViewDefinitionSummary) => {
-                    const label = this.getViewLabel(view);
-                    const iconName = this.getViewIcon(view);
-                    const isActive = activeSet.has(view.id);
-                    return html`
-                                <div
-                                    class="token"
-                                    data-view-id=${view.id}
-                                    draggable="true"
-                                    role="listitem"
-                                    title=${label}
-                                    aria-label=${label}
-                                    @dragstart=${(event: DragEvent) =>
-                            this.handleTokenDragStart(event, view.id)}
-                                >
-                                    <span class="token__icon">
-                                        <img src="https://storage.googleapis.com/lozzuck.appspot.com/blox/icons/${iconName}.png" alt="${label}" />
-                                    </span>
-                              
-                                </div>
-                            `;
-                })}
-
-                    <button
-                        @click=${this.handlers.resetSession}
-                        class="icon-button"
-                        title="New Session / Reset"
-                    >
-                        <i class="icon codicon codicon-refresh"></i>
-                    </button>
-                </div>
+         
             </div>
         `;
     }
