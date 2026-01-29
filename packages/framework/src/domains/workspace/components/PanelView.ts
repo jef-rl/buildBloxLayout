@@ -64,7 +64,7 @@ export class PanelView extends LitElement {
             border: 2px dashed transparent;
             border-radius: 8px;
             background: transparent;
-            z-index: 2;
+            z-index: 50; /* Ensure above view content */
             pointer-events: none;
             transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
             opacity: 0;
@@ -111,13 +111,11 @@ export class PanelView extends LitElement {
             return { definitionId: null, instance: null };
         }
 
-        // 1. Check new View Instances
         const instance = this.uiState.viewInstances?.[this.viewId];
         if (instance) {
             return { definitionId: instance.definitionId, instance };
         }
 
-        // 2. Check Legacy View Array
         const legacyView = this.uiState.views?.find(v => v.id === this.viewId);
         if (legacyView) {
              return { 
@@ -131,7 +129,6 @@ export class PanelView extends LitElement {
              };
         }
 
-        // 3. Fallback: viewId IS the definitionId
         const def = viewRegistry.get(this.viewId);
         if (def) {
             return { definitionId: this.viewId, instance: null };
@@ -147,10 +144,6 @@ export class PanelView extends LitElement {
         const { definitionId, instance } = this.resolveViewData();
         const definition = definitionId ? viewRegistry.get(definitionId) : null;
         
-        // Only reload if the viewId has actually changed or definition changed
-        const currentElement = container.firstElementChild as HTMLElement | null;
-        
-        // Cache Key: Instance ID (preferred) or View ID (fallback)
         const cacheKey = instance?.instanceId ?? this.viewId;
 
         const cachedElement = cacheKey ? viewRegistry.getElement(cacheKey) : undefined;
@@ -163,7 +156,7 @@ export class PanelView extends LitElement {
             return;
         }
         
-        // Re-use current element if it matches (optimistic update)
+        const currentElement = container.firstElementChild as HTMLElement | null;
         if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
             this.applyViewData(currentElement, instance);
             return;
@@ -171,8 +164,6 @@ export class PanelView extends LitElement {
         
         container.innerHTML = '';
         if (!definition?.tag) {
-            // Avoid calling requestUpdate() here to prevent update loops.
-            // The renderFallback() method handles UI for missing definitions.
             return;
         }
 
@@ -189,10 +180,8 @@ export class PanelView extends LitElement {
         if (instance) {
             (element as any).instanceId = instance.instanceId;
             (element as any).context = instance.localContext;
-            // Legacy data support
             (element as any).data = instance.localContext;
             
-            // Apply common props if they exist on the element type
             const ctx = instance.localContext || {};
             if (typeof ctx.label === 'string') {
                 (element as { label?: string }).label = ctx.label;
@@ -229,7 +218,6 @@ export class PanelView extends LitElement {
     }
 
     private handleDragStart(event: DragEvent) {
-        // Only allow dragging if we have a view
         const { instance } = this.resolveViewData();
         const draggableId = instance?.instanceId || this.viewId;
         
@@ -243,26 +231,31 @@ export class PanelView extends LitElement {
             event.dataTransfer.setData('text/plain', draggableId);
             event.dataTransfer.effectAllowed = 'move';
             
-            // Custom Drag Image
+            // Dispatch drag start
+            this.uiDispatch?.({ type: 'layout/dragStart', viewId: draggableId });
+
             const ghost = this.cloneNode(true) as HTMLElement;
             ghost.style.position = 'absolute';
             ghost.style.top = '-1000px';
             ghost.style.left = '-1000px';
-            ghost.style.width = '200px'; // Approx width
-            ghost.style.height = '40px'; // Approx header height
+            ghost.style.width = '200px';
+            ghost.style.height = '40px';
             ghost.style.background = '#1e293b';
             ghost.style.border = '2px solid #3b82f6';
             ghost.style.borderRadius = '4px';
             ghost.style.opacity = '1';
             ghost.style.zIndex = '9999';
             
-            // Just show the ID/Title if possible
             ghost.innerHTML = `<div style="padding: 8px; color: white;">${instance?.title || 'View'}</div>`;
             
             document.body.appendChild(ghost);
             event.dataTransfer.setDragImage(ghost, 10, 10);
             setTimeout(() => document.body.removeChild(ghost), 0);
         }
+    }
+
+    private handleDragEnd(event: DragEvent) {
+        this.uiDispatch?.({ type: 'layout/dragEnd' });
     }
 
     private handleDragEnter(event: DragEvent) {
@@ -312,12 +305,9 @@ export class PanelView extends LitElement {
         if (!this.viewId) {
             message = 'No view selected.';
         } else {
-            // Check if we have an instance or def
             const { definitionId } = this.resolveViewData();
-            
             if (!definitionId) {
                 // message = `View "${this.viewId}" cannot be resolved.`;
-                // Don't show error immediately, as it might be loading state
             } else {
                 const definition = viewRegistry.get(definitionId);
                 if (!definition) {
@@ -340,7 +330,6 @@ export class PanelView extends LitElement {
 
     render() {
         const overlayActive = this.isDropOverlayActive();
-        // Allow dragging if a view is present
         const canDrag = !!this.viewId;
 
         return html`
@@ -348,6 +337,7 @@ export class PanelView extends LitElement {
                 class="view-wrapper"
                 draggable="${canDrag ? 'true' : 'false'}"
                 @dragstart=${this.handleDragStart}
+                @dragend=${this.handleDragEnd}
                 @dragenter=${this.handleDragEnter}
                 @dragover=${this.handleDragOver}
                 @dragleave=${this.handleDragLeave}
