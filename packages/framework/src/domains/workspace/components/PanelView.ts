@@ -68,6 +68,11 @@ export class PanelView extends LitElement {
             pointer-events: none;
             transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
             opacity: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-end;
+            padding: 4px;
         }
 
         .design-overlay.active {
@@ -80,6 +85,26 @@ export class PanelView extends LitElement {
         .design-overlay.ready {
             border-color: #22d3ee;
             background: rgba(34, 211, 238, 0.12);
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.15s;
+        }
+
+        .remove-btn:hover {
+            opacity: 1;
         }
     `;
 
@@ -204,8 +229,7 @@ export class PanelView extends LitElement {
     private isDropOverlayActive(): boolean {
         return Boolean(
             this.uiState?.layout?.inDesign &&
-            this.uiState?.auth?.isAdmin &&
-            this.uiState?.layout?.draggedViewId
+            this.uiState?.auth?.isAdmin
         );
     }
 
@@ -218,6 +242,11 @@ export class PanelView extends LitElement {
     }
 
     private handleDragStart(event: DragEvent) {
+        if (!this.isDropOverlayActive()) {
+            event.preventDefault();
+            return;
+        }
+
         const { instance } = this.resolveViewData();
         const draggableId = instance?.instanceId || this.viewId;
         
@@ -297,7 +326,18 @@ export class PanelView extends LitElement {
         if (!viewId || !panelId) {
             return;
         }
-        this.uiDispatch?.({ type: 'panels/assignView', viewId, panelId });
+        
+        // Check if CTRL is held down
+        const swap = event.ctrlKey;
+        
+        this.uiDispatch?.({ type: 'panels/assignView', viewId, panelId, swap });
+    }
+
+    private handleRemoveView(e: Event) {
+        e.stopPropagation();
+        if (this.panelId) {
+            this.uiDispatch?.({ type: 'panels/removeView', panelId: this.panelId });
+        }
     }
 
     private renderFallback() {
@@ -330,7 +370,7 @@ export class PanelView extends LitElement {
 
     render() {
         const overlayActive = this.isDropOverlayActive();
-        const canDrag = !!this.viewId;
+        const canDrag = !!this.viewId && overlayActive;
 
         return html`
             <div
@@ -346,7 +386,13 @@ export class PanelView extends LitElement {
                 <div class="view-container"></div>
                 <div
                     class="design-overlay ${overlayActive ? 'active' : ''} ${this.isDropReady ? 'ready' : ''}"
-                ></div>
+                >
+                    ${overlayActive && this.viewId ? html`
+                        <button class="remove-btn" @click=${this.handleRemoveView} title="Remove View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    ` : nothing}
+                </div>
                 ${this.renderFallback()}
             </div>
         `;

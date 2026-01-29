@@ -120,9 +120,7 @@ export class ExpanderControls extends LitElement {
         const overlayOpen = !!this.uiState?.layout?.overlayView;
         const separatorClass = `separator ${isColumn ? 'column' : 'row'}`;
 
-        return html`
-            <div class="controls ${isColumn ? 'column' : ''}">
-                ${leftVisible ? html`
+        const leftExpanderButton = leftVisible ? html`
                     <button class="icon-button ${leftExpanded ? 'active' : ''}" @click=${() => this.toggleSide('left')} title="Toggle Left Panel">
                     <!-- Left Sidebar Icon (Left Block) -->
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,8 +132,9 @@ export class ExpanderControls extends LitElement {
                        }
                     </svg>
                     </button>
-                ` : nothing}
-                ${bottomVisible ? html`
+                ` : nothing;
+
+        const bottomExpanderButton = bottomVisible ? html`
                     <button class="icon-button ${bottomExpanded ? 'active' : ''}" @click=${() => this.toggleSide('bottom')} title="Toggle Bottom Panel">
                         <!-- Bottom Panel Icon (Bottom Block) -->
                         <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,8 +146,9 @@ export class ExpanderControls extends LitElement {
                            }
                         </svg>
                     </button>
-                ` : nothing}
-                ${rightVisible ? html`
+                ` : nothing;
+
+        const rightExpanderButton = rightVisible ? html`
                     <button class="icon-button ${rightExpanded ? 'active' : ''}" @click=${() => this.toggleSide('right')} title="Toggle Right Panel">
                         <!-- Right Sidebar Icon (Right Block) -->
                         <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +160,39 @@ export class ExpanderControls extends LitElement {
                            }
                         </svg>
                     </button>
-                ` : nothing}
+                ` : nothing;
+
+        // If left panel is expanded, we want the bottom button to appear AFTER the right button or at the end
+        // If left panel is closed, we want the bottom button to appear next to the left button (current behavior)
+        // However, the request says "move to the right if the left expander is open".
+        // Assuming the order is usually [Left, Bottom, Right, Separator, Overlay]
+        // If Left is Open, we want [Left, Right, Bottom, Separator, Overlay] ? 
+        // Or maybe just swap Bottom and Right? Or move Bottom further right?
+        
+        // Let's implement dynamic ordering based on `leftExpanded`.
+        
+        let buttons;
+        if (leftExpanded) {
+             // Move bottom button to the right of other controls or swap?
+             // Based on the request "move to the right", I'll place it after the Right button.
+             buttons = html`
+                ${leftExpanderButton}
+                ${rightExpanderButton}
+                ${bottomExpanderButton}
+             `;
+        } else {
+            // Default order
+             buttons = html`
+                ${leftExpanderButton}
+                ${bottomExpanderButton}
+                ${rightExpanderButton}
+             `;
+        }
+
+
+        return html`
+            <div class="controls ${isColumn ? 'column' : ''}">
+                ${buttons}
                 <div class="${separatorClass}"></div>
                 <button class="icon-button ${overlayOpen ? 'active' : ''}" @click=${() => this.toggleOverlay()} title="Toggle Overlay (Test)">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

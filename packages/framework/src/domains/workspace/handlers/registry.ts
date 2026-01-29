@@ -870,6 +870,7 @@ export const registerWorkspaceHandlers = (
   
   // Use the robust handler from workspace-panels.handlers
   registerHandler(registry, 'panels/assignView', wrapHandler(workspacePanelHandlers['panels/assignView']));
+  registerHandler(registry, 'panels/removeView', wrapHandler(workspacePanelHandlers['panels/removeView']));
   
   registerHandler(registry, 'panels/setMainViewOrder', handleSetMainViewOrder);
   registerHandler(registry, 'panels/togglePanel', handleTogglePanel);

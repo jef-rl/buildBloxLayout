@@ -159,11 +159,11 @@ const assignViewToPanel = (
     inputViewId: string,
     data?: unknown,
     placement?: 'top' | 'bottom',
+    swap?: boolean,
 ): UIState => {
     let instanceId = inputViewId;
     let definitionId = inputViewId;
     let nextViewInstances = { ...(state.viewInstances || {}) };
-    let viewNeedsUpdate = false;
     
     // Check if it's already an instance
     const existingInstance = nextViewInstances[inputViewId];
@@ -204,12 +204,29 @@ const assignViewToPanel = (
         }
     };
 
-    const nextPanels = state.panels.map(p => {
+    const targetPanelViewId = panel.viewId;
+
+    let nextPanels = state.panels.map(p => {
         if (p.id === panel.id) {
             return nextPanel;
         }
         // Enforce 1:1 rule
         if (p.viewId === instanceId || p.activeViewId === instanceId) {
+             if (swap && targetPanelViewId) {
+                 // Swap: put the view that was in the target panel into the source panel
+                 const targetViewInstance = nextViewInstances[targetPanelViewId];
+                 return {
+                     ...p,
+                     viewId: targetPanelViewId,
+                     activeViewId: targetPanelViewId,
+                     view: targetViewInstance ? {
+                         id: targetPanelViewId,
+                         name: targetViewInstance.title || targetViewInstance.definitionId,
+                         component: targetViewInstance.definitionId,
+                         data: targetViewInstance.localContext
+                     } : p.view // Fallback to existing if not found (should be rare)
+                 };
+             }
              return { ...p, view: null, viewId: undefined, activeViewId: undefined };
         }
         return p;
@@ -267,7 +284,7 @@ const assignViewToPanel = (
 // === Handler Implementation ===
 
 const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
-    const payload = action.payload as { panelId: string; viewId: string; data?: unknown; placement?: 'top' | 'bottom' } | undefined;
+    const payload = action.payload as { panelId: string; viewId: string; data?: unknown; placement?: 'top' | 'bottom'; swap?: boolean } | undefined;
     if (!payload || !payload.panelId || !payload.viewId) {
         return { state, followUps: [] };
     }
@@ -277,10 +294,55 @@ const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
         return { state, followUps: [] };
     }
 
-    const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data, payload.placement);
+    const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data, payload.placement, payload.swap);
     return { state: nextState, followUps: [] };
+};
+
+const removeViewHandler: ReducerHandler<UIState> = (state, action) => {
+    const payload = action.payload as { panelId: string } | undefined;
+    if (!payload?.panelId) {
+        return { state, followUps: [] };
+    }
+
+    const panel = state.panels.find(p => p.id === payload.panelId);
+    if (!panel) return { state, followUps: [] };
+    
+    const viewIdToRemove = panel.viewId;
+
+    const nextPanels = state.panels.map((p) => {
+        if (p.id === payload.panelId) {
+             return { ...p, view: null, viewId: undefined, activeViewId: undefined };
+        }
+        return p;
+    });
+    
+    let nextLayout = {
+        ...state.layout,
+        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+    };
+
+    if (viewIdToRemove && ['left', 'right', 'bottom'].includes(panel.region)) {
+        const key = `${panel.region}ViewOrder` as keyof LayoutState;
+        // @ts-ignore
+        const currentOrder = (state.layout[key] as string[]) || [];
+        const nextOrder = currentOrder.filter(id => id !== viewIdToRemove);
+        nextLayout = {
+            ...nextLayout,
+            [key]: nextOrder
+        };
+    }
+
+    return {
+        state: {
+            ...state,
+            panels: nextPanels,
+            layout: nextLayout
+        },
+        followUps: []
+    };
 };
 
 export const workspacePanelHandlers = {
     'panels/assignView': assignViewHandler,
+    'panels/removeView': removeViewHandler,
 };
