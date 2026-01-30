@@ -5,6 +5,7 @@ import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import { createControlToolbarHandlers } from '../handlers/control-toolbar.handlers';
 import type { ExpanderState } from '../../../utils/expansion-helpers.js';
+import { dispatchUiEvent } from '../../../utils/dispatcher';
 
 @customElement('custom-toolbar')
 export class CustomToolbar extends LitElement {
@@ -84,6 +85,33 @@ export class CustomToolbar extends LitElement {
     private setExpanderState(side: 'left' | 'right' | 'bottom', state: ExpanderState) {
         this.handlers.setExpansion(side, state);
     }
+    
+    private setMainAreaCount(count: number) {
+        dispatchUiEvent(this, 'layout/setMainAreaCount', { count });
+    }
+
+    private setViewportWidthMode(mode: string) {
+        dispatchUiEvent(this, 'layout/setViewportWidthMode', { mode });
+    }
+
+    private resetLayout() {
+        if (!this.uiDispatch || !this.uiState) {
+            return;
+        }
+
+        // Reset expander states to 'Closed'
+        this.setExpanderState('left', 'Closed');
+        this.setExpanderState('bottom', 'Closed');
+        this.setExpanderState('right', 'Closed');
+
+        // Clear all main panels
+        const mainPanels = this.uiState.panels.filter(p => p.region === 'main');
+        mainPanels.forEach(panel => {
+            if (panel.id) {
+                this.uiDispatch?.({ type: 'panels/removeView', panelId: panel.id });
+            }
+        });
+    }
 
     private renderButton(index: number, content?: string, isImage: boolean = false, onClick?: () => void) {
         return html`
@@ -109,11 +137,11 @@ export class CustomToolbar extends LitElement {
     render() {
         return html`
             <div class="grid">
-                <!-- 1-4 Buttons: Left Expander Controls -->
-                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-hidden-48.png', true, () => this.setExpanderState('left', 'Collapsed'))}
-                ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-closed-48.png', true, () => this.setExpanderState('left', 'Closed'))}
-                ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-open-48.png', true, () => this.setExpanderState('left', 'Opened'))}
-                ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-expanded-48.png', true, () => this.setExpanderState('left', 'Expanded'))}
+                <!-- 1-4 Buttons: New Icons -->
+                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/add-96.png', true, () => this.resetLayout())}
+                ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true)}
+                ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/edit-96.png', true)}
+                ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true)}
                 
                 <!-- 5 Div -->
                 ${this.renderSeparator()}
@@ -128,7 +156,7 @@ export class CustomToolbar extends LitElement {
                 ${this.renderSeparator()}
                 
                 <!-- 11-14 Buttons -->
-                ${this.renderButton(11, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-hidden-48.png', true, () => this.setExpanderState('right', 'Collapsed'))}
+                ${this.renderButton(11, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-hidden-48.png', true, () => this.setExpanderState('right', 'Collapsed'))}
                 ${this.renderButton(12, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-closed-48.png', true, () => this.setExpanderState('right', 'Closed'))}
                 ${this.renderButton(13, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-open-48.png', true, () => this.setExpanderState('right', 'Opened'))}
                 ${this.renderButton(14, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-expanded-48.png', true, () => this.setExpanderState('right', 'Expanded'))}
@@ -138,21 +166,21 @@ export class CustomToolbar extends LitElement {
                 ${this.renderSeparator()}
                 
                 <!-- 16-20 Buttons -->
-                ${this.renderButton(16, 'x1')}
-                ${this.renderButton(17, 'x2')}
-                ${this.renderButton(18, 'x3')}
-                ${this.renderButton(19, 'x4')}
-                ${this.renderButton(20, 'x5')}
+                ${this.renderButton(16, 'x1', false, () => this.setMainAreaCount(1))}
+                ${this.renderButton(17, 'x2', false, () => this.setMainAreaCount(2))}
+                ${this.renderButton(18, 'x3', false, () => this.setMainAreaCount(3))}
+                ${this.renderButton(19, 'x4', false, () => this.setMainAreaCount(4))}
+                ${this.renderButton(20, 'x5', false, () => this.setMainAreaCount(5))}
                 
                 <!-- 21 Div -->
                 ${this.renderSeparator()}
                 
                 <!-- 22-26 Buttons -->
-                ${this.renderButton(22, '1')}
-                ${this.renderButton(23, '1/2')}
-                ${this.renderButton(24, '1/3')}
-                ${this.renderButton(25, '1/4')}
-                ${this.renderButton(26, '1/5')}
+                ${this.renderButton(22, '1', false, () => this.setViewportWidthMode('1x'))}
+                ${this.renderButton(23, '1/2', false, () => this.setViewportWidthMode('2x'))}
+                ${this.renderButton(24, '1/3', false, () => this.setViewportWidthMode('3x'))}
+                ${this.renderButton(25, '1/4', false, () => this.setViewportWidthMode('4x'))}
+                ${this.renderButton(26, '1/5', false, () => this.setViewportWidthMode('5x'))}
             </div>
         `;
     }
