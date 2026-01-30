@@ -30,11 +30,18 @@ export const createControlToolbarHandlers = (
         dispatch({ type: 'layout/setOverlayView', viewId });
     },
     // From size-controls
-    setViewport: (mode: string) => {
+    setViewportWidthMode: (mode: string) => {
         const dispatch = getDispatch();
         if (!dispatch) {
             return;
         }
         dispatch({ type: 'layout/setViewportWidthMode', mode });
+    },
+    setMainAreaCount: (count: number) => {
+        const dispatch = getDispatch();
+        if (!dispatch) {
+            return;
+        }
+        dispatch({ type: 'layout/setMainAreaCount', count });
     },
 });

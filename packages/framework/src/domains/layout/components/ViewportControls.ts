@@ -76,7 +76,7 @@ export class ViewportControls extends LitElement {
         const mainAreaCount = this.uiState?.layout?.mainAreaCount ?? 1;
         const requestedCount = Number.parseInt(requestedMode, 10);
         const actualMode = requestedCount > mainAreaCount ? `${mainAreaCount}x` : requestedMode;
-        this.handlers.setViewport(actualMode);
+        this.handlers.setViewportWidthMode(actualMode);
     }
 
     private resolveVisibleModes() {

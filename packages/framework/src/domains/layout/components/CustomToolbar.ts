@@ -5,7 +5,6 @@ import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import { createControlToolbarHandlers } from '../handlers/control-toolbar.handlers';
 import type { ExpanderState } from '../../../utils/expansion-helpers.js';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
 
 @customElement('custom-toolbar')
 export class CustomToolbar extends LitElement {
@@ -87,11 +86,11 @@ export class CustomToolbar extends LitElement {
     }
     
     private setMainAreaCount(count: number) {
-        dispatchUiEvent(this, 'layout/setMainAreaCount', { count });
+        this.handlers.setMainAreaCount(count);
     }
 
     private setViewportWidthMode(mode: string) {
-        dispatchUiEvent(this, 'layout/setViewportWidthMode', { mode });
+        this.handlers.setViewportWidthMode(mode);
     }
 
     private resetLayout() {
