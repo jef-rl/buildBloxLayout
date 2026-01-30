@@ -220,6 +220,12 @@ const TOOLBAR_VIEWS: View[] = [
     name: 'View Token Strip',
     component: 'view-token-strip',
     data: {}
+  },
+  {
+    id: 'custom-toolbar',
+    name: 'Custom Toolbar',
+    component: 'custom-toolbar',
+    data: {}
   }
 ];
 
@@ -364,7 +370,7 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       instanceId: 'main-toolbar-1',
       definitionId: 'generic-toolbar',
       title: 'Main Toolbar',
-      localContext: { viewIds: ['expander-1', 'viewport-1'], stretchViewIds: [] }
+      localContext: { viewIds: ['custom-toolbar-1'], stretchViewIds: [] }
     },
     'expander-1': {
       instanceId: 'expander-1',
@@ -382,6 +388,12 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       instanceId: 'viewport-1',
       definitionId: 'viewport-controls',
       title: 'Viewport Controls',
+      localContext: {}
+    },
+    'custom-toolbar-1': {
+      instanceId: 'custom-toolbar-1',
+      definitionId: 'custom-toolbar',
+      title: 'Custom Toolbar',
       localContext: {}
     }
   },
@@ -519,7 +531,8 @@ function getIconForView(viewId: string): string {
     'generic-toolbar': 'view_compact',
     'expander-controls': 'panel_left',
     'viewport-controls': 'aspect_ratio',
-    'view-token-strip': 'view_list'
+    'view-token-strip': 'view_list',
+    'custom-toolbar': 'apps'
   };
   return iconMap[viewId] || 'apps';
 }
@@ -558,6 +571,9 @@ function getComponentLoader(viewId: string): () => Promise<any> {
   if (viewId === 'view-token-strip') {
     return () => import('@project/framework').then(m => m.ViewControls);
   }
+  if (viewId === 'custom-toolbar') {
+    return () => import('@project/framework').then(m => m.CustomToolbar);
+  }
 
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
@@ -586,6 +602,9 @@ function getTagForView(viewId: string): string {
   }
   if (viewId === 'view-token-strip') {
     return 'view-controls';
+  }
+  if (viewId === 'custom-toolbar') {
+    return 'custom-toolbar';
   }
   return 'demo-view';
 }

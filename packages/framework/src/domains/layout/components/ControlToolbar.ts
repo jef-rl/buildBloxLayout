@@ -6,7 +6,9 @@ import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import { createControlToolbarHandlers } from '../handlers/control-toolbar.handlers';
 import { toggleExpanderState, isExpanderButtonVisible, isExpanderPanelOpen, ExpanderState } from '../../../utils/expansion-helpers.js';
-import type { LayoutExpansion } from '../../../types/state.js';
+import type { LayoutExpansion, ViewDefinitionSummary } from '../../../types/state.js';
+import { createViewControlsHandlers } from '../handlers/view-controls.handlers';
+import { Icons } from '../../../components/Icons';
 
 export class ControlToolbar extends LitElement {
     @property({ type: String }) orientation = 'row';
@@ -25,6 +27,7 @@ export class ControlToolbar extends LitElement {
         },
     });
     private handlers = createControlToolbarHandlers(this, () => this.uiDispatch);
+    private viewHandlers = createViewControlsHandlers(this, () => this.uiDispatch);
 
     static styles = css`
         :host {
@@ -136,6 +139,66 @@ export class ControlToolbar extends LitElement {
             z-index: 10;
             gap: 4px;
         }
+
+        .slot-strip {
+            display: grid;
+            grid-auto-columns: 24px;
+            align-items: center;
+            gap: 2px 0px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            grid-auto-flow: column;
+            min-height: 40px;
+        }
+
+        .slot {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0px;
+            height: 40px;
+            min-width: 24px;
+            padding: 0px;
+            border-radius: 4px 4px 0 0;
+            border: transparent solid;
+            border-width: 0 0 24px 0;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .slot--active {
+            border-color: rgb(0,64,32);
+            background: rgb(0, 64, 32);
+            color: #d1fae5;
+        }
+
+        .slot--disabled {
+            border-color: rgba(148, 163, 184, 1);
+            background: transparent;
+            color: rgba(148, 163, 184, 0.4);
+            cursor: not-allowed;
+        }
+
+        .slot__label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 16px;
+            height: 16px;
+            padding: 0;
+            border-radius: 999px;
+            font-size: 14px;
+        }
+
+        .slot__title {
+            display: none;
+        }
     `;
 
     private toggleControlPanel(side: 'left' | 'right' | 'bottom' | null) {
@@ -204,6 +267,42 @@ export class ControlToolbar extends LitElement {
         `;
     }
 
+    // --- ViewControls Logic ---
+    get panelLimit() {
+        const layout = this.uiState?.layout ?? { mainAreaCount: 1, mainViewOrder: [] };
+        const rawCount = Number(layout.mainAreaCount ?? 1);
+        const clamped = Math.min(5, Math.max(1, Number.isFinite(rawCount) ? rawCount : 1));
+        return clamped;
+    }
+
+    private getViewLabel(view: { title?: string; name?: string; id?: string }) {
+        return view.title || view.name || view.id || '';
+    }
+
+    private getViewIcon(view: { icon?: string; title?: string; name?: string; id?: string }) {
+        if (view.icon) {
+            return view.icon;
+        }
+        return Icons[Math.floor(Math.random() * Icons.length)];
+    }
+
+    private resolvePanelViewId(panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) {
+        return panel?.activeViewId ?? panel?.viewId ?? (panel as any)?.view?.component ?? null;
+    }
+
+    private resolveActiveMainViews() {
+        const uiState = this.uiState;
+        const panels = uiState && Array.isArray(uiState.panels) ? uiState.panels : [];
+        return panels
+            .filter((panel) => panel.region === 'main')
+            .map((panel) => this.resolvePanelViewId(panel))
+            .filter(Boolean);
+    }
+
+    private handleSlotClick(slotIndex: number) {
+        this.viewHandlers.setMainAreaCount(slotIndex + 1);
+    }
+
     render() {
         const isColumn = this.orientation === 'column';
         const expansion = this.uiState?.layout?.expansion ?? {
@@ -244,8 +343,51 @@ export class ControlToolbar extends LitElement {
         const visibleModes = allModes.slice(0, Math.min(availableViewCount, 5));
         // === END FILTER CODE ===
 
+        // --- ViewControls Data ---
+        const views = this.uiState?.viewDefinitions ?? [];
+        const activeOrder = this.resolveActiveMainViews();
+        const capacity = this.panelLimit;
+        const slotStripClass = `slot-strip ${isColumn ? 'slot-strip--column' : ''}`;
+
         return html`
             <div class="controls ${isColumn ? 'column' : ''}" @click=${this.handlers.stopClickPropagation}>
+                 <!-- View Tokens Section -->
+                <div class="${slotStripClass}">
+                    ${Array.from({ length: 5 }).map((_, index) => {
+                        const viewId = activeOrder[index] ?? null;
+                        const view = viewId ? views.find((item) => item.id === viewId) : null;
+                        const label = view ? this.getViewLabel(view) : '';
+                        const isEnabled = index < capacity;
+                        const isActive = Boolean(viewId);
+                        const slotLabel = isActive ? label : `Slot ${index + 1}`;
+                        const slotClass = [
+                            'slot',
+                            isEnabled ? 'slot--active' : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ');
+
+                        return html`
+                            <button
+                                class="${slotClass}"
+                                aria-label=${slotLabel}
+                                @click=${() => this.handleSlotClick(index)}
+                                title=${slotLabel}
+                            >
+                                <span class="slot__label">
+                                    ${index + 1}
+                                </span>
+                                <span class="slot__title">
+                                    ${view ? label : `Slot ${index + 1}`}
+                                </span>
+                            </button>
+                        `;
+                    })}
+                </div>
+
+                <!-- Separator -->
+                <div class="${separatorClass}"></div>
+
                 <!-- Expander Controls Section -->
                 ${leftVisible ? html`
                     <div style="position: relative;">
@@ -306,6 +448,26 @@ export class ControlToolbar extends LitElement {
                         ${mode}
                     </button>
                 `)}
+                   
+                <!-- Separator -->
+                <div class="${separatorClass}"></div>
+
+                <!-- Active Counter Controls Section -->
+                ${html`
+                  <button
+                                class="${slotClass}"
+                                aria-label=${slotLabel}
+                                @click=${() => this.handleSlotClick(index)}
+                                title=${slotLabel}
+                            >
+                                <span class="slot__label">
+                                    ${index + 1}
+                                </span>
+                                <span class="slot__title">
+                                    ${view ? label : `Slot ${index + 1}`}
+                                </span>
+                            </button>
+                `}
             </div>
         `;
     }
