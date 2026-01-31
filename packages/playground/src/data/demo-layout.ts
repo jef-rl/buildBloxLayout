@@ -72,6 +72,12 @@ const MAIN_VIEWS: View[] = [
       color: PLACEHOLDER_COLOR,
       description: 'Code editing with syntax highlighting'
     }
+  },
+  {
+    id: 'layouts-list',
+    name: 'Layouts List',
+    component: 'layouts-list',
+    data: {}
   }
 ];
 
@@ -532,7 +538,8 @@ function getIconForView(viewId: string): string {
     'expander-controls': 'panel_left',
     'viewport-controls': 'aspect_ratio',
     'view-token-strip': 'view_list',
-    'custom-toolbar': 'apps'
+    'custom-toolbar': 'apps',
+    'layouts-list': 'view_list'
   };
   return iconMap[viewId] || 'apps';
 }
@@ -575,6 +582,10 @@ function getComponentLoader(viewId: string): () => Promise<any> {
     return () => import('@project/framework').then(m => m.CustomToolbar);
   }
 
+  if (viewId === 'layouts-list') {
+    return () => import('@project/framework').then(m => m.LayoutsList);
+  }
+
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data
   return () => import('../components/demo-view');
@@ -606,5 +617,10 @@ function getTagForView(viewId: string): string {
   if (viewId === 'custom-toolbar') {
     return 'custom-toolbar';
   }
+
+  if (viewId === 'layouts-list') {
+    return 'layouts-list';
+  }
+
   return 'demo-view';
 }
