@@ -30,11 +30,12 @@ export class CustomToolbar extends LitElement {
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(26, 1fr);
-            gap: 2px;
+            grid-auto-flow:column;
+            grid-auto-columns: auto;
+            gap: 0px;
             align-items: center;
             height: 100%;
-            padding: 0 4px;
+            padding: 0;
         }
 
         .icon-button {
@@ -73,8 +74,8 @@ export class CustomToolbar extends LitElement {
         .separator {
             width: 1px;
             height: 16px;
-            background-color: #334155;
-            margin: 0 auto;
+            background-color: #ffffff33;
+            margin: 0 6px;
         }
     `;
 

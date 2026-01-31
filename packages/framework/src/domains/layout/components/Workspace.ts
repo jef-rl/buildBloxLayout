@@ -4,8 +4,8 @@ import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
-import { createViewControlsHandlers } from '../handlers/view-controls.handlers';
-import { createExpanderControlsHandlers } from '../handlers/expander-controls.handlers';
+// import { createViewControlsHandlers } from '../handlers/view-controls.handlers';
+// import { createExpanderControlsHandlers } from '../handlers/expander-controls.handlers';
 import type { ViewDefinitionSummary } from '../../../types/state';
 import { Icons } from '../../../components/Icons';
 import { toggleExpanderState, isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
@@ -481,132 +481,12 @@ export class Workspace extends LitElement {
         const zoomLevels = [1, 2, 3, 4, 5];
 
         return html`
-            <div class="${toolbarClass}">
-                <!-- Expander Controls -->
-                <div class="${expanderClass}">
-                    <button class="icon-button ${leftExpanded ? 'active' : ''}" @click=${() => this.toggleSide('left')} title="Toggle Left Panel">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="3" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
-                           ${leftExpanded
-                             ? html`<path d="M12 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                             : html`<path d="M10 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                           }
-                        </svg>
-                    </button>
-                    <button class="icon-button ${bottomExpanded ? 'active' : ''}" @click=${() => this.toggleSide('bottom')} title="Toggle Bottom Panel">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="3" y="18" width="18" height="3" fill="#0284c7" stroke="none" />
-                           ${bottomExpanded
-                             ? html`<path d="M12 12l0 3m0 0l-1.5 -1.5m1.5 1.5l1.5 -1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                             : html`<path d="M12 15l0 -3m0 0l-1.5 1.5m1.5 -1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                           }
-                        </svg>
-                    </button>
-                    <button class="icon-button ${rightExpanded ? 'active' : ''}" @click=${() => this.toggleSide('right')} title="Toggle Right Panel">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <rect x="3" y="3" width="18" height="18" fill="#cbd5e1" stroke="none" />
-                           <rect x="16" y="3" width="5" height="18" fill="#0284c7" stroke="none" />
-                           ${rightExpanded
-                             ? html`<path d="M12 12l3 0m0 0l-1.5 -1.5m1.5 1.5l-1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                             : html`<path d="M14 12l-3 0m0 0l1.5 -1.5m-1.5 1.5l1.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />`
-                           }
-                        </svg>
-                    </button>
-                    <div class="${separatorClass}"></div>
-                    <button class="icon-button ${overlayOpen ? 'active' : ''}" @click=${() => this.toggleOverlay()} title="Toggle Overlay">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
-                </div>
+            
 
-                <!-- View Controls -->
-                <div class="${viewsClass}" @click=${this.viewHandlers.stopClickPropagation}>
-                    <div class="slot-strip">
-                        ${Array.from({ length: 5 }).map((_, index) => {
-                            const viewId = activeOrder[index] ?? null;
-                            const view = viewId ? views.find((item) => item.id === viewId) : null;
-                            const isEnabled = index < capacity;
-                            const slotClass = `slot ${isEnabled ? 'slot--active' : ''}`;
+          
 
-                            return html`
-                                <button
-                                    class="${slotClass}"
-                                    @click=${() => this.handleSlotClick(index)}
-                                    title="Slot ${index + 1}"
-                                >
-                                    <span class="slot__label">${index + 1}</span>
-                                </button>
-                            `;
-                        })}
-                    </div>
-
-                    <div
-                        class="token-pool"
-                        @dragover=${this.handleTokenDragOver}
-                        @drop=${(event: DragEvent) => this.handleDrop(event)}
-                    >
-                        ${tokenOrder
-                            .map((viewId: string) => viewMap.get(viewId))
-                            .filter((view?: ViewDefinitionSummary): view is ViewDefinitionSummary => !!view)
-                            .map((view: ViewDefinitionSummary) => {
-                                const label = this.getViewLabel(view);
-                                const iconName = this.getViewIcon(view);
-                                return html`
-                                    <div
-                                        class="token"
-                                        data-view-id=${view.id}
-                                        draggable="true"
-                                        title=${label}
-                                        @dragstart=${(event: DragEvent) => this.handleTokenDragStart(event, view.id)}
-                                        @dragend=${this.handleTokenDragEnd}
-                                    >
-                                        <span class="token__icon">
-                                            <img src="https://storage.googleapis.com/lozzuck.appspot.com/blox/icons/${iconName}.png" alt="${label}" />
-                                        </span>
-                                    </div>
-                                `;
-                            })}
-
-                        <button
-                            @click=${this.viewHandlers.resetSession}
-                            class="icon-button"
-                            title="New Session / Reset"
-                        >
-                            <i class="icon codicon codicon-refresh"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Zoom Controls -->
-                <div class="zoom-section">
-                    ${zoomLevels.map(level => html`
-                        <button
-                            class="zoom-button ${this.zoomLevel === level ? 'active' : ''}"
-                            @click=${() => this.setZoom(level)}
-                            title="${level}x Zoom"
-                        >
-                            ${level}X
-                        </button>
-                    `)}
-                </div>
-
-                <!-- Scale Controls -->
-                <div class="scale-section">
-                    <button class="icon-button" title="Grid View">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                        </svg>
-                    </button>
-                    <button class="icon-button" title="Layout Options">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            
+       
         `;
     }
 }

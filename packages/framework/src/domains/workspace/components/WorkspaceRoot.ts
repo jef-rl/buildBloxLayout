@@ -22,6 +22,7 @@ export class WorkspaceRoot extends LitElement {
             height: 100%;
             position: relative;
             overflow: hidden;
+            z-index:50;
             background-color: #0f172a;
         }
 
@@ -45,15 +46,14 @@ export class WorkspaceRoot extends LitElement {
             position: relative;
             background-color: #111827;
             border: 1px solid #1f2937;
-            overflow: hidden;
+            overflow: visible;
             transition: opacity 0.2s ease;
             display: flex;
             flex-direction: column;
         }
 
         .expander.collapsed {
-            opacity: 0;
-            pointer-events: none;
+            opacity: 1;
             border-width: 0;
         }
 
@@ -86,6 +86,7 @@ export class WorkspaceRoot extends LitElement {
             overflow-x: auto;
             overflow-y: hidden;
             background-color: #0b1220;
+            z-inddex:0;
         }
 
         .main-panel {
@@ -149,7 +150,7 @@ export class WorkspaceRoot extends LitElement {
         /* Sash Toggles */
         .sash-toggle {
             position: absolute;
-            z-index: 50; /* Above panels */
+            z-index: 999; /* Above panels */
             background-color: #1e293b;
             border: 1px solid #334155;
             cursor: pointer;
@@ -169,7 +170,7 @@ export class WorkspaceRoot extends LitElement {
         .sash-toggle.left {
             left: var(--left-width, 0px);
             top: 120px; /* Y offset */
-            width: 16px;
+            width: 24px;
             height: 32px;
             border-left: none;
             border-radius: 0 4px 4px 0;
@@ -179,7 +180,7 @@ export class WorkspaceRoot extends LitElement {
         .sash-toggle.right {
             right: var(--right-width, 0px);
             top: 120px; /* Y offset */
-            width: 16px;
+            width: 24px;
             height: 32px;
             border-right: none;
             border-radius: 4px 0 0 4px;
@@ -188,9 +189,9 @@ export class WorkspaceRoot extends LitElement {
 
         .sash-toggle.bottom {
             bottom: var(--bottom-height, 0px);
-            left: 280px; /* X offset */
+            left: 120px; /* X offset */
             width: 32px;
-            height: 16px;
+            height: 24px;
             border-bottom: none;
             border-radius: 4px 4px 0 0;
             transition: bottom 0.2s ease;
@@ -395,6 +396,8 @@ export class WorkspaceRoot extends LitElement {
                     "
                 >
                     <div class="expander expander-left ${leftOpen ? '' : 'collapsed'}">
+                            ${this.renderSash('left')}
+            
                         ${leftPanel ? this.renderSidePanelStack('left', leftViewOrder, leftPanel.id) : nothing}
                     </div>
 
@@ -414,16 +417,15 @@ export class WorkspaceRoot extends LitElement {
                     </div>
 
                     <div class="expander expander-right ${rightOpen ? '' : 'collapsed'}">
+                    ${this.renderSash('right')}
                         ${rightPanel ? this.renderSidePanelStack('right', rightViewOrder, rightPanel.id) : nothing}
                     </div>
 
                     <div class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}">
-                        ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id) : nothing}
+                    ${this.renderSash('bottom')}
+                    ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id) : nothing}
                     </div>
 
-                    ${this.renderSash('left')}
-                    ${this.renderSash('right')}
-                    ${this.renderSash('bottom')}
                 </div>
 
                 <dock-container .manager=${this.dockManager} toolbarId="burger" fallbackPosition="top-left" disablePositionPicker>

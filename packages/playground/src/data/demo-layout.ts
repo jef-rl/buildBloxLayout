@@ -562,15 +562,15 @@ function getComponentLoader(viewId: string): () => Promise<any> {
   if (viewId === 'generic-toolbar') {
     return () => import('@project/framework').then(m => m.ToolbarContainer);
   }
-  if (viewId === 'expander-controls') {
-    return () => import('@project/framework').then(m => m.ExpanderControls);
-  }
-  if (viewId === 'viewport-controls') {
-    return () => import('@project/framework').then(m => m.ViewportControls);
-  }
-  if (viewId === 'view-token-strip') {
-    return () => import('@project/framework').then(m => m.ViewControls);
-  }
+  // if (viewId === 'expander-controls') {
+  //   return () => import('@project/framework').then(m => m.ExpanderControls);
+  // }
+  // if (viewId === 'viewport-controls') {
+  //   return () => import('@project/framework').then(m => m.ViewportControls);
+  // }
+  // if (viewId === 'view-token-strip') {
+  //   return () => import('@project/framework').then(m => m.ViewControls);
+  // }
   if (viewId === 'custom-toolbar') {
     return () => import('@project/framework').then(m => m.CustomToolbar);
   }
