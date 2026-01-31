@@ -39,11 +39,41 @@ export class ViewRegistryPanel extends LitElement {
      * @param {string} viewId - The ID of the view being dragged.
      */
     private handleDragStart(event: DragEvent, viewId: string) {
-        if (!event.dataTransfer) {
+        if (!event.dataTransfer || !this.uiState) {
+            event.preventDefault(); // Prevent default if not draggable or no dataTransfer
             return;
         }
+
         event.dataTransfer.setData('application/x-view-id', viewId);
         event.dataTransfer.effectAllowed = 'move';
+
+        // Find the view definition to get its title for the drag ghost
+        const viewDefinition = this.uiState.viewDefinitions.find(v => v.id === viewId);
+        const dragTitle = viewDefinition?.title || 'View';
+
+        // Create a custom drag ghost element
+        const ghost = document.createElement('div');
+        ghost.style.cssText = `
+            position: absolute;
+            top: -1000px;
+            left: -1000px;
+            padding: 8px 12px;
+            background: #1e293b;
+            color: white;
+            border: 1px solid #3b82f6;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: var(--theme-font-family, 'sans-serif');
+            white-space: nowrap;
+            z-index: 9999;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        `;
+        ghost.textContent = dragTitle;
+        document.body.appendChild(ghost);
+
+        // Set the custom drag image and remove the ghost after a short delay
+        event.dataTransfer.setDragImage(ghost, 10, 10);
+        setTimeout(() => document.body.removeChild(ghost), 0);
 
         // Dispatch the action to notify the global state
         this.uiDispatch?.({ type: 'layout/dragStart', viewId });

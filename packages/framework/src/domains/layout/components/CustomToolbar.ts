@@ -109,6 +109,10 @@ export class CustomToolbar extends LitElement {
         });
     }
 
+    private toggleInDesign() {
+        this.uiDispatch?.({ type: 'layout/toggleInDesign' });
+    }
+    
     private renderButton(index: number, content?: string, isImage: boolean = false, onClick?: () => void) {
         return html`
             <button class="icon-button" title="Action ${index}" @click=${onClick}>
@@ -137,7 +141,8 @@ export class CustomToolbar extends LitElement {
                 ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/add-96.png', true, () => this.resetLayout())}
                 ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true)}
                 ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/edit-96.png', true)}
-                ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true)}
+                ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true, () => this.toggleInDesign())}
+              
                 
                 <!-- 5 Div -->
                 ${this.renderSeparator()}
