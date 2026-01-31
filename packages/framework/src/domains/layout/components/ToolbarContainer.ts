@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { dispatchUiEvent } from '../../../utils/dispatcher';
+import '../../workspace/components/ToolbarView.js';
 
 type ToolbarContext = {
     viewIds?: string[];
@@ -42,7 +43,7 @@ export class ToolbarContainer extends LitElement {
             min-width: 0;
         }
 
-        .toolbar-item panel-view {
+        .toolbar-item toolbar-view {
             width: 100%;
         }
 
@@ -157,7 +158,7 @@ export class ToolbarContainer extends LitElement {
                             draggable="true"
                             @dragstart=${(event: DragEvent) => this.handleDragStart(event, viewId)}
                         >
-                            <panel-view .viewId=${viewId}></panel-view>
+                            <toolbar-view .viewId=${viewId}></toolbar-view>
                         </div>
                     `;
                 })}

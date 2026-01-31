@@ -112,7 +112,7 @@ export class CustomToolbar extends LitElement {
     private toggleInDesign() {
         this.uiDispatch?.({ type: 'layout/toggleInDesign' });
     }
-    
+
     private renderButton(index: number, content?: string, isImage: boolean = false, onClick?: () => void) {
         return html`
             <button class="icon-button" title="Action ${index}" @click=${onClick}>
@@ -143,45 +143,54 @@ export class CustomToolbar extends LitElement {
                 ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/edit-96.png', true)}
                 ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true, () => this.toggleInDesign())}
               
-                
-                <!-- 5 Div -->
+                                <!-- 5 Div -->
                 ${this.renderSeparator()}
                 
                 <!-- 6-9 Buttons -->
-                ${this.renderButton(6, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-hidden-48.png', true, () => this.setExpanderState('bottom', 'Collapsed'))}
-                ${this.renderButton(7, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-closed-48.png', true, () => this.setExpanderState('bottom', 'Closed'))}
-                ${this.renderButton(8, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-open-48.png', true, () => this.setExpanderState('bottom', 'Opened'))}                
-                ${this.renderButton(9, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-expanded-48.png', true, () => this.setExpanderState('bottom', 'Expanded'))}
+                ${this.renderButton(6, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-hidden-48.png', true, () => this.setExpanderState('left', 'Collapsed'))}
+                ${this.renderButton(7, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-closed-48.png', true, () => this.setExpanderState('left', 'Closed'))}
+                ${this.renderButton(8, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-open-48.png', true, () => this.setExpanderState('left', 'Opened'))}                
+                ${this.renderButton(9, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-left-expanded-48.png', true, () => this.setExpanderState('left', 'Expanded'))}
+                
+
+                <!-- 10 Div -->
+                ${this.renderSeparator()}
+                
+                <!-- 6-9 Buttons -->
+                ${this.renderButton(16, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-hidden-48.png', true, () => this.setExpanderState('bottom', 'Collapsed'))}
+                ${this.renderButton(17, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-closed-48.png', true, () => this.setExpanderState('bottom', 'Closed'))}
+                ${this.renderButton(18, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-open-48.png', true, () => this.setExpanderState('bottom', 'Opened'))}                
+                ${this.renderButton(19, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-bottom-expanded-48.png', true, () => this.setExpanderState('bottom', 'Expanded'))}
                 
                 <!-- 10 Div -->
                 ${this.renderSeparator()}
                 
                 <!-- 11-14 Buttons -->
-                ${this.renderButton(11, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-hidden-48.png', true, () => this.setExpanderState('right', 'Collapsed'))}
-                ${this.renderButton(12, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-closed-48.png', true, () => this.setExpanderState('right', 'Closed'))}
-                ${this.renderButton(13, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-open-48.png', true, () => this.setExpanderState('right', 'Opened'))}
-                ${this.renderButton(14, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-expanded-48.png', true, () => this.setExpanderState('right', 'Expanded'))}
+                ${this.renderButton(21, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-hidden-48.png', true, () => this.setExpanderState('right', 'Collapsed'))}
+                ${this.renderButton(22, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-closed-48.png', true, () => this.setExpanderState('right', 'Closed'))}
+                ${this.renderButton(23, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-open-48.png', true, () => this.setExpanderState('right', 'Opened'))}
+                ${this.renderButton(24, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/expander-right-expanded-48.png', true, () => this.setExpanderState('right', 'Expanded'))}
 
                 
                 <!-- 15 Div -->
                 ${this.renderSeparator()}
                 
                 <!-- 16-20 Buttons -->
-                ${this.renderButton(16, 'x1', false, () => this.setMainAreaCount(1))}
-                ${this.renderButton(17, 'x2', false, () => this.setMainAreaCount(2))}
-                ${this.renderButton(18, 'x3', false, () => this.setMainAreaCount(3))}
-                ${this.renderButton(19, 'x4', false, () => this.setMainAreaCount(4))}
-                ${this.renderButton(20, 'x5', false, () => this.setMainAreaCount(5))}
+                ${this.renderButton(26, 'x1', false, () => this.setMainAreaCount(1))}
+                ${this.renderButton(27, 'x2', false, () => this.setMainAreaCount(2))}
+                ${this.renderButton(28, 'x3', false, () => this.setMainAreaCount(3))}
+                ${this.renderButton(29, 'x4', false, () => this.setMainAreaCount(4))}
+                ${this.renderButton(30, 'x5', false, () => this.setMainAreaCount(5))}
                 
                 <!-- 21 Div -->
                 ${this.renderSeparator()}
                 
                 <!-- 22-26 Buttons -->
-                ${this.renderButton(22, '1', false, () => this.setViewportWidthMode('1x'))}
-                ${this.renderButton(23, '1/2', false, () => this.setViewportWidthMode('2x'))}
-                ${this.renderButton(24, '1/3', false, () => this.setViewportWidthMode('3x'))}
-                ${this.renderButton(25, '1/4', false, () => this.setViewportWidthMode('4x'))}
-                ${this.renderButton(26, '1/5', false, () => this.setViewportWidthMode('5x'))}
+                ${this.renderButton(32, '1', false, () => this.setViewportWidthMode('1x'))}
+                ${this.renderButton(33, '1/2', false, () => this.setViewportWidthMode('2x'))}
+                ${this.renderButton(34, '1/3', false, () => this.setViewportWidthMode('3x'))}
+                ${this.renderButton(35, '1/4', false, () => this.setViewportWidthMode('4x'))}
+                ${this.renderButton(36, '1/5', false, () => this.setViewportWidthMode('5x'))}
             </div>
         `;
     }
