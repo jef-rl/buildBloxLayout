@@ -3,7 +3,6 @@ import { customElement, property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
-import { createControlToolbarHandlers } from '../handlers/control-toolbar.handlers';
 import type { ExpanderState } from '../../../utils/expansion-helpers.js';
 
 @customElement('custom-toolbar')
@@ -21,8 +20,6 @@ export class CustomToolbar extends LitElement {
             this.requestUpdate();
         },
     });
-    private handlers = createControlToolbarHandlers(this, () => this.uiDispatch);
-
 
     static styles = css`
         :host {
@@ -82,15 +79,15 @@ export class CustomToolbar extends LitElement {
     `;
 
     private setExpanderState(side: 'left' | 'right' | 'bottom', state: ExpanderState) {
-        this.handlers.setExpansion(side, state);
+        this.uiDispatch?.({ type: 'layout/setExpansion', side, state });
     }
     
     private setMainAreaCount(count: number) {
-        this.handlers.setMainAreaCount(count);
+        this.uiDispatch?.({ type: 'layout/setMainAreaCount', count });
     }
 
     private setViewportWidthMode(mode: string) {
-        this.handlers.setViewportWidthMode(mode);
+        this.uiDispatch?.({ type: 'layout/setViewportWidthMode', mode });
     }
 
     private resetLayout() {
