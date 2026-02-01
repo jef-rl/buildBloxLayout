@@ -28,6 +28,9 @@ export * from './utils';
 // Types & Interfaces
 export * from './types';
 
+// NXT API (temporary namespace to avoid breaking changes)
+export * as nxt from './nxt';
+
 // Backward Compatibility Exports (Legacy Paths)
 // These maintain the old import paths for existing consumers
 export { ViewRegistry, viewRegistry } from './core/registry/view-registry';
