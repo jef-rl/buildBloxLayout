@@ -3,9 +3,9 @@
 ## Executive Summary
 
 This plan outlines the reorganization of `packages/framework/src` to:
-1. Limit folder depth to **3 levels maximum** (from current 4 levels)
+1. Limit folder depth to **2 levels maximum** (from current 4 levels): `src/{domain}/file.ts`
 2. Limit file size to **~50 lines of code** (1 function per file where practical)
-3. Implement consistent naming conventions using **{domain}-{feature}.{type}.ts** pattern
+3. Implement consistent naming conventions using **{feature}.{type}.ts** pattern
 
 ## Related Documents
 
@@ -16,9 +16,10 @@ This plan outlines the reorganization of `packages/framework/src` to:
 
 | Aspect | Initial | Revised |
 |--------|---------|---------|
+| Max folder depth | 3 levels | 2 levels |
 | Max file size | 200 lines | ~50 lines |
 | Split granularity | 2-6 files per large file | 5-15 files per large file |
-| Total files | ~98 | ~184 |
+| Total files | ~98 | ~192 |
 | Functions per file | Multiple | 1 (where practical) |
 
 ## Naming Corrections
@@ -429,17 +430,17 @@ After each phase:
 | state/ | 5 | 8 |
 | types/ | 5 | 11 |
 | utils/ | 10 | 5 |
-| persistence/ | 4 | 14 |
+| persistence/ | 4 | 15 |
 | handlers/ (core) | - | 9 |
 | effects/ | 4 | 7 |
-| auth/ | 2 | 17 |
-| dock/ | 6 | 12 |
-| layout/ | 10 | 35 |
+| auth/ | 2 | 18 |
+| dock/ | 6 | 11 |
+| layout/ | 10 | 37 |
 | logging/ | 2 | 7 |
-| workspace/ | 8 | 32 |
-| components/ | 4 | 11 |
+| workspace/ | 8 | 38 |
+| components/ | 4 | 10 |
 | config/ | 1 | 1 |
-| **Total** | **~66** | **~184** |
+| **Total** | **~66** | **~192** |
 
 ---
 
@@ -455,10 +456,10 @@ After each phase:
 
 ## Success Criteria
 
-- [ ] All folders are max 3 levels deep
+- [ ] All folders are max 2 levels deep: `src/{domain}/file.ts`
 - [ ] All files are ~50 lines (max 80, target 50)
 - [ ] 1 function per file (where practical)
-- [ ] Consistent naming: `{domain}-{feature}.{type}.ts`
+- [ ] Consistent naming: `{feature}.{type}.ts`
 - [ ] No broken imports
 - [ ] All functionality preserved
 - [ ] Tests pass
