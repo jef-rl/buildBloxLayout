@@ -1,3 +1,6 @@
+// Built-in views
+// TODO: Extract from core/built-in-views.ts
+
 /**
  * Built-in framework views that are auto-registered during initialization.
  * Users don't need to register these - they're available automatically.

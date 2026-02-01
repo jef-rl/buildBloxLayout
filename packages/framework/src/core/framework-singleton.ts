@@ -1,3 +1,6 @@
+// Main singleton class
+// TODO: Extract from core/framework-singleton.ts
+
 /**
  * Framework Singleton
  *

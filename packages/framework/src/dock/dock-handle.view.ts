@@ -1,0 +1,7 @@
+// Position handle
+// TODO: Extract from domains/dock/components/DockContainer.ts
+//
+// This file should contain ~50 lines extracted from the source.
+// See DETAILED_FILE_MAPPING.md for what should go here.
+
+export {};
