@@ -469,7 +469,47 @@ After each phase:
 
 ## Quick Start
 
-To execute the migration, use the prompts in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md):
+### Option 1: Safe Migration (Recommended) - Using `nxt/` folder
+
+The safest approach creates all migrated files in a separate `nxt/` folder, keeping original `src/` files untouched.
+
+```bash
+# Check current progress
+npm run migrate:nxt:status
+
+# Run migration (resumable - tracks progress)
+npm run migrate:nxt
+
+# Preview changes without making them
+npm run migrate:nxt:dry
+
+# Reset progress and start fresh
+npm run migrate:nxt:reset
+```
+
+**Benefits:**
+- Original `src/` files are never modified
+- Progress tracked in `migration-progress.json` for resumable execution
+- Can be interrupted and resumed at any step
+- Safe to compare `src/` vs `nxt/` before switching
+
+**After migration is complete:**
+1. Verify `nxt/` folder compiles: `cd nxt && npx tsc --noEmit`
+2. Compare functionality between `src/` and `nxt/`
+3. When ready, rename folders: `mv src src-backup && mv nxt src`
+
+### Option 2: In-Place Migration
+
+To modify `src/` directly (use with caution):
+
+```bash
+npm run migrate        # Run migration
+npm run migrate:dry    # Preview changes
+```
+
+### Option 3: Manual Migration
+
+Use the prompts in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md):
 
 1. Run Pre-Migration Setup (create folders)
 2. Execute Chunks 1-18 in order
@@ -477,3 +517,39 @@ To execute the migration, use the prompts in [MIGRATION_PROMPTS.md](./MIGRATION_
 4. Cleanup and validate (Chunk 20)
 
 Each chunk is self-contained and can be executed in a single session.
+
+---
+
+## Migration Progress Tracking
+
+The `nxt/` migration tracks progress in `migration-progress.json`:
+
+```json
+{
+  "completedSteps": [1, 2, 3],
+  "lastUpdated": "2024-01-15T10:30:00Z",
+  "totalSteps": 21
+}
+```
+
+### Migration Steps (21 total):
+
+| Step | Description |
+|------|-------------|
+| 1 | Create folder structure in nxt/ |
+| 2 | Migrate type definitions |
+| 3 | Migrate state files |
+| 4 | Migrate utility files |
+| 5 | Migrate core files |
+| 6 | Migrate persistence files |
+| 7 | Migrate effects |
+| 8 | Migrate auth domain |
+| 9 | Migrate dock domain |
+| 10 | Migrate layout domain |
+| 11 | Migrate logging domain |
+| 12 | Migrate workspace domain |
+| 13 | Migrate shared components |
+| 14 | Migrate config |
+| 15 | Create barrel exports |
+| 16 | Create main index.ts |
+| 17-21 | Verification and cleanup |

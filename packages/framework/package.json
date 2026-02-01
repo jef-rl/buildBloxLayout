@@ -17,7 +17,11 @@
     "migrate": "node scripts/migrate.cjs",
     "migrate:dry": "node scripts/migrate.cjs --dry-run",
     "migrate:imports": "node scripts/update-imports.cjs",
-    "migrate:imports:dry": "node scripts/update-imports.cjs --dry-run"
+    "migrate:imports:dry": "node scripts/update-imports.cjs --dry-run",
+    "migrate:nxt": "node scripts/migrate-nxt.cjs",
+    "migrate:nxt:dry": "node scripts/migrate-nxt.cjs --dry-run",
+    "migrate:nxt:reset": "node scripts/migrate-nxt.cjs --reset",
+    "migrate:nxt:status": "node scripts/migrate-nxt.cjs --status"
   },
   "files": [
     "dist"
