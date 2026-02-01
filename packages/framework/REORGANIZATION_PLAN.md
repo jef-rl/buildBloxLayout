@@ -4,8 +4,30 @@
 
 This plan outlines the reorganization of `packages/framework/src` to:
 1. Limit folder depth to **3 levels maximum** (from current 4 levels)
-2. Limit file size to **200 lines of code maximum**
-3. Implement consistent naming conventions using **feature.{handler|state|view|effect}.ts** pattern
+2. Limit file size to **~50 lines of code** (1 function per file where practical)
+3. Implement consistent naming conventions using **{domain}-{feature}.{type}.ts** pattern
+
+## Related Documents
+
+- **[DETAILED_FILE_MAPPING.md](./DETAILED_FILE_MAPPING.md)** - Complete source → target file mapping (~184 files)
+- **[MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md)** - 20 executable prompts for chunked migration
+
+## Key Changes from Initial Plan
+
+| Aspect | Initial | Revised |
+|--------|---------|---------|
+| Max file size | 200 lines | ~50 lines |
+| Split granularity | 2-6 files per large file | 5-15 files per large file |
+| Total files | ~98 | ~184 |
+| Functions per file | Multiple | 1 (where practical) |
+
+## Naming Corrections
+
+| Current Name | Actual Purpose | New Name |
+|--------------|----------------|----------|
+| `CustomToolbar.ts` | Admin layout controls | `admin-toolbar` |
+| `ViewRegistryPanel.ts` | Draggable view palette | `view-palette` |
+| `Workspace.ts` | LEGACY (commented out) | DELETE |
 
 ---
 
@@ -403,14 +425,21 @@ After each phase:
 
 | Category | Current | After Split |
 |----------|---------|-------------|
-| View files | 17 | ~35 |
-| Handler files | 12 | ~25 |
-| Effect files | 3 | 4 |
-| State files | 4 | 4 |
-| Type files | 5 | 6 |
-| Utility files | 10 | 12 |
-| Index files | 15 | 12 |
-| **Total** | **~66** | **~98** |
+| core/ | 9 | 15 |
+| state/ | 5 | 8 |
+| types/ | 5 | 11 |
+| utils/ | 10 | 5 |
+| persistence/ | 4 | 14 |
+| handlers/ (core) | - | 9 |
+| effects/ | 4 | 7 |
+| auth/ | 2 | 17 |
+| dock/ | 6 | 12 |
+| layout/ | 10 | 35 |
+| logging/ | 2 | 7 |
+| workspace/ | 8 | 32 |
+| components/ | 4 | 11 |
+| config/ | 1 | 1 |
+| **Total** | **~66** | **~184** |
 
 ---
 
@@ -427,9 +456,23 @@ After each phase:
 ## Success Criteria
 
 - [ ] All folders are max 3 levels deep
-- [ ] All files are max 200 lines
-- [ ] Consistent naming: `feature.{view|handler|effect|state|types|utils}.ts`
+- [ ] All files are ~50 lines (max 80, target 50)
+- [ ] 1 function per file (where practical)
+- [ ] Consistent naming: `{domain}-{feature}.{type}.ts`
 - [ ] No broken imports
 - [ ] All functionality preserved
 - [ ] Tests pass
 - [ ] Build succeeds
+
+---
+
+## Quick Start
+
+To execute the migration, use the prompts in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md):
+
+1. Run Pre-Migration Setup (create folders)
+2. Execute Chunks 1-18 in order
+3. Update imports (Chunk 19)
+4. Cleanup and validate (Chunk 20)
+
+Each chunk is self-contained and can be executed in a single session.
