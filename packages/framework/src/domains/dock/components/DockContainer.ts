@@ -46,13 +46,13 @@ export class DockContainer extends LitElement {
         .dock-container--row {
             padding: 0px 16px;
             flex-direction: row;
-            gap: 12px;
+            gap: 1px;
         }
 
         .dock-container--column {
-            padding: 16px 6px;
+            padding: 16px 0px;
             flex-direction: column;
-            gap: 12px;
+            gap: 1px;
         }
 
         .dock-container--top-left {
@@ -101,6 +101,8 @@ export class DockContainer extends LitElement {
             border-bottom: 0;
             border-right: 0;
             border-radius: 16px 0 0 0;
+            padding: 16px 0 0 16px;
+
         }
 
         .dock-container--bottom-left {

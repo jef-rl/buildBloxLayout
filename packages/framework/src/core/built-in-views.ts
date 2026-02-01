@@ -13,8 +13,8 @@ const loadAuthView = () =>
 const loadLogView = () =>
   import('../domains/logging/components/LogView').then((m) => m.LogView);
 
-const loadLayoutsList = () =>
-  import('../domains/layout/components/LayoutsList').then((m) => m.LayoutsList);
+// const loadLayoutsList = () =>
+//   import('../domains/layout/components/LayoutsList').then((m) => m.LayoutsList);
 
 const loadCustomToolbar = () =>
   import('../domains/layout/components/CustomToolbar').then(
@@ -57,14 +57,14 @@ export const BUILT_IN_VIEWS: ViewDefinition[] = [
     icon: 'terminal',
     component: loadLogView,
   },
-  {
-    id: 'layouts-list',
-    name: 'Layouts',
-    title: 'Layouts',
-    tag: 'layouts-list',
-    icon: 'view_list',
-    component: loadLayoutsList,
-  },
+  // {
+  //   id: 'layouts-list',
+  //   name: 'Layouts',
+  //   title: 'Layouts',
+  //   tag: 'layouts-list',
+  //   icon: 'view_list',
+  //   component: loadLayoutsList,
+  // },
   {
     id: 'custom-toolbar',
     name: 'Toolbar',

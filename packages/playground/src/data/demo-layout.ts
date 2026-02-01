@@ -543,9 +543,9 @@ function getComponentLoader(viewId: string): () => Promise<any> {
     return () => import('@project/framework').then(m => m.CustomToolbar);
   }
 
-  if (viewId === 'layouts-list') {
-    return () => import('@project/framework').then(m => m.LayoutsList);
-  }
+  // if (viewId === 'layouts-list') {
+  //   return () => import('@project/framework').then(m => m.LayoutsList);
+  // }
 
   // In a real app, these would load actual component modules
   // For the demo, we'll use a unified component that adapts based on data

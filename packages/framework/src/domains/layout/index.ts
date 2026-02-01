@@ -4,11 +4,11 @@ export * from './components/ToolbarContainer';
 // export * from './components/ExpanderControls';
 // export * from './components/ViewportControls';
 // export * from './components/Workspace';
-export * from './components/PresetManager';
+// export * from './components/PresetManager';
 export * from './components/FrameworkMenu';
 export * from './components/ViewRegistryPanel';
 export * from './components/CustomToolbar';
-export * from './components/LayoutsList';
+// export * from './components/LayoutsList';
 
 // Layout handlers
 // export * from './handlers/resize';

@@ -116,14 +116,6 @@ export class ViewRegistryPanel extends LitElement {
         const isDraggable = this.isDraggable();
 
         return html`
-            <div class="header">
-                <h3>View Registry</h3>
-                <p>
-                    ${isDraggable
-                        ? 'Drag a view onto a panel to assign it.'
-                        : 'Enable InDesign mode to edit the layout.'}
-                </p>
-            </div>
             <div class="registry-list">
                 ${views.map((view) => this.renderRegistryItem(view))}
             </div>
@@ -135,46 +127,31 @@ export class ViewRegistryPanel extends LitElement {
             display: flex;
             flex-direction: column;
             height: 100%;
-            background-color: var(--theme-color-surface-1, #2c2c2c);
+            // background-color: var(--theme-color-surface-1, #2c2c2c);
             color: var(--theme-color-on-surface, #ffffff);
             font-family: var(--theme-font-family, 'sans-serif');
             font-size: 13px;
             overflow: hidden;
         }
 
-        .header {
-            padding: 12px;
-            border-bottom: 1px solid var(--theme-color-border, #444);
-        }
-
-        h3 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        p {
-            margin: 0;
-            font-size: 12px;
-            color: var(--theme-color-on-surface-variant, #aaa);
-        }
+    
 
         .registry-list {
             flex-grow: 1;
+            max-height: 40vh;
             overflow-y: auto;
-            padding: 8px;
+            padding: 8px 0 0 0;
         }
 
         .registry-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 4px;
-            border-left: 3px solid transparent;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            /* Ensure the item itself captures events */
-            pointer-events: auto; 
+        position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4px 16px;
+    margin-bottom: 4px;
+    /* border-left: 3px solid transparent; */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    pointer-events: auto;
         }
 
         .registry-item.is-draggable {
