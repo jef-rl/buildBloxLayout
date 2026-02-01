@@ -13,7 +13,11 @@
     }
   },
   "scripts": {
-    "build": "tsc -p . && node ../../scripts/copy-package-dist.js framework"
+    "build": "tsc -p . && node ../../scripts/copy-package-dist.js framework",
+    "migrate": "node scripts/migrate.cjs",
+    "migrate:dry": "node scripts/migrate.cjs --dry-run",
+    "migrate:imports": "node scripts/update-imports.cjs",
+    "migrate:imports:dry": "node scripts/update-imports.cjs --dry-run"
   },
   "files": [
     "dist"
