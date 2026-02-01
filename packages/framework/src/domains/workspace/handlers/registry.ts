@@ -861,7 +861,7 @@ const registerHandler = (
 export const registerWorkspaceHandlers = (
   registry: HandlerRegistry<FrameworkContextState>,
 ): void => {
-  ['layout/setExpansion', 'layout/setOverlayView', 'layout/setViewportWidthMode'].forEach((type) =>
+  ['layout/setExpansion', 'layout/setOverlayView', 'layout/setViewportWidthMode', 'layout/setOverlayExpander', 'layout/unsetOverlayExpander', 'layout/resetExpanders'].forEach((type) =>
     registerHandler(registry, type, handleLayoutAction),
   );
   registerHandler(registry, 'layout/setMainAreaCount', handleMainAreaCount);

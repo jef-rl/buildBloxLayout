@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
@@ -7,7 +7,7 @@ import type { ExpanderState } from '../../../utils/expansion-helpers.js';
 
 @customElement('custom-toolbar')
 export class CustomToolbar extends LitElement {
-    
+
     private uiState: UiStateContextValue['state'] | null = null;
     private uiDispatch: UiStateContextValue['dispatch'] | null = null;
 
@@ -96,14 +96,13 @@ export class CustomToolbar extends LitElement {
             return;
         }
 
-        // Reset expander states to 'Closed'
-        this.setExpanderState('left', 'Closed');
-        this.setExpanderState('bottom', 'Closed');
-        this.setExpanderState('right', 'Closed');
+        // Reset all expander states to 'Closed' individually
+        this.uiDispatch({ type: 'layout/setExpansion', side: 'left', state: 'Closed' });
+        this.uiDispatch({ type: 'layout/setExpansion', side: 'right', state: 'Closed' });
+        this.uiDispatch({ type: 'layout/setExpansion', side: 'bottom', state: 'Closed' });
 
-        // Clear all main panels
-        const mainPanels = this.uiState.panels.filter(p => p.region === 'main');
-        mainPanels.forEach(panel => {
+        // Clear all panels (main and side panels)
+        this.uiState.panels.forEach(panel => {
             if (panel.id) {
                 this.uiDispatch?.({ type: 'panels/removeView', panelId: panel.id });
             }
@@ -112,6 +111,10 @@ export class CustomToolbar extends LitElement {
 
     private toggleInDesign() {
         this.uiDispatch?.({ type: 'layout/toggleInDesign' });
+    }
+
+    private openSavePresetOverlay() {
+        this.uiDispatch?.({ type: 'layout/setOverlayExpander', viewId: 'save-preset' });
     }
 
     private renderButton(index: number, content?: string, isImage: boolean = false, onClick?: () => void) {
@@ -140,7 +143,7 @@ export class CustomToolbar extends LitElement {
             <div class="grid">
                 <!-- 1-4 Buttons: New Icons -->
                 ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/download-96.png', true)}
-                ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true)}
+                ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true, () => this.openSavePresetOverlay())}
                 ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/erase-96.png', true, () => this.resetLayout())}
                 ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true, () => this.toggleInDesign())}
               

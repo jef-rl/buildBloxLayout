@@ -31,7 +31,7 @@ export * from './types';
 // Backward Compatibility Exports (Legacy Paths)
 // These maintain the old import paths for existing consumers
 export { ViewRegistry, viewRegistry } from './core/registry/view-registry';
-export { Workspace } from './domains/layout/components/Workspace';
+// export { Workspace } from './domains/layout/components/Workspace';
 export { DockContainer } from './domains/dock/components/DockContainer';
 export { DockManager } from './domains/dock/components/DockManager';
 export { PositionPicker } from './domains/dock/components/PositionPicker';
@@ -39,4 +39,4 @@ export { FrameworkRoot } from './components/FrameworkRoot';
 export { OverlayExpander as OverlayLayer } from './domains/workspace/components/OverlayLayer';
 export { WorkspaceRoot } from './domains/workspace/components/WorkspaceRoot';
 export { PanelView } from './domains/workspace/components/PanelView';
-export { Icons } from './components/Icons';
+// export { Icons } from './components/Icons';

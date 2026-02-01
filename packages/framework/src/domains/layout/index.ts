@@ -3,7 +3,7 @@
 export * from './components/ToolbarContainer';
 // export * from './components/ExpanderControls';
 // export * from './components/ViewportControls';
-export * from './components/Workspace';
+// export * from './components/Workspace';
 export * from './components/PresetManager';
 export * from './components/FrameworkMenu';
 export * from './components/ViewRegistryPanel';

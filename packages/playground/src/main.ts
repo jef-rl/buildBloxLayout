@@ -1,86 +1,111 @@
-import { bootstrapFramework, setFrameworkLogger } from '@project/framework';
-import { IMPROVED_DEMO_LAYOUT, VIEW_REGISTRATIONS } from './data/demo-layout';
+/**
+ * BuildBlox Framework - Simplified Demo
+ *
+ * This demonstrates the new simplified API where:
+ * 1. Users only register their custom views (framework views are auto-registered)
+ * 2. No need for manual bootstrapping - just configure and register
+ * 3. Icons and tags are auto-derived from view IDs
+ */
+
+import { Framework, type SimpleViewConfig } from '@project/framework';
+import { IMPROVED_DEMO_LAYOUT } from './data/demo-layout';
 import { firebaseApp, firebaseAuth } from './firebase';
 
-/**
- * Improved Demo Bootstrap
- * 
- * This demonstrates:
- * 1. Proper framework initialization
- * 2. View registration with metadata
- * 3. State hydration
- * 4. Optional logging configuration
- */
+// Import custom view components
+import { CounterView } from './components/counter-view';
+import { DataFeedView } from './components/data-feed-view';
+import { ConfiguratorView } from './components/configurator-view';
+import { ImprovedDemoView } from './components/demo-view';
 
 // ====================
-// LOGGING SETUP
+// VIEW REGISTRATIONS (Simplified!)
 // ====================
 
 /**
- * Configure framework logging for development
- * This helps understand the event flow and state changes
+ * Only register custom application views.
+ * Framework views (firebase-auth, framework-logs, layouts-list, custom-toolbar)
+ * are automatically registered by the framework!
+ *
+ * Compare to the old approach which required:
+ * - getTagForView() function to map IDs to tags
+ * - getIconForView() function to map IDs to icons
+ * - getComponentLoader() function for async component loading
+ * - Manual registration of firebase-auth, framework-logs, etc.
  */
-setFrameworkLogger({
-  info: (message: string, context?: unknown) => {
-    console.log(`[Framework Info] ${message}`, context);
-  },
-  warn: (message: string, context?: unknown) => {
-    console.warn(`[Framework Warn] ${message}`, context);
-  },
-  error: (message: string, context?: unknown) => {
-    console.error(`[Framework Error] ${message}`, context);
-  },
-  debug: (message: string, context?: unknown) => {
-    if (import.meta.env.DEV) {
-      console.debug(`[Framework Debug] ${message}`, context);
-    }
-  }
-});
+const CUSTOM_VIEWS: SimpleViewConfig[] = [
+  // Interactive demo views
+  // Note: Components already have @customElement decorators, so we provide the tag explicitly
+  { id: 'counter-demo', component: CounterView, tag: 'counter-view', icon: 'calculate' },
+  { id: 'stock-ticker', component: DataFeedView, tag: 'data-feed-view', icon: 'trending_up' },
+  { id: 'system-logs', component: DataFeedView, tag: 'data-feed-view', icon: 'dvr' },
+  { id: 'config-panel', component: ConfiguratorView, tag: 'configurator-view', icon: 'tune' },
+
+  // Main area views (using demo-view for placeholders)
+  { id: 'canvas-editor', component: ImprovedDemoView, tag: 'demo-view', icon: 'edit' },
+  { id: 'code-editor', component: ImprovedDemoView, tag: 'demo-view', icon: 'code' },
+
+  // Left panel views
+  { id: 'project-explorer', component: ImprovedDemoView, tag: 'demo-view', icon: 'folder' },
+  { id: 'asset-library', component: ImprovedDemoView, tag: 'demo-view', icon: 'collections' },
+
+  // Right panel views
+  { id: 'properties-panel', component: ImprovedDemoView, tag: 'demo-view', icon: 'tune' },
+  { id: 'style-editor', component: ImprovedDemoView, tag: 'demo-view', icon: 'palette' },
+  { id: 'data-inspector', component: ImprovedDemoView, tag: 'demo-view', icon: 'storage' },
+
+  // Bottom panel views
+  { id: 'console-output', component: ImprovedDemoView, tag: 'demo-view', icon: 'terminal' },
+  { id: 'timeline-view', component: ImprovedDemoView, tag: 'demo-view', icon: 'schedule' },
+  { id: 'preview-panel', component: ImprovedDemoView, tag: 'demo-view', icon: 'device_hub' },
+
+  // Overlay views
+  { id: 'ai-assistant', component: ImprovedDemoView, tag: 'demo-view', icon: 'psychology' },
+  { id: 'project-settings', component: ImprovedDemoView, tag: 'demo-view', icon: 'settings' },
+  { id: 'export-dialog', component: ImprovedDemoView, tag: 'demo-view', icon: 'file_download' },
+];
 
 // ====================
-// FRAMEWORK BOOTSTRAP
+// AUTH CONFIGURATION
 // ====================
 
 const authConfig = {
-  enabled: true,                     // Enable auth features
-  authViewId: 'firebase-auth',       // ID of the auth overlay view
-  autoShowOnStartup: false,          // Disable auto-show to prevent annoyance if not configured
-  requireAuthForActions: [],         // Actions that require authentication
+  enabled: true,
+  authViewId: 'firebase-auth', // This view is auto-registered by framework!
+  autoShowOnStartup: false,
+  requireAuthForActions: [],
   adminEmails: (import.meta.env.VITE_ADMIN_EMAILS ?? '')
     .split(',')
     .map((e: string) => e.trim())
-    .filter(Boolean),                // System administrator emails from .env
+    .filter(Boolean),
 };
 
+// ====================
+// FRAMEWORK INITIALIZATION (Simplified!)
+// ====================
+
 /**
- * Initialize the framework with:
- * - View definitions (registry)
- * - Initial UI state
- * - Optional mount point
+ * Configure and initialize the framework.
+ *
+ * OLD APPROACH (~60 lines):
+ *   setFrameworkLogger({...});
+ *   const VIEW_REGISTRATIONS = ALL_VIEWS.map(v => ({...}));
+ *   bootstrapFramework({ views, state, auth });
+ *
+ * NEW APPROACH (~10 lines):
+ *   Framework.configure({...}).registerViews([...]).init();
  */
-const root = bootstrapFramework({
-  // Register all views using the definitions from demo-layout
-  // We use the specific component loaders defined there
-  views: VIEW_REGISTRATIONS,
-
-  // Hydrate initial state
-  state: IMPROVED_DEMO_LAYOUT,
-
-  // Configure auth at bootstrap so handlers can react immediately
+const root = Framework.configure({
   auth: authConfig,
-
-  // Optional: specify mount point (defaults to document.body)
-  // mount: document.getElementById('app')
-});
+  initialState: IMPROVED_DEMO_LAYOUT,
+  logging: 'console',
+})
+  .registerViews(CUSTOM_VIEWS)
+  .init();
 
 // ====================
 // FIREBASE INITIALIZATION
 // ====================
 
-/**
- * Initialize Firebase services (Firestore & Authentication)
- * Uses custom element lifecycle to ensure framework-root is ready
- */
 const initializeFirebaseServices = () => {
   const frameworkRoot = root as any;
 
@@ -89,13 +114,11 @@ const initializeFirebaseServices = () => {
     return;
   }
 
-  // Wait for framework-root to be connected to the DOM
   if (frameworkRoot.isConnected) {
     setupFirebase(frameworkRoot).catch((error) => {
       console.error('Firebase initialization failed:', error);
     });
   } else {
-    // If not yet connected, wait for it
     const observer = new MutationObserver(() => {
       if (frameworkRoot.isConnected) {
         setupFirebase(frameworkRoot).catch((error) => {
@@ -108,80 +131,49 @@ const initializeFirebaseServices = () => {
   }
 };
 
-/**
- * Configure Firestore and Firebase Authentication
- */
 const setupFirebase = async (frameworkRoot: any) => {
-  console.log('[Firebase Setup] setupFirebase called', {
-    frameworkRootReady: !!frameworkRoot,
-    firestoreHook: typeof frameworkRoot.configureFirestore === 'function',
-    authHook: typeof frameworkRoot.configureFirebaseAuth === 'function',
-    firebaseAppReady: !!firebaseApp,
-    authConfig: frameworkRoot.authConfig,
-  });
+  console.log('[Firebase Setup] Initializing...');
 
-  // Check if Firebase is initialized
   if (!firebaseApp) {
-    console.warn('%c Firebase Not Initialized ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
-    console.warn('Skipping Firestore and Authentication setup. To enable Firebase features, add your Firebase configuration to packages/playground/.env');
+    console.warn(
+      '%c Firebase Not Initialized ',
+      'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;'
+    );
+    console.warn(
+      'To enable Firebase, add your configuration to packages/playground/.env'
+    );
     return;
   }
 
-  // Initialize Firestore for preset persistence
+  // Initialize Firestore
   if (frameworkRoot.configureFirestore && firebaseApp) {
     try {
-      console.log('[Firebase Setup] Initializing Firestore...');
-      // Import Firestore modules
-      const { getFirestore: initGetFirestore } = await import('firebase/firestore');
-      console.log('[Firebase Setup] Firestore modules imported');
-
-      // Get the Firestore instance
-      const db = initGetFirestore(firebaseApp);
-      console.log('[Firebase Setup] Firestore instance created:', !!db);
-
+      const { getFirestore } = await import('firebase/firestore');
+      const db = getFirestore(firebaseApp);
       frameworkRoot.configureFirestore(db);
-      console.log('%c Firestore Persistence Enabled ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
-      console.log('[Firebase Setup] Framework root configured with Firestore');
+      console.log(
+        '%c Firestore Enabled ',
+        'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;'
+      );
     } catch (error) {
-      console.error('%c Firestore Initialization Failed ', 'background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px;');
-      console.error('Error details:', error);
-      console.warn('Firestore is not available. This might mean:');
-      console.warn('1. Firestore is not enabled in your Firebase project');
-      console.warn('2. There is a network issue connecting to Firebase');
-      console.warn('3. Your Firebase credentials are invalid');
-      console.warn('Presets will be stored locally only (no Firestore sync)');
-    }
-  } else {
-    console.warn('%c Firestore Configuration Skipped ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
-    if (!frameworkRoot.configureFirestore) {
-      console.warn('Framework root does not have configureFirestore method');
-    }
-    if (!firebaseApp) {
-      console.warn('Firebase app is not initialized');
+      console.error('Firestore initialization failed:', error);
     }
   }
 
-  // Initialize Firebase Authentication
+  // Initialize Firebase Auth
   if (frameworkRoot.configureFirebaseAuth) {
     try {
       frameworkRoot.configureFirebaseAuth(firebaseAuth);
-      console.log('%c Firebase Auth Initialized ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
+      console.log(
+        '%c Firebase Auth Enabled ',
+        'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;'
+      );
     } catch (error) {
-      console.warn('%c Firebase Auth Setup Failed ', 'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px;');
-      console.warn('Error details:', error);
+      console.error('Firebase Auth setup failed:', error);
     }
   }
-
-  // Log authentication configuration
-  console.log('%c Auth Configuration ', 'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;');
-  console.log('  • Email/Password authentication: ✓');
-  console.log('  • Google OAuth: ✓');
-  console.log('  • Password reset: ✓');
-  console.log('  • User signup: ✓');
-  console.log('  • Auto-show on startup:', frameworkRoot.authConfig?.autoShowOnStartup ? '✓' : '✗');
 };
 
-// Initialize Firebase services
 initializeFirebaseServices();
 
 // ====================
@@ -189,54 +181,52 @@ initializeFirebaseServices();
 // ====================
 
 if (import.meta.env.DEV) {
-  // Expose framework root for debugging
   (window as any).__frameworkRoot = root;
-  
-  // Log initialization complete
-  console.log('%c Framework Initialized ', 'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;');
-  console.log('Framework root:', root);
-  console.log('Initial state:', IMPROVED_DEMO_LAYOUT);
-  console.log('Registered views:', VIEW_REGISTRATIONS.length);
-  
-  // Provide helpful debugging commands
+  (window as any).__Framework = Framework;
+
+  console.log(
+    '%c Framework Initialized (Simplified API) ',
+    'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;'
+  );
+  console.log('Custom views registered:', CUSTOM_VIEWS.length);
+  console.log(
+    'Framework views auto-registered: firebase-auth, framework-logs, layouts-list, custom-toolbar'
+  );
+
   console.log(`
-%c🎯 Debugging Commands %c
+%c New Simplified API %c
 
-// Access framework root
-__frameworkRoot
+// Register views with minimal config (only id and component required!)
+Framework.registerView({
+  id: 'my-view',
+  component: MyViewComponent,
+  // icon auto-inferred from id keywords
+  // tag auto-derived from id
+});
 
-// Dispatch custom action
-import { dispatchUiEvent } from '@project/framework';
-dispatchUiEvent(window, 'your/action', { payload: 'data' });
+// Framework auto-registers built-in views:
+// - firebase-auth (AuthView)
+// - framework-logs (LogView)
+// - layouts-list (LayoutsList)
+// - custom-toolbar (CustomToolbar)
 
-// Check current state
-__frameworkRoot.querySelector('framework-root').state
-
+// Full API:
+Framework
+  .configure({ auth, initialState, logging })
+  .registerViews([...])
+  .init();
   `,
     'background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px;',
     'color: #9ca3af; font-size: 0.9em;'
   );
 
   console.log(`
-%c🔐 Authentication Shortcuts %c
+%c Authentication %c
 
-// Open authentication overlay
-Cmd/Ctrl + L
-
-// The auth view supports:
-- Email/password login
-- User signup
-- Password reset
-- Google OAuth
-- User profile and logout
-
+// Open auth overlay: Cmd/Ctrl + L
+// Auth view is auto-registered by framework!
   `,
     'background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px;',
     'color: #9ca3af; font-size: 0.9em;'
   );
 }
-
-// ====================
-// EVENT LISTENERS AND SHORTCUTS
-// ====================
-// ... (kept implicit as they were not modified)

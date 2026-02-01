@@ -4,7 +4,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { ViewDefinitionSummary } from '../../../types/state';
-import { Icons } from '../../../components/Icons';
+// import { Icons } from '../../../components/Icons';
 
 /**
  * Lightweight registry viewer intended to live inside a dock container.
@@ -98,7 +98,7 @@ export class ViewRegistryPanel extends LitElement {
                 @dragstart=${(e: DragEvent) => this.handleDragStart(e, view.id)}
                 @dragend=${this.handleDragEnd}
             >
-                <div class="item-icon">${Icons[0]}</div>
+                <div class="item-icon"></div>
                 <div class="item-details">
                     <div class="item-title">${view.title}</div>
                     <div class="item-id">${view.id}</div>

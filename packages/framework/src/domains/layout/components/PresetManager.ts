@@ -10,8 +10,6 @@ import { createPresetManagerHandlers } from '../handlers/preset-manager.handlers
 export class PresetManager extends LitElement {
     @property({ type: String }) orientation = 'row';
 
-    @state() private showSaveDialog = false;
-    @state() private newPresetName = '';
     @state() private editingPresetName: string | null = null;
     @state() private editedName = '';
 
@@ -213,65 +211,6 @@ export class PresetManager extends LitElement {
             color: #ffffff;
         }
 
-        .save-dialog {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding: 8px;
-            background: #1f2937;
-            border-radius: 6px;
-            border: 1px solid #374151;
-        }
-
-        .save-dialog__input {
-            padding: 6px 8px;
-            border-radius: 4px;
-            border: 1px solid #374151;
-            background: #111827;
-            color: #e5e7eb;
-            font-size: 12px;
-            outline: none;
-        }
-
-        .save-dialog__input:focus {
-            border-color: #2563eb;
-        }
-
-        .save-dialog__actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 4px;
-        }
-
-        .dialog-button {
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: none;
-            font-size: 11px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .dialog-button.primary {
-            background: #2563eb;
-            color: #ffffff;
-        }
-
-        .dialog-button.primary:hover {
-            background: #1d4ed8;
-        }
-
-        .dialog-button.secondary {
-            background: #374151;
-            color: #e5e7eb;
-        }
-
-        .dialog-button.secondary:hover {
-            background: #4b5563;
-        }
-
         .empty-state {
             display: flex;
             align-items: center;
@@ -296,7 +235,6 @@ export class PresetManager extends LitElement {
 
     private get presets(): LayoutPreset[] {
         const presetsMap = this.uiState?.layout?.presets ?? {};
-        console.log('[PresetManager] Getting presets:', { presetsMap, keys: Object.keys(presetsMap), uiStateExists: !!this.uiState });
         return Object.values(presetsMap);
     }
 
@@ -304,34 +242,8 @@ export class PresetManager extends LitElement {
         return this.uiState?.layout?.activePreset ?? null;
     }
 
-    private openSaveDialog() {
-        this.showSaveDialog = true;
-        this.newPresetName = '';
-    }
-
-    private closeSaveDialog() {
-        this.showSaveDialog = false;
-        this.newPresetName = '';
-    }
-
-    private handleSaveInputChange(event: Event) {
-        const input = event.target as HTMLInputElement;
-        this.newPresetName = input.value;
-    }
-
-    private handleSaveInputKeydown(event: KeyboardEvent) {
-        if (event.key === 'Enter') {
-            this.confirmSave();
-        } else if (event.key === 'Escape') {
-            this.closeSaveDialog();
-        }
-    }
-
-    private confirmSave() {
-        if (this.newPresetName.trim()) {
-            this.handlers.savePreset(this.newPresetName.trim());
-            this.closeSaveDialog();
-        }
+    private openSavePresetOverlay() {
+        this.uiDispatch?.({ type: 'layout/setOverlayExpander', viewId: 'save-preset' });
     }
 
     private handleLoad(name: string) {
@@ -407,42 +319,13 @@ export class PresetManager extends LitElement {
                         </button>
                         <button
                             class="save-button"
-                            @click=${() => this.openSaveDialog()}
+                            @click=${() => this.openSavePresetOverlay()}
                             title="Save current layout as preset"
                         >
                             Save
                         </button>
                     </div>
                 </div>
-
-                ${this.showSaveDialog ? html`
-                    <div class="save-dialog">
-                        <input
-                            type="text"
-                            class="save-dialog__input"
-                            placeholder="Enter preset name..."
-                            .value=${this.newPresetName}
-                            @input=${this.handleSaveInputChange}
-                            @keydown=${this.handleSaveInputKeydown}
-                            autofocus
-                        />
-                        <div class="save-dialog__actions">
-                            <button
-                                class="dialog-button secondary"
-                                @click=${() => this.closeSaveDialog()}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                class="dialog-button primary"
-                                @click=${() => this.confirmSave()}
-                                ?disabled=${!this.newPresetName.trim()}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                ` : nothing}
 
                 <div class="preset-list">
                     ${presets.length === 0 ? html`

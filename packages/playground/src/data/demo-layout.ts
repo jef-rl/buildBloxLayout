@@ -210,24 +210,6 @@ const TOOLBAR_VIEWS: View[] = [
     data: { viewIds: [] }
   },
   {
-    id: 'expander-controls',
-    name: 'Expander Controls',
-    component: 'expander-controls',
-    data: {}
-  },
-  {
-    id: 'viewport-controls',
-    name: 'Viewport Controls',
-    component: 'viewport-controls',
-    data: {}
-  },
-  {
-    id: 'view-token-strip',
-    name: 'View Token Strip',
-    component: 'view-token-strip',
-    data: {}
-  },
-  {
     id: 'custom-toolbar',
     name: 'Custom Toolbar',
     component: 'custom-toolbar',
@@ -378,24 +360,6 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       title: 'Main Toolbar',
       localContext: { viewIds: ['custom-toolbar-1'], stretchViewIds: [] }
     },
-    'expander-1': {
-      instanceId: 'expander-1',
-      definitionId: 'expander-controls',
-      title: 'Expanders',
-      localContext: {}
-    },
-    'tokens-1': {
-      instanceId: 'tokens-1',
-      definitionId: 'view-token-strip',
-      title: 'View Tokens',
-      localContext: { orientation: 'row' }
-    },
-    'viewport-1': {
-      instanceId: 'viewport-1',
-      definitionId: 'viewport-controls',
-      title: 'Viewport Controls',
-      localContext: {}
-    },
     'custom-toolbar-1': {
       instanceId: 'custom-toolbar-1',
       definitionId: 'custom-toolbar',
@@ -535,9 +499,6 @@ function getIconForView(viewId: string): string {
     'project-settings': 'settings',
     'export-dialog': 'file_download',
     'generic-toolbar': 'view_compact',
-    'expander-controls': 'panel_left',
-    'viewport-controls': 'aspect_ratio',
-    'view-token-strip': 'view_list',
     'custom-toolbar': 'apps',
     'layouts-list': 'view_list'
   };
@@ -604,15 +565,6 @@ function getTagForView(viewId: string): string {
   }
   if (viewId === 'generic-toolbar') {
     return 'toolbar-container';
-  }
-  if (viewId === 'expander-controls') {
-    return 'expander-controls';
-  }
-  if (viewId === 'viewport-controls') {
-    return 'viewport-controls';
-  }
-  if (viewId === 'view-token-strip') {
-    return 'view-controls';
   }
   if (viewId === 'custom-toolbar') {
     return 'custom-toolbar';

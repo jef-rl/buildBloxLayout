@@ -91,6 +91,28 @@ export const applyLayoutAction = (
                 overlayView: (payload.viewId as string | null | undefined) ?? null,
             };
         }
+        case 'layout/setOverlayExpander': {
+            return {
+                ...layout,
+                overlayExpander: (payload.viewId as string | null | undefined) ?? null,
+            };
+        }
+        case 'layout/unsetOverlayExpander': {
+            return {
+                ...layout,
+                overlayExpander: null,
+            };
+        }
+        case 'layout/resetExpanders': {
+            return {
+                ...layout,
+                expansion: {
+                    expanderLeft: 'Closed',
+                    expanderRight: 'Closed',
+                    expanderBottom: 'Closed',
+                },
+            };
+        }
         case 'layout/setViewportWidthMode': {
             const mode = normalizeViewportWidthMode(payload.mode);
             return {
