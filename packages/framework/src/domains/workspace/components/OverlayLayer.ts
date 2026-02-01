@@ -103,6 +103,22 @@ export class OverlayExpander extends LitElement {
         this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: null });
     }
 
+    private handleKeydown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.viewId) {
+            this.close();
+        }
+    };
+
+    connectedCallback() {
+        super.connectedCallback();
+        document.addEventListener('keydown', this.handleKeydown);
+    }
+
+    disconnectedCallback() {
+        document.removeEventListener('keydown', this.handleKeydown);
+        super.disconnectedCallback();
+    }
+
     render() {
         const isOpen = !!this.viewId;
         if (isOpen) {

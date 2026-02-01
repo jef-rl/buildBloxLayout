@@ -8,7 +8,6 @@ import '../../layout/components/ViewRegistryPanel.js';
 import '../../dock/components/DockContainer.js';
 import './OverlayLayer.js';
 import './PanelView.js';
-import '../../layout/components/SavePresetOverlay.js';
 import { viewRegistry } from '../../../core/registry/view-registry.js';
 import { dispatchUiEvent } from '../../../utils/dispatcher.js';
 import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
@@ -448,21 +447,8 @@ export class WorkspaceRoot extends LitElement {
                 ${overlayView ? html`
                     <overlay-expander .viewId="${overlayView}"></overlay-expander>
                 ` : nothing}
-
-                ${layout.overlayExpander === 'save-preset' ? html`
-                    <save-preset-overlay
-                        open
-                        @save=${this.handleSavePreset}
-                        @close=${() => this.dispatch({ type: 'layout/unsetOverlayExpander' })}
-                    ></save-preset-overlay>
-                ` : nothing}
             </div>
         `;
-    }
-
-    private handleSavePreset(event: CustomEvent<{ name: string }>) {
-        this.dispatch({ type: 'presets/save', name: event.detail.name });
-        this.dispatch({ type: 'layout/unsetOverlayExpander' });
     }
 }
 

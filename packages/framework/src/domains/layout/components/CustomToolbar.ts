@@ -114,7 +114,11 @@ export class CustomToolbar extends LitElement {
     }
 
     private openSavePresetOverlay() {
-        this.uiDispatch?.({ type: 'layout/setOverlayExpander', viewId: 'save-preset' });
+        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: 'save-preset' });
+    }
+
+    private openLoadPresetOverlay() {
+        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: 'load-preset' });
     }
 
     private renderButton(index: number, content?: string, isImage: boolean = false, onClick?: () => void) {
@@ -142,7 +146,7 @@ export class CustomToolbar extends LitElement {
         return html`
             <div class="grid">
                 <!-- 1-4 Buttons: New Icons -->
-                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/download-96.png', true)}
+                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/download-96.png', true, () => this.openLoadPresetOverlay())}
                 ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true, () => this.openSavePresetOverlay())}
                 ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/erase-96.png', true, () => this.resetLayout())}
                 ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true, () => this.toggleInDesign())}

@@ -26,6 +26,16 @@ const loadToolbarContainer = () =>
     (m) => m.ToolbarContainer
   );
 
+const loadSavePresetContent = () =>
+  import('../domains/layout/components/SavePresetContent').then(
+    (m) => m.SavePresetContent
+  );
+
+const loadLoadPresetContent = () =>
+  import('../domains/layout/components/LoadPresetContent').then(
+    (m) => m.LoadPresetContent
+  );
+
 /**
  * Framework-provided view definitions.
  * These are registered automatically when the framework initializes.
@@ -70,6 +80,22 @@ export const BUILT_IN_VIEWS: ViewDefinition[] = [
     tag: 'toolbar-container',
     icon: 'view_compact',
     component: loadToolbarContainer,
+  },
+  {
+    id: 'save-preset',
+    name: 'Save Preset',
+    title: 'Save Preset',
+    tag: 'save-preset-content',
+    icon: 'save',
+    component: loadSavePresetContent,
+  },
+  {
+    id: 'load-preset',
+    name: 'Load Preset',
+    title: 'Load Preset',
+    tag: 'load-preset-content',
+    icon: 'folder_open',
+    component: loadLoadPresetContent,
   },
 ];
 
