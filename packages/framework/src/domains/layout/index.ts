@@ -8,6 +8,7 @@ export * from './components/PresetManager';
 export * from './components/FrameworkMenu';
 export * from './components/ViewRegistryPanel';
 export * from './components/CustomToolbar';
+export * from './components/LayoutsList';
 
 // Layout handlers
 // export * from './handlers/resize';

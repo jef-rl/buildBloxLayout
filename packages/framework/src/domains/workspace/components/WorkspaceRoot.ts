@@ -432,15 +432,11 @@ export class WorkspaceRoot extends LitElement {
                     <framework-menu></framework-menu>
                 </dock-container>
 
-                <dock-container .manager=${this.dockManager} toolbarId="views">
-                    <view-controls></view-controls>
-                </dock-container>
-
                 <dock-container .manager=${this.dockManager} toolbarId="registry" fallbackPosition="bottom-right">
                     <view-registry-panel></view-registry-panel>
                 </dock-container>
 
-                <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center">
+                <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center" disablePositionPicker>
                     <toolbar-view viewId="main-toolbar-1" class="workspace-toolbar"></toolbar-view>
                 </dock-container>
 

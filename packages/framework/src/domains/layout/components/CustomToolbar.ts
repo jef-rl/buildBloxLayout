@@ -42,9 +42,9 @@ export class CustomToolbar extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 28px;
-            padding: 4px;
+            width: 32px;
+            height: 32px;
+            padding: 0px;
             border-radius: 4px;
             border: none;
             background: transparent;
@@ -61,19 +61,19 @@ export class CustomToolbar extends LitElement {
         }
 
         .icon {
-            width: 16px;
-            height: 16px;
+            width: 32px;
+            height: 32px;
         }
         
         .icon-img {
-            width: 16px;
-            height: 16px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
         }
 
         .separator {
             width: 1px;
-            height: 16px;
+            height: 48px;
             background-color: #ffffff33;
             margin: 0 6px;
         }
@@ -139,9 +139,9 @@ export class CustomToolbar extends LitElement {
         return html`
             <div class="grid">
                 <!-- 1-4 Buttons: New Icons -->
-                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/add-96.png', true, () => this.resetLayout())}
+                ${this.renderButton(1, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/download-96.png', true)}
                 ${this.renderButton(2, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/upload-96.png', true)}
-                ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/edit-96.png', true)}
+                ${this.renderButton(3, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/erase-96.png', true, () => this.resetLayout())}
                 ${this.renderButton(4, 'https://storage.googleapis.com/lozzuck.appspot.com/_FrameworkIcons/view-quilt-96.png', true, () => this.toggleInDesign())}
               
                                 <!-- 5 Div -->

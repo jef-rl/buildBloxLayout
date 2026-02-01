@@ -36,7 +36,7 @@ export class DockContainer extends LitElement {
             display: flex;
             align-items: center;
             pointer-events: auto;
-            background-color: rgba(17, 24, 39, 0.95);
+             background-color: #2C3961; 
             border: 1px solid #374151;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
             /* backdrop-filter: blur(8px); -- Removed to prevent trapping fixed position children */
@@ -44,7 +44,7 @@ export class DockContainer extends LitElement {
         }
 
         .dock-container--row {
-            padding: 6px 16px;
+            padding: 0px 16px;
             flex-direction: row;
             gap: 12px;
         }
