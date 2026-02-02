@@ -1,4 +1,4 @@
-import { getPosClasses } from "./dock.utils";
+import { getPosClasses } from "../helpers/dock.utils";
 
 
 export type DockPosition =

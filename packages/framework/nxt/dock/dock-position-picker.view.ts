@@ -1,7 +1,7 @@
 import { LitElement, css, html } from "lit";
 import { DockPosition } from "./dock-manager.view";
 import { createPositionPickerHandlers } from "./dock-position-picker.handlers";
-import { getPickerStyles, getArrowStyles, gridIndexToPos } from "./dock.utils";
+import { getPickerStyles, getArrowStyles, gridIndexToPos } from "../helpers/dock.utils";
 import { property } from "lit/decorators";
 import { cssDockPicker } from "./dock-position-picker.styles";
 
