@@ -304,8 +304,8 @@ export class ImprovedDemoView extends LitElement {
 
   private get panelInfo() {
     const panels = this.uiState?.panels ?? [];
-    const mainPanels = panels.filter(p => p.region === 'main');
-    const activePanels = mainPanels.filter(p => p.view !== null);
+    const mainPanels = panels.filter((p: { region: string; }) => p.region === 'main');
+    const activePanels = mainPanels.filter((p: { view: null; }) => p.view !== null);
 
     return {
       total: panels.length,

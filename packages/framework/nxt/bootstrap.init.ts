@@ -1,10 +1,10 @@
 
 import '../components/FrameworkRoot';
-import { dispatchUiEvent } from './dispatcher.utils';import { getFrameworkLogger } from './logger.utils';
-import { ViewDefinition } from './panels.types';
-import { FrameworkAuthConfig } from './state.types';
-import { UIState } from './ui.state';
-import { viewRegistry } from './view-registry.registry';
+import { dispatchUiEvent } from './helpers/dispatcher.utils';import { getFrameworkLogger } from './helpers/logger.utils';
+import { ViewDefinition } from './types/panels.types';
+import { FrameworkAuthConfig } from './types/state.types';
+import { UIState } from './context/ui.state';
+import { viewRegistry } from './registries/view.registry';
 
 export type BootstrapFrameworkOptions = {
     views: ViewDefinition[];
