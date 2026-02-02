@@ -1,5 +1,5 @@
-import type { DockPosition } from '../components/DockManager';
-import type { DockContainer } from '../components/DockContainer';
+import { DockContainer } from "./dock-container.view";
+import { DockPosition } from "./dock-manager.view";
 
 export const createDockContainerHandlers = (container: DockContainer) => ({
     stopClickPropagation: (event: Event) => {

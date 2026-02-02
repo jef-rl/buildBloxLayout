@@ -1,13 +1,8 @@
-import type { EffectRegistry } from '../core/registry/effect-registry';
-import type { HandlerAction } from '../core/registry/handler-registry';
-import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
-import {
-  loginWithEmail,
-  signupWithEmail,
-  loginWithGoogle,
-  sendPasswordReset,
-  logout,
-} from '../utils/firebase-auth';
+import { EffectRegistry } from "./effect-registry.registry";
+import { loginWithEmail, signupWithEmail, loginWithGoogle, sendPasswordReset, logout } from "./firebase-auth.utils";
+import { HandlerAction } from "./handler-registry.registry";
+import { FrameworkContextState } from "./workspace-registry.handlers";
+
 
 const toErrorMessage = (error: unknown): string => {
   const code = (error as { code?: string })?.code ?? '';

@@ -1,4 +1,4 @@
-import { dispatchUiEvent } from '../../../utils/dispatcher';
+import { dispatchUiEvent } from "./dispatcher.utils";
 
 const getFloatingCords = (id: string) => {
     // This is a placeholder. In a real application, you would get the coordinates

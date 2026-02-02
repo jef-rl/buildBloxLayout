@@ -14,7 +14,7 @@ import {
   type QuerySnapshot,
   type DocumentData,
 } from 'firebase/firestore';
-import type { LayoutPreset, LayoutPresets } from '../types/state';
+import { LayoutPreset, LayoutPresets } from './state.types';
 
 export interface FirestorePreset extends LayoutPreset {
   userId: string | null;

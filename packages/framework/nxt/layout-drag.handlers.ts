@@ -1,6 +1,7 @@
-import { HandlerAction, ReducerHandler } from '../../../core/registry/handler-registry';
-import { UIState } from '../../../state/ui-state';
+
 import { cloneDeep } from 'lodash-es';
+import { ReducerHandler } from './handler-registry.registry';
+import { UIState } from './state.types';
 
 const dragStart: ReducerHandler<UIState> = (state, action) => {
     const payload = action.payload as { viewId: string } | undefined;

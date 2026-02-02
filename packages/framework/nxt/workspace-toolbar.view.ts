@@ -1,10 +1,10 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { View, ViewInstance } from '../../../types/index';
-import { viewRegistry } from '../../../core/registry/view-registry';
+import { UiStateContextValue } from './ui.state';
+import { uiStateContext } from './context.state';
+import { ViewInstance } from './panels.types';
+import { viewRegistry } from './view-registry.registry';
 
 export class ToolbarView extends LitElement {
     @property({ type: String }) panelId: string | null = null;
@@ -91,7 +91,7 @@ export class ToolbarView extends LitElement {
             return { definitionId: instance.definitionId, instance };
         }
 
-        const legacyView = this.uiState.views?.find(v => v.id === this.viewId);
+        const legacyView = this.uiState.views?.find((v: { id: string | null; }) => v.id === this.viewId);
         if (legacyView) {
              return { 
                  definitionId: legacyView.component, 

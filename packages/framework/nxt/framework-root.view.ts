@@ -12,7 +12,7 @@ import { createEffectRegistry } from '../core/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
-import { getFrameworkLogger } from '../utils/logger';
+import { getFrameworkLogger } from './logger.utils'
 import { validateState } from '../state/state-validator';
 import {
   registerWorkspaceHandlers,

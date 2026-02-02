@@ -3,7 +3,7 @@ import type { HandlerAction } from '../core/registry/handler-registry';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import type { FrameworkMenuConfig } from '../types/state';
 import { frameworkMenuPersistence } from '../utils/framework-menu-persistence';
-import { getFrameworkLogger } from '../utils/logger';
+import { getFrameworkLogger } from './logger.utils'
 
 const dispatchLog = (
   dispatch: (actions: HandlerAction[]) => void,

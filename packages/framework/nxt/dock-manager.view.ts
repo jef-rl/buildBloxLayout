@@ -1,4 +1,5 @@
-import { getPosClasses } from '../utils';
+import { getPosClasses } from "./dock.utils";
+
 
 export type DockPosition =
     'top-left' | 'top-center' | 'top-right' | 'middle-right' | 'bottom-right' |

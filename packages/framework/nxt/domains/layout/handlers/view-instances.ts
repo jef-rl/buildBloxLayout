@@ -1,7 +1,7 @@
-import { ReducerHandler } from "./handler-registry.registry";
-import { ViewInstance } from "./panels.types";
-import { viewRegistry } from "./view-registry.registry";
-import { FrameworkContextState } from "./workspace-registry.handlers";
+import { ReducerHandler } from "../../../handler-registry.registry";
+import { ViewInstance } from "../../../panels.types";
+import { viewRegistry } from "../../../view-registry.registry";
+import { FrameworkContextState } from "../../../workspace-registry.handlers";
 
 export const createInstance: ReducerHandler<FrameworkContextState> = (context, action) => {
     const { definitionId, overrides } = action.payload as { definitionId: string, overrides?: Partial<ViewInstance> };

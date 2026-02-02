@@ -6,10 +6,10 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { AuthMode, AuthConfig } from '../../../types/auth';
+import { AuthConfig, AuthMode } from './auth.types';
+import { uiStateContext } from './context.state';
+import { dispatchUiEvent } from './dispatcher.utils';import { UiStateContextValue } from './ui.state';
+
 
 @customElement('auth-view')
 export class AuthView extends LitElement {

@@ -1,4 +1,4 @@
-import type { FrameworkMenuItem, AuthUser, FrameworkAuthConfig, AuthState } from '../types/state';
+import { FrameworkAuthConfig, AuthState, FrameworkMenuItem } from "./state.types";
 
 /**
  * Generate authentication-related menu items based on auth state

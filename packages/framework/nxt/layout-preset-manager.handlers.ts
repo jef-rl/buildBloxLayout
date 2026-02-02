@@ -1,4 +1,4 @@
-import type { UiStateContextValue } from '../../../state/ui-state';
+import { UiStateContextValue } from "./ui.state";
 
 type UiDispatch = UiStateContextValue['dispatch'];
 

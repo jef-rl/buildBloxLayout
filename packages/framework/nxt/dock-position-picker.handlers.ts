@@ -1,5 +1,6 @@
-import type { DockPosition } from '../components/DockManager';
-import type { PositionPicker } from '../components/PositionPicker';
+import { DockPosition } from "./dock-manager.view";
+import { PositionPicker } from "./dock-position-picker.view";
+
 
 export const createPositionPickerHandlers = (picker: PositionPicker) => ({
     stopClickPropagation: (event: Event) => {

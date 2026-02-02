@@ -1,5 +1,5 @@
-import type { View, ViewDefinition, ViewInstance } from '../../types/index';
-import { getFrameworkLogger } from '../../utils/logger';
+import { getFrameworkLogger } from "./logger.utils";
+import { ViewDefinition, View, ViewInstance } from "./panels.types";
 
 export type ViewRegistryChangeDetail = {
     type: 'register';

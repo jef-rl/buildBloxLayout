@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import { uiStateContext } from './context.state';
+import { UiStateContextValue } from './ui.state';
 
 /**
  * Content component for saving a new preset.

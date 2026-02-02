@@ -1,7 +1,6 @@
-
-import type { Panel, PanelContainer, PanelState, UIState, View, LayoutState } from '../../../types/index';
-import { viewRegistry } from '../../../core/registry/view-registry';
-import { ReducerHandler } from '../../../core/registry/handler-registry';
+import { Panel, View } from "./panels.types";
+import { UIState, LayoutState } from "./state.types";
+import { viewRegistry } from "./view-registry.registry";
 
 const MIN_MAIN_PANELS = 1;
 const MAX_MAIN_PANELS = 5;
@@ -47,15 +46,15 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
     const effectiveOrder = uniqueOrder.slice(0, capacity);
     const viewIdsInMainArea = new Set(effectiveOrder);
 
-    const mainPanels = state.panels.filter((panel) => panel.region === 'main');
-    const mainPanelIds = mainPanels.map((panel) => panel.id);
+    const mainPanels = state.panels.filter((panel: { region: string; }) => panel.region === 'main');
+    const mainPanelIds = mainPanels.map((panel: { id: any; }) => panel.id);
 
     let viewInstanceCounter = Number.isFinite(state.viewInstanceCounter) ? state.viewInstanceCounter : 0;
     
     // Create map for fast lookup
     const viewInstances = state.viewInstances || {};
 
-    const nextPanels = state.panels.map((panel) => {
+    const nextPanels = state.panels.map((panel: { region: string; viewId: string; id: any; }) => {
         if (panel.region !== 'main') {
             // Enforce 1:1 rule: if this view is now in the main area, remove it from side panels
             if (panel.viewId && viewIdsInMainArea.has(panel.viewId)) {
@@ -107,7 +106,7 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         }
         
         // Check legacy views array
-        const existingView = state.views.find((v) => v.component === targetId);
+        const existingView = state.views.find((v: { component: string; }) => v.component === targetId);
         if (existingView) {
              return { ...panel, view: existingView, viewId: targetId, activeViewId: targetId };
         }
@@ -133,11 +132,11 @@ export const applyMainViewOrder = (state: UIState, viewOrder: string[]): UIState
         return p;
     });
 
-    const activePanelViews = finalPanels.map((p) => p.view).filter((v): v is View => Boolean(v));
-    const inactiveViews = state.views.filter(v => !activePanelViews.some(av => av.id === v.id));
+    const activePanelViews = finalPanels.map((p: { view: any; }) => p.view).filter((v: any): v is View => Boolean(v));
+    const inactiveViews = state.views.filter((v: { id: any; }) => !activePanelViews.some((av: { id: any; }) => av.id === v.id));
     const nextViews = uniqueViews([...activePanelViews, ...inactiveViews]);
     
-    const nextActiveView = state.views.find(v => v.id === state.activeView)?.id ?? nextViews[0]?.id ?? null;
+    const nextActiveView = state.views.find((v: { id: any; }) => v.id === state.activeView)?.id ?? nextViews[0]?.id ?? null;
 
     return {
         ...state,
@@ -206,12 +205,12 @@ const assignViewToPanel = (
 
     // --- LOGIC FOR REMOVING SOURCE PANEL IF DRAGGING FROM SIDE PANEL (WITHOUT CTRL) ---
     let panelIdToRemove: string | null = null;
-    const sourcePanel = state.panels.find(p => p.viewId === instanceId || p.activeViewId === instanceId);
+    const sourcePanel = state.panels.find((p: { viewId: string; activeViewId: string; }) => p.viewId === instanceId || p.activeViewId === instanceId);
     
     if (sourcePanel && !swap && sourcePanel.id !== panel.id) {
          const isSideRegion = ['left', 'right', 'bottom'].includes(sourcePanel.region);
          if (isSideRegion) {
-             const panelsInRegion = state.panels.filter(p => p.region === sourcePanel.region).length;
+             const panelsInRegion = state.panels.filter((p: { region: any; }) => p.region === sourcePanel.region).length;
              // Only remove if there is more than 1 panel in that region
              if (panelsInRegion > 1) {
                  panelIdToRemove = sourcePanel.id;
@@ -222,7 +221,7 @@ const assignViewToPanel = (
 
     const targetPanelViewId = panel.viewId;
 
-    let nextPanels = state.panels.map(p => {
+    let nextPanels = state.panels.map((p: { id: any; viewId: string; activeViewId: string; view: any; }) => {
         if (p.id === panel.id) {
             return nextPanel;
         }
@@ -250,18 +249,18 @@ const assignViewToPanel = (
     });
 
     if (panelIdToRemove) {
-        nextPanels = nextPanels.filter(p => p.id !== panelIdToRemove);
+        nextPanels = nextPanels.filter((p: { id: string; }) => p.id !== panelIdToRemove);
     }
 
     // Sync legacy views array
     const viewInstanceObject = nextPanel.view!;
-    const otherViews = state.views.filter((v) => v.id !== instanceId);
+    const otherViews = state.views.filter((v: { id: string; }) => v.id !== instanceId);
     const nextViews = [...otherViews, viewInstanceObject];
 
     // NEW: Update region view order for side panels
     let nextLayout: LayoutState = {
         ...state.layout,
-        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels as Panel[]),
     };
 
     // Update view orders for side panels if panels were removed
@@ -330,42 +329,42 @@ const assignViewToPanel = (
 
 // === Handler Implementation ===
 
-const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
-    const payload = action.payload as { panelId: string; viewId: string; data?: unknown; placement?: 'top' | 'bottom'; swap?: boolean } | undefined;
+function assignViewHandler(state: { panels: any[]; }, action: { payload: { panelId: string; viewId: string; data?: unknown; placement?: "top" | "bottom"; swap?: boolean; } | undefined; }) {
+    const payload = action.payload as { panelId: string; viewId: string; data?: unknown; placement?: 'top' | 'bottom'; swap?: boolean; } | undefined;
     if (!payload || !payload.panelId || !payload.viewId) {
         return { state, followUps: [] };
     }
 
-    const panel = state.panels.find((p) => p.id === payload.panelId);
+    const panel = state.panels.find((p: { id: string; }) => p.id === payload.panelId);
     if (!panel) {
         return { state, followUps: [] };
     }
 
     const nextState = assignViewToPanel(state, panel, payload.viewId, payload.data, payload.placement, payload.swap);
     return { state: nextState, followUps: [] };
-};
+}
 
-const removeViewHandler: ReducerHandler<UIState> = (state, action) => {
-    const payload = action.payload as { panelId: string } | undefined;
+function removeViewHandler(state: { panels: any[]; layout: { [x: string]: string[]; }; }, action: { payload: { panelId: string; } | undefined; }) {
+    const payload = action.payload as { panelId: string; } | undefined;
     if (!payload?.panelId) {
         return { state, followUps: [] };
     }
 
-    const panel = state.panels.find(p => p.id === payload.panelId);
+    const panel = state.panels.find((p: { id: string; }) => p.id === payload.panelId);
     if (!panel) return { state, followUps: [] };
-    
+
     const viewIdToRemove = panel.viewId;
 
-    const nextPanels = state.panels.map((p) => {
+    const nextPanels = state.panels.map((p: { id: string; }) => {
         if (p.id === payload.panelId) {
-             return { ...p, view: null, viewId: undefined, activeViewId: undefined };
+            return { ...p, view: null, viewId: undefined, activeViewId: undefined };
         }
         return p;
     });
-    
+
     let nextLayout = {
         ...state.layout,
-        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+        mainViewOrder: deriveMainViewOrderFromPanels(nextPanels as any),
     };
 
     if (viewIdToRemove && ['left', 'right', 'bottom'].includes(panel.region)) {
@@ -387,7 +386,7 @@ const removeViewHandler: ReducerHandler<UIState> = (state, action) => {
         },
         followUps: []
     };
-};
+}
 
 export const workspacePanelHandlers = {
     'panels/assignView': assignViewHandler,

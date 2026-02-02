@@ -4,7 +4,7 @@ import type { FrameworkContextState } from '../domains/workspace/handlers/regist
 import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { presetPersistence } from '../utils/persistence';
 import { hybridPersistence } from '../utils/hybrid-persistence';
-import { getFrameworkLogger } from '../utils/logger';
+import { getFrameworkLogger } from './logger.utils'
 
 const dispatchLog = (
   dispatch: (actions: HandlerAction[]) => void,

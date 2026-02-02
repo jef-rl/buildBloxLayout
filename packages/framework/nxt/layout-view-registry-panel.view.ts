@@ -1,9 +1,10 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { ViewDefinitionSummary } from '../../../types/state';
+import { uiStateContext } from './context.state';
+import { ViewDefinitionSummary } from './state.types';
+import { UiStateContextValue } from './ui.state';
+
 // import { Icons } from '../../../components/Icons';
 
 /**
@@ -48,7 +49,7 @@ export class ViewRegistryPanel extends LitElement {
         event.dataTransfer.effectAllowed = 'move';
 
         // Find the view definition to get its title for the drag ghost
-        const viewDefinition = this.uiState.viewDefinitions.find(v => v.id === viewId);
+        const viewDefinition = this.uiState.viewDefinitions.find((v: { id: string; }) => v.id === viewId);
         const dragTitle = viewDefinition?.title || 'View';
 
         // Create a custom drag ghost element
@@ -117,7 +118,7 @@ export class ViewRegistryPanel extends LitElement {
 
         return html`
             <div class="registry-list">
-                ${views.map((view) => this.renderRegistryItem(view))}
+                ${views.map((view: ViewDefinitionSummary) => this.renderRegistryItem(view))}
             </div>
         `;
     }

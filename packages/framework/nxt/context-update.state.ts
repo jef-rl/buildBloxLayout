@@ -1,4 +1,5 @@
-import { getFrameworkLogger } from '../utils/logger';
+import { getFrameworkLogger } from "./logger.utils";
+
 
 const NAMESPACE_ALLOWLIST = new Set([
   'framework',

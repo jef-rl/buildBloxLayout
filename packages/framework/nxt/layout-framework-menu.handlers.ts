@@ -1,5 +1,6 @@
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { FrameworkMenuItem, FrameworkMenuPresetItem, FrameworkMenuConfig } from '../../../types/state';
+import { FrameworkMenuPresetItem, FrameworkMenuItem, FrameworkMenuConfig } from "./state.types";
+import { UiStateContextValue } from "./ui.state";
+
 
 type UiDispatch = UiStateContextValue['dispatch'];
 

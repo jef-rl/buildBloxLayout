@@ -1,10 +1,10 @@
 import { LitElement, html, css, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { UIState, FrameworkMenuItem, FrameworkMenuParentItem, FrameworkMenuPresetItem } from '../../../types/state';
-import { createFrameworkMenuHandlers } from '../handlers/framework-menu.handlers';
+import { uiStateContext } from './context.state';
+import { createFrameworkMenuHandlers } from './layout-framework-menu.handlers';
+import { FrameworkMenuItem, UIState, FrameworkMenuPresetItem, FrameworkMenuParentItem } from './state.types';
+import { UiStateContextValue } from './ui.state';
 
 export class FrameworkMenu extends LitElement {
     @property({ type: String }) orientation: 'row' | 'column' = 'column';

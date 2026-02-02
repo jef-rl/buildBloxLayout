@@ -3,7 +3,7 @@
  * Used by SimpleViewConfig to auto-derive missing properties.
  */
 
-import type { FrameworkLogger } from '../utils/logger';
+import type { FrameworkLogger } from './logger.utils'
 
 /**
  * Icon keywords mapped to Material Icons names.

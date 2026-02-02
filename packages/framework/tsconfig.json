@@ -2,12 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./nxt",
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "emitDeclarationOnly": false
   },
-  "include": ["src"]
+  "include": ["nxt"]
 }

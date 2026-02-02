@@ -1,14 +1,14 @@
-import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutExpansion } from '../../../types/state';
-import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
-import { viewRegistry } from '../../../core/registry/view-registry';
+import { generateAuthMenuItems } from './auth-menu-items.utils';
+import { migrateLegacyExpansion, LegacyLayoutExpansion } from './expansion-helpers.utils';
+import { frameworkMenuPersistence } from './framework-menu-persistence.utils';
+import { HandlerAction, ReducerHandler, HandlerRegistry } from './handler-registry.registry';
+import { FRAMEWORK_ADMIN_EMAILS } from './helpers.utils';
+import { dragHandlers } from './layout-drag.handlers';
+import { viewInstanceHandlers } from './layout-view-instances.handlers';
+import { UIState, LayoutExpansion, LayoutPreset, LayoutPresets, FrameworkMenuConfig } from './state.types';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
-import { dragHandlers } from '../../layout/handlers/drag.handlers';
-import { viewInstanceHandlers } from '../../layout/handlers/view-instances';
-import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
-import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
-import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
-import { FRAMEWORK_ADMIN_EMAILS } from '../../../config/admin-emails';
+
 
 export type FrameworkContextState = {
   state: UIState;

@@ -1,7 +1,8 @@
 import type { Firestore } from 'firebase/firestore';
-import type { LayoutPreset, LayoutPresets } from '../types/state';
-import { presetPersistence } from './persistence';
-import { firestorePersistence } from './firestore-persistence';
+import { firestorePersistence } from './firestore-persistence.utils';
+import { presetPersistence } from './persistence.utils';
+import { LayoutPresets, LayoutPreset } from './state.types';
+
 
 export interface HybridPersistenceConfig {
   firestore: Firestore;

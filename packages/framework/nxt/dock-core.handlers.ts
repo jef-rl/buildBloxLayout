@@ -1,5 +1,5 @@
-import { DockManager, DockPosition } from '../components/DockManager';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
+import { dispatchUiEvent } from "./dispatcher.utils";
+import { DockManager, DockPosition } from "./dock-manager.view";
 
 export const dockHandlers = (dm: DockManager) => ({
     DOCK_TOGGLE_PICKER: (payload: { id: string }) => {

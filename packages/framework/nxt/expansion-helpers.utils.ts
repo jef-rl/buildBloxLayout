@@ -1,4 +1,5 @@
-import type { LayoutExpansion } from '../types/state.js';
+import { LayoutExpansion } from "./state.types";
+
 
 export type ExpanderState = 'Collapsed' | 'Closed' | 'Opened' | 'Expanded';
 

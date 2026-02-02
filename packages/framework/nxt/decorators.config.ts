@@ -14,8 +14,8 @@
  * The ID is derived from the class name (converted to kebab-case) unless specified.
  */
 
-import { Framework } from './framework-singleton';
-import { toKebabCase } from './defaults';
+import { Framework } from './framework-singleton.state';
+import { toKebabCase } from './defaults.config'; 
 
 /**
  * Options for the @view decorator.

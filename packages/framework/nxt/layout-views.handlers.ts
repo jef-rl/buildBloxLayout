@@ -1,5 +1,6 @@
-import type { View } from '../../../types/index';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
+import { dispatchUiEvent } from "./dispatcher.utils";
+import { View } from "./panels.types";
+
 
 export const viewHandlers = {
     VIEW_ADDED: (payload: { view: View }) => {

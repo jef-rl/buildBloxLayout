@@ -1,6 +1,6 @@
-import type { ToolbarPos, ViewportWidthMode } from './core';
-import type { Panel, PanelContainer, View, ViewInstance } from '../domains/panels/types';
-import type { ExpanderState } from '../utils/expansion-helpers.js';
+import { ViewportWidthMode, ToolbarPos } from "./core.types";
+import { ExpanderState } from "./expansion-helpers.utils";
+import { ViewInstance, PanelContainer, Panel, View } from "./panels.types";
 
 export type LayoutExpansion = {
   expanderLeft: ExpanderState;

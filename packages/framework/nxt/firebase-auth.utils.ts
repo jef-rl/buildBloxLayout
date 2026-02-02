@@ -13,7 +13,8 @@ import {
   signInWithPopup,
   onAuthStateChanged,
 } from 'firebase/auth';
-import type { AuthUser } from '../types/state';
+import { AuthUser } from './state.types';
+
 
 let firebaseAuthInstance: Auth | null = null;
 let authStateCallback: ((user: AuthUser | null) => void) | null = null;

@@ -3,36 +3,37 @@
  * Users don't need to register these - they're available automatically.
  */
 
-import type { ViewDefinition } from '../types/index';
-import type { ViewRegistryApi } from './registry/view-registry';
+import { ViewDefinition } from './panels.types';
+import { ViewRegistryApi } from './view-registry.registry';
+
 
 // Lazy imports for built-in components to avoid circular dependencies
 const loadAuthView = () =>
-  import('../domains/auth/components/AuthView').then((m) => m.AuthView);
+  import('./auth.view').then((m) => m.AuthView);
 
 const loadLogView = () =>
-  import('../domains/logging/components/LogView').then((m) => m.LogView);
+  import('./log.view').then((m) => m.LogView);
 
 // const loadLayoutsList = () =>
 //   import('../domains/layout/components/LayoutsList').then((m) => m.LayoutsList);
 
 const loadCustomToolbar = () =>
-  import('../domains/layout/components/CustomToolbar').then(
+  import('./layout-custom-toolbar.view').then(
     (m) => m.CustomToolbar
   );
 
 const loadToolbarContainer = () =>
-  import('../domains/layout/components/ToolbarContainer').then(
+  import('./layout-toolbar-container.view').then(
     (m) => m.ToolbarContainer
   );
 
 const loadSavePresetContent = () =>
-  import('../domains/layout/components/SavePresetContent').then(
+  import('./layout-save-preset.view').then(
     (m) => m.SavePresetContent
   );
 
 const loadLoadPresetContent = () =>
-  import('../domains/layout/components/LoadPresetContent').then(
+  import('./layout-load-preset.view').then(
     (m) => m.LoadPresetContent
   );
 

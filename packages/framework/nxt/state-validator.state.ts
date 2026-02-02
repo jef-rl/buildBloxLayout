@@ -1,5 +1,5 @@
-import type { UIState, View, Panel } from '../types';
-import { ExpanderState } from '../utils/expansion-helpers';
+import { ExpanderState } from "./expansion-helpers.utils";
+import { UIState } from "./state.types";
 
 /**
  * A collection of validation functions to verify the integrity of the UI state.

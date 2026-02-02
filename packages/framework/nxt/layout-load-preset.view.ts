@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { LayoutPreset } from '../../../types/state';
+import { uiStateContext } from './context.state';
+import { LayoutPreset } from './state.types';
+import { UiStateContextValue } from './ui.state';
 
 /**
  * Content component for loading a saved preset.

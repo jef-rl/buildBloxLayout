@@ -1,4 +1,4 @@
-import type { FrameworkMenuConfig, FrameworkMenuItem } from '../types/state';
+import { FrameworkMenuConfig, FrameworkMenuItem } from "./state.types";
 
 const STORAGE_KEY = 'buildblox-framework-menu-config';
 const STORAGE_VERSION = 1;

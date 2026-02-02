@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { ExpanderState } from '../../../utils/expansion-helpers.js';
+import { uiStateContext } from './context.state';
+import { ExpanderState } from './expansion-helpers.utils';
+import { UiStateContextValue } from './ui.state';
 
 @customElement('custom-toolbar')
 export class CustomToolbar extends LitElement {
@@ -102,7 +102,7 @@ export class CustomToolbar extends LitElement {
         this.uiDispatch({ type: 'layout/setExpansion', side: 'bottom', state: 'Closed' });
 
         // Clear all panels (main and side panels)
-        this.uiState.panels.forEach(panel => {
+        this.uiState.panels.forEach((panel: { id: any; }) => {
             if (panel.id) {
                 this.uiDispatch?.({ type: 'panels/removeView', panelId: panel.id });
             }

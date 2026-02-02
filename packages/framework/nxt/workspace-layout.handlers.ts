@@ -1,6 +1,6 @@
-import type { LayoutExpansion, LayoutState, MainAreaPanelCount } from '../../../types/state';
-import type { ViewportWidthMode } from '../../../types/core';
-import { toggleExpanderState, type ExpanderState } from '../../../utils/expansion-helpers.js';
+import { ViewportWidthMode } from "./core.types";
+import { ExpanderState, toggleExpanderState } from "./expansion-helpers.utils";
+import { MainAreaPanelCount, LayoutExpansion, LayoutState } from "./state.types";
 
 const VIEWPORT_WIDTH_MODES: ViewportWidthMode[] = ['1x', '2x', '3x', '4x', '5x'];
 

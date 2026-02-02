@@ -19,11 +19,11 @@
 
 import type { UIState, FrameworkAuthConfig } from '../types/index';
 import type { ViewDefinition } from '../domains/panels/types';
-import type { FrameworkLogger } from '../utils/logger';
+import type { FrameworkLogger } from './logger.utils'
 import type { FrameworkRoot } from '../components/FrameworkRoot';
 import { viewRegistry } from './registry/view-registry';
 import { dispatchUiEvent } from '../utils/dispatcher';
-import { setFrameworkLogger, getFrameworkLogger } from '../utils/logger';
+import { setFrameworkLogger, getFrameworkLogger } from './logger.utils'
 import {
   type SimpleViewConfig,
   normalizeViewConfig,

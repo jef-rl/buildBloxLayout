@@ -1,7 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { dispatchUiEvent } from '../../../utils/dispatcher';
+
 import '../../workspace/components/ToolbarView.js';
+import { dispatchUiEvent } from './dispatcher.utils.js';
 
 type ToolbarContext = {
     viewIds?: string[];
