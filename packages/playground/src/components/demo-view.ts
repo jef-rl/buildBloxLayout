@@ -14,9 +14,9 @@ import { uiStateContext, dispatchUiEvent, type UiStateContextValue } from '@proj
  */
 @customElement('demo-view')
 export class ImprovedDemoView extends LitElement {
-  // ====================
+  // ===================//
   // PROPERTIES
-  // ====================
+  // ===================//
 
   /** View label from view definition */
   @property() label = 'Demo View';
@@ -34,9 +34,9 @@ export class ImprovedDemoView extends LitElement {
     description?: string;
   } | null = null;
 
-  // ====================
+  // ===================//
   // INTERNAL STATE
-  // ====================
+  // ===================//
 
   /** Local interaction state */
   @state() private isHovered = false;
@@ -56,9 +56,9 @@ export class ImprovedDemoView extends LitElement {
     },
   });
 
-  // ====================
+  // ===================//
   // STYLES
-  // ====================
+  // ===================//
 
   static styles = css`
     :host {
@@ -247,11 +247,17 @@ export class ImprovedDemoView extends LitElement {
       font-size: 0.75rem;
       color: #60a5fa;
     }
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #facc15; /* yellow-400 */
+    }
   `;
 
-  // ====================
+  // ===================//
   // COMPUTED PROPERTIES
-  // ====================
+  // ===================//
 
   private get viewLabel() {
     return this.data?.label ?? this.label;
@@ -314,9 +320,9 @@ export class ImprovedDemoView extends LitElement {
     };
   }
 
-  // ====================
+  // ===================//
   // EVENT HANDLERS (Dispatch Only)
-  // ====================
+  // ===================//
 
   /**
    * Toggle expansion panel
@@ -370,9 +376,9 @@ export class ImprovedDemoView extends LitElement {
     dispatchUiEvent(this, 'auth/logoutRequested', {});
   }
 
-  // ====================
+  // ===================//
   // RENDER
-  // ====================
+  // ===================//
 
   render() {
     const auth = this.authStatus;
@@ -413,7 +419,9 @@ export class ImprovedDemoView extends LitElement {
               Name: ${userInfo.name}<br>
               Email: ${userInfo.email}<br>
               UID: ${userInfo.uid}<br>
-              Admin: ${userInfo.isAdmin ? 'Yes' : 'No'}<br>
+              Admin: ${userInfo.isAdmin
+                ? html`<span class="admin-badge"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Yes</span>`
+                : 'No'}<br>
               Status: ${userInfo.isLoggedIn ? 'Logged In' : 'Logged Out'}
             </div>
           </div>

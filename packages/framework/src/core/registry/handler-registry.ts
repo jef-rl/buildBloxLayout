@@ -1,28 +1,9 @@
 import { applyContextUpdate } from '../../state/context-update';
 import { getFrameworkLogger } from '../../utils/logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
-
-export type HandlerAction<TPayload = Record<string, unknown>> = {
-  type: string;
-  payload?: TPayload;
-};
-
-export type HandlerResult<TState> = {
-  state: TState;
-  followUps: HandlerAction[];
-};
-
-export type ReducerHandler<TState> = (
-  state: TState,
-  action: HandlerAction,
-) => HandlerResult<TState>;
-
-export type HandlerRegistry<TState> = {
-  register: (type: string, handler: ReducerHandler<TState>) => void;
-  get: (type: string) => ReducerHandler<TState> | undefined;
-  handle: (state: TState, action: HandlerAction) => HandlerResult<TState>;
-  list: () => string[];
-};
+import { ReducerHandler } from './ReducerHandler.type';
+import { HandlerRegistry } from './HandlerRegistry.type';
+import { HandlerAction } from './HandlerAction.type';
 
 const summarizeChanges = (changes: unknown) => {
   if (Array.isArray(changes)) {

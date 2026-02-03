@@ -1,5 +1,5 @@
 import type { EffectRegistry } from '../core/registry/effect-registry';
-import type { HandlerAction } from '../core/registry/handler-registry';
+import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import type { FrameworkMenuConfig } from '../types/state';
 import { frameworkMenuPersistence } from '../utils/framework-menu-persistence';

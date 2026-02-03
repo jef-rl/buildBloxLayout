@@ -1,7 +1,7 @@
 
 import type { Panel, PanelContainer, PanelState, UIState, View, LayoutState } from '../../../types/index';
 import { viewRegistry } from '../../../core/registry/view-registry';
-import { ReducerHandler } from '../../../core/registry/handler-registry';
+import { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 
 const MIN_MAIN_PANELS = 1;
 const MAX_MAIN_PANELS = 5;

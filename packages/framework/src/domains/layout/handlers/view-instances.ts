@@ -1,5 +1,5 @@
 import { viewRegistry } from '../../../core/registry/view-registry';
-import type { ReducerHandler } from '../../../core/registry/handler-registry';
+import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import type { FrameworkContextState } from '../../workspace/handlers/registry';
 import type { ViewInstance } from '../../panels/types';
 

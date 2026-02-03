@@ -115,7 +115,7 @@ export function toKebabCase(str: string): string {
  */
 export const DEFAULT_DEV_LOGGER: FrameworkLogger = {
   info: (message: string, context?: unknown) => {
-    console.log(`[BuildBlox] ${message}`, context ?? '');
+    // console.log(`[BuildBlox] ${message}`, context ?? '');
   },
   warn: (message: string, context?: unknown) => {
     console.warn(`[BuildBlox] ${message}`, context ?? '');

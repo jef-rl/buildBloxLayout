@@ -5,9 +5,9 @@ import type { Auth } from 'firebase/auth';
 import {
   coreHandlers,
   createHandlerRegistry,
-  type HandlerAction,
-  type ReducerHandler,
 } from '../core/registry/handler-registry';
+import { type HandlerAction } from '../core/registry/HandlerAction.type';
+import { type ReducerHandler } from '../core/registry/ReducerHandler.type';
 import { createEffectRegistry } from '../core/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
@@ -25,47 +25,13 @@ import { firestorePersistence } from '../utils/firestore-persistence';
 import { configureFrameworkAuth, onFrameworkAuthStateChange } from '../utils/firebase-auth';
 import { viewRegistry } from '../core/registry/view-registry';
 import '../domains/workspace/components/WorkspaceRoot';
+import { UiEventDetail } from './UiEventDetail.type';
+import { UiDispatchPayload } from './UiDispatchPayload.type';
+import { shouldLogAction } from './shouldLogAction.helper';
+import { createLogAction } from './createLogAction.helper';
+import { summarizeUpdate } from './summarizeUpdate.helper';
 
 const isDev = import.meta.env.DEV;
-
-type UiEventDetail = {
-  type: string;
-  payload?: Record<string, unknown>;
-};
-
-type UiDispatchPayload = {
-  type: string;
-  [key: string]: unknown;
-};
-
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-const summarizeUpdate = (previousState: UIState, nextState: UIState) => {
-  const previousKeys = Object.keys(previousState);
-  const nextKeys = Object.keys(nextState);
-  const changedKeys = nextKeys.filter((key) => previousState[key as keyof UIState] !== nextState[key as keyof UIState]);
-  return {
-    previousKeys,
-    nextKeys,
-    changedKeys,
-  };
-};
-
-const shouldLogAction = (actionType: string) => !actionType.startsWith('logs/');
-
-const createLogAction = (
-  level: LogLevel,
-  message: string,
-  data?: Record<string, unknown>,
-): HandlerAction => ({
-  type: 'logs/append',
-  payload: {
-    level,
-    message,
-    data,
-    source: 'framework',
-  },
-});
 
 const wrapCoreHandler = (
   handler: ReducerHandler<UIState>,

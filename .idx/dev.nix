@@ -6,6 +6,8 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.nodejs_20
+    pkgs.yarn
+
   ];
   # Sets environment variables in the workspace
   env = {
@@ -23,22 +25,22 @@
     ];
     workspace = {
       # Runs when a workspace is first created with this `dev.nix` file
-      onCreate = {
-        npm-install = "npm install";
-        # Open editors for the following files by default, if they exist:
-        default.openFiles = [ "index.html" "packages/app/src/main.ts" ];
-      };
+      # onCreate = {
+      #   npm-install = "npm install";
+      #   # Open editors for the following files by default, if they exist:
+      #   default.openFiles = [ "index.html" "packages/app/src/main.ts" ];
+      # };
       # To run something each time the workspace is (re)started, use the `onStart` hook
     };
     # Enable previews and customize configuration
-    previews = {
-      enable = true;
-      previews = {
-        web = {
-          command = [ "npm" "run" "dev:app" "--" "--port" "$PORT" "--host" "0.0.0.0" ];
-          manager = "web";
-        };
-      };
-    };
+    # previews = {
+    #   enable = true;
+    #   previews = {
+    #     web = {
+    #       command = [ "npm" "run" "dev:app" "--" "--port" "$PORT" "--host" "0.0.0.0" ];
+    #       manager = "web";
+    #     };
+    #   };
+    # };
   };
 }

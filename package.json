@@ -10,7 +10,11 @@
   ],
   "scripts": {
     "dev:playground": "npm run dev -w packages/playground",
-    "build:playground": "npm run build -w packages/framework && npm run build -w packages/playground  && npm run dev -w packages/playground"
+    "build": "npm run build -w packages/framework && npm run build -w packages/playground  && npm run dev -w packages/playground",
+    "build:all": "npm run build:framework && npm run build:playground",
+    "build:framework": "npm run build -w packages/framework",
+    "build:playground": "npm run build -w packages/playground",
+    "clean": "rm -rf dist && rm -rf packages/framework/dist && rm -rf packages/playground/dist"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,5 @@
-import { HandlerAction, ReducerHandler } from '../../../core/registry/handler-registry';
+import { HandlerAction } from '../../../core/registry/HandlerAction.type';
+import { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import { UIState } from '../../../state/ui-state';
 import { cloneDeep } from 'lodash-es';
 

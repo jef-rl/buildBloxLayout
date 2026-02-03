@@ -1,5 +1,7 @@
 import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutExpansion } from '../../../types/state';
-import type { HandlerAction, HandlerRegistry, ReducerHandler } from '../../../core/registry/handler-registry';
+import type { HandlerAction } from '../../../core/registry/HandlerAction.type';
+import type { HandlerRegistry } from '../../../core/registry/HandlerRegistry.type';
+import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
@@ -8,7 +10,8 @@ import { viewInstanceHandlers } from '../../layout/handlers/view-instances';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
-import { FRAMEWORK_ADMIN_EMAILS } from '../../../config/admin-emails';
+
+export const FRAMEWORK_ADMIN_EMAILS: string[] = ['jef@@gourmetguide.co.uk']
 
 export type FrameworkContextState = {
   state: UIState;

@@ -13,3 +13,8 @@ packages/framework/tsconfig.tsbuildinfo
 package-lock.json
 packages/framework/tsconfig.tsbuildinfo
 packages/framework/tsconfig.tsbuildinfo
+package-lock.json
+packages/framework/package-lock.json
+packages/framework/tsconfig.tsbuildinfo
+.gitignore
+packages/playground/tsconfig.tsbuildinfo

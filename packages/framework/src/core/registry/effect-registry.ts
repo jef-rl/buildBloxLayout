@@ -1,4 +1,4 @@
-import type { HandlerAction } from './handler-registry';
+import type { HandlerAction } from './HandlerAction.type';
 
 export type EffectHandler<TState> = (
   context: TState,
