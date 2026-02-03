@@ -336,7 +336,8 @@ export class PanelView extends LitElement {
     private handleRemoveView(e: Event) {
         e.stopPropagation();
         if (this.panelId) {
-            this.uiDispatch?.({ type: 'panels/removeView', panelId: this.panelId });
+            const viewId = this.viewId ?? undefined;
+            this.uiDispatch?.({ type: 'panels/removeView', panelId: this.panelId, viewId });
         }
     }
 
