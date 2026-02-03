@@ -286,7 +286,7 @@ export class WorkspaceRoot extends LitElement {
                 
                 ${viewOrder.map(viewId => html`
                     <div class="stack-item">
-                        <panel-view .viewId="${viewId}"></panel-view>
+                        <panel-view .panelId="${panelId}" .viewId="${viewId}"></panel-view>
                     </div>
                 `)}
                 

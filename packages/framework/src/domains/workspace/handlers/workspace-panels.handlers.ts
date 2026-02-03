@@ -346,7 +346,7 @@ const assignViewHandler: ReducerHandler<UIState> = (state, action) => {
 };
 
 const removeViewHandler: ReducerHandler<UIState> = (state, action) => {
-    const payload = action.payload as { panelId: string } | undefined;
+    const payload = action.payload as { panelId: string; viewId?: string | null } | undefined;
     if (!payload?.panelId) {
         return { state, followUps: [] };
     }
@@ -354,10 +354,15 @@ const removeViewHandler: ReducerHandler<UIState> = (state, action) => {
     const panel = state.panels.find(p => p.id === payload.panelId);
     if (!panel) return { state, followUps: [] };
     
-    const viewIdToRemove = panel.viewId;
+    const viewIdToRemove = payload.viewId ?? panel.viewId;
+    const shouldClearPanel =
+        panel.region === 'main' ||
+        !payload.viewId ||
+        panel.viewId === viewIdToRemove ||
+        panel.activeViewId === viewIdToRemove;
 
     const nextPanels = state.panels.map((p) => {
-        if (p.id === payload.panelId) {
+        if (p.id === payload.panelId && shouldClearPanel) {
              return { ...p, view: null, viewId: undefined, activeViewId: undefined };
         }
         return p;
