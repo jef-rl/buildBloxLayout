@@ -5,10 +5,10 @@ import type { Auth } from 'firebase/auth';
 import {
   coreHandlers,
   createHandlerRegistry,
-} from '../core/registry/handler-registry';
+} from '../legacy/registry/handler-registry';
 import { type HandlerAction } from '../core/registry/HandlerAction.type';
 import { type ReducerHandler } from '../core/registry/ReducerHandler.type';
-import { createEffectRegistry } from '../core/registry/effect-registry';
+import { createEffectRegistry } from '../legacy/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
@@ -28,15 +28,21 @@ import { hybridPersistence } from '../utils/hybrid-persistence';
 import { setFirestoreSyncCallback } from '../utils/persistence';
 import { firestorePersistence } from '../utils/firestore-persistence';
 import { configureFrameworkAuth, onFrameworkAuthStateChange } from '../utils/firebase-auth';
-import { viewRegistry } from '../core/registry/view-registry';
+import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
 import '../domains/workspace/components/WorkspaceRoot';
-import { UiEventDetail } from './UiEventDetail.type';
-import { UiDispatchPayload } from './UiDispatchPayload.type';
 import { shouldLogAction } from './shouldLogAction.helper';
 import { createLogAction } from './createLogAction.helper';
 import { summarizeUpdate } from './summarizeUpdate.helper';
 
 const isDev = import.meta.env.DEV;
+type UiDispatchPayload = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
+type UiEventDetail = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
 
 const wrapCoreHandler = (
   handler: ReducerHandler<UIState>,

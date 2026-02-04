@@ -4,9 +4,9 @@ import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 import type { Action } from '../../nxt/runtime/actions/action';
 import { HandlerImplRegistry } from '../../nxt/runtime/registries/handlers/handler-impl-registry';
 import { HandlerRegistry as NxtHandlerRegistry } from '../../nxt/runtime/registries/handlers/handler-registry';
-import { ReducerHandler } from './ReducerHandler.type';
-import { HandlerRegistry } from './HandlerRegistry.type';
-import { HandlerAction } from './HandlerAction.type';
+import { ReducerHandler } from '../../core/registry/ReducerHandler.type';
+import { HandlerRegistry } from '../../core/registry/HandlerRegistry.type';
+import { HandlerAction } from '../../core/registry/HandlerAction.type';
 
 const summarizeChanges = (changes: unknown) => {
   if (Array.isArray(changes)) {
@@ -112,7 +112,6 @@ const toFollowUps = (actions: unknown): HandlerAction[] => {
   return actions.filter((action): action is HandlerAction => Boolean(action?.type));
 };
 
-/** @deprecated Use CoreContext + NXT registries instead. */
 export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
   'state/hydrate': (state, action) => {
     const payload = action.payload ?? {};
@@ -257,7 +256,6 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
   },
 };
 
-/** @deprecated Use CoreContext + NXT registries instead. */
 export const createHandlerRegistry = <TState>(
   initialHandlers: Record<string, ReducerHandler<TState>> = {},
 ): HandlerRegistry<TState> => {

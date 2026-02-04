@@ -1,10 +1,12 @@
-import type { UiEventDetail } from '../types/events';
+type UiEventDetail = {
+  type: string;
+  payload: unknown;
+};
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
 };
 
-/** @deprecated Use CoreContext + NXT registries instead. */
 export const dispatchUiEvent = <TPayload>(target: UiEventTarget, type: string, payload?: TPayload) => {
   const resolvedTarget =
     typeof window !== 'undefined' && target === window
