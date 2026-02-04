@@ -1,6 +1,6 @@
 import type { UIState, ViewDefinition, FrameworkAuthConfig } from '../types/index';
-import { viewRegistry } from './registry/view-registry';
-import { dispatchUiEvent } from '../utils/dispatcher';
+import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
+import { dispatchUiEvent } from '../legacy/dispatcher';
 import { getFrameworkLogger } from '../utils/logger';
 import '../components/FrameworkRoot';
 

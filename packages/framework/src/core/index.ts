@@ -1,6 +1,5 @@
 // Legacy API (backwards compatible)
 export * from './bootstrap';
-export * from './registry';
 
 // New simplified API
 export { Framework, type FrameworkConfig } from './framework-singleton';

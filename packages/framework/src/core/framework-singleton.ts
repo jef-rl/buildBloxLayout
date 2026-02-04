@@ -21,8 +21,8 @@ import type { UIState, FrameworkAuthConfig } from '../types/index';
 import type { ViewDefinition } from '../domains/panels/types';
 import type { FrameworkLogger } from '../utils/logger';
 import type { FrameworkRoot } from '../components/FrameworkRoot';
-import { viewRegistry } from './registry/view-registry';
-import { dispatchUiEvent } from '../utils/dispatcher';
+import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
+import { dispatchUiEvent } from '../legacy/dispatcher';
 import { setFrameworkLogger, getFrameworkLogger } from '../utils/logger';
 import {
   type SimpleViewConfig,

@@ -2,7 +2,6 @@ import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutE
 import type { HandlerAction } from '../../../core/registry/HandlerAction.type';
 import type { HandlerRegistry } from '../../../core/registry/HandlerRegistry.type';
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
-import { viewRegistry } from '../../../core/registry/view-registry';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
 import { dragHandlers } from '../../layout/handlers/drag.handlers';

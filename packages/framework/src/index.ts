@@ -30,7 +30,7 @@ export * from './types';
 
 // Backward Compatibility Exports (Legacy Paths)
 // These maintain the old import paths for existing consumers
-export { ViewRegistry, viewRegistry } from './core/registry/view-registry';
+export { ViewRegistry, viewRegistry } from './nxt/runtime/registries/views/view-registry-legacy-api';
 // export { Workspace } from './domains/layout/components/Workspace';
 export { DockContainer } from './domains/dock/components/DockContainer';
 export { DockManager } from './domains/dock/components/DockManager';
