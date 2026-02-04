@@ -112,6 +112,7 @@ const toFollowUps = (actions: unknown): HandlerAction[] => {
   return actions.filter((action): action is HandlerAction => Boolean(action?.type));
 };
 
+/** @deprecated Use CoreContext + NXT registries instead. */
 export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
   'state/hydrate': (state, action) => {
     const payload = action.payload ?? {};
@@ -256,6 +257,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
   },
 };
 
+/** @deprecated Use CoreContext + NXT registries instead. */
 export const createHandlerRegistry = <TState>(
   initialHandlers: Record<string, ReducerHandler<TState>> = {},
 ): HandlerRegistry<TState> => {
