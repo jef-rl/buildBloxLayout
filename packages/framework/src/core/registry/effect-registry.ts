@@ -8,18 +8,21 @@ import {
   registerFrameworkEffectImpls,
 } from '../../nxt/effects/register-framework-effects';
 
+/** @deprecated Use CoreContext + NXT registries instead. */
 export type EffectHandler<TState> = (
   context: TState,
   action: HandlerAction,
   dispatch: (actions: HandlerAction[]) => void,
 ) => void;
 
+/** @deprecated Use CoreContext + NXT registries instead. */
 export type EffectRegistry<TState> = {
   register: (type: string, handler: EffectHandler<TState>) => void;
   get: (type: string) => EffectHandler<TState> | undefined;
   list: () => string[];
 };
 
+/** @deprecated Use CoreContext + NXT registries instead. */
 export const createEffectRegistry = <TState>(): EffectRegistry<TState> => {
   const impls = new EffectImplRegistry();
   const registry = new NxtEffectRegistry(impls);
