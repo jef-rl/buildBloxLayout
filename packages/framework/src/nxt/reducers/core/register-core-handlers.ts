@@ -3,8 +3,7 @@ import type { ReducerImpl } from '../../runtime/registries/handlers/handler-impl
 import type { CoreRegistries } from '../../runtime/registries/core-registries';
 import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import { logsAppendReducer } from './logs-append.reducer';
-import { logsClearReducer } from './logs-clear.reducer';
+import { logsAppendReducer, logsClearReducer } from './logs.reducer';
 import { stateHydrateReducer } from './state-hydrate.reducer';
 
 const coreHandlers = [
