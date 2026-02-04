@@ -2,6 +2,7 @@ import type { HandlerAction } from '../../core/registry/HandlerAction.type';
 import type { EffectImpl } from '../../nxt/runtime/registries/effects/effect-impl-registry';
 import { EffectImplRegistry } from '../../nxt/runtime/registries/effects/effect-impl-registry';
 import { EffectRegistry as NxtEffectRegistry } from '../../nxt/runtime/registries/effects/effect-registry';
+import type { ActionName } from '../../nxt/runtime/actions/action-catalog';
 import {
   applyFrameworkEffectDefs,
   frameworkEffectDefs,
@@ -37,7 +38,7 @@ export const createEffectRegistry = <TState>(): EffectRegistry<TState> => {
         const legacyAction = { type: action.action, payload: action.payload } as HandlerAction;
         handler(context, legacyAction, (actions) => {
           actions.forEach((followUp) => {
-            dispatch({ action: followUp.type, payload: followUp.payload });
+            dispatch({ action: followUp.type as ActionName, payload: followUp.payload });
           });
         });
       };
@@ -51,7 +52,7 @@ export const createEffectRegistry = <TState>(): EffectRegistry<TState> => {
       }
       return (context, action, dispatch) => {
         void registry.runForAction(
-          { action: action.type, payload: action.payload },
+          { action: action.type as ActionName, payload: action.payload },
           (nextAction) => dispatch([{ type: nextAction.action, payload: nextAction.payload }]),
           () => context,
         );

@@ -2,6 +2,7 @@ import { viewRegistry } from '../../../nxt/runtime/registries/views/view-registr
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import type { FrameworkContextState } from '../../workspace/handlers/registry';
 import type { ViewInstance } from '../../panels/types';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 export const createInstance: ReducerHandler<FrameworkContextState> = (context, action) => {
     const { definitionId, overrides } = action.payload as { definitionId: string, overrides?: Partial<ViewInstance> };
@@ -76,7 +77,7 @@ export const destroyInstance: ReducerHandler<FrameworkContextState> = (context, 
 };
 
 export const viewInstanceHandlers = {
-    'view/createInstance': createInstance,
-    'view/updateLocalContext': updateLocalContext,
-    'view/destroyInstance': destroyInstance
+    [ActionCatalog.ViewCreateInstance]: createInstance,
+    [ActionCatalog.ViewUpdateLocalContext]: updateLocalContext,
+    [ActionCatalog.ViewDestroyInstance]: destroyInstance
 };

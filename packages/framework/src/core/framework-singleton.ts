@@ -23,6 +23,7 @@ import type { FrameworkLogger } from '../utils/logger';
 import type { FrameworkRoot } from '../components/FrameworkRoot';
 import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
 import { dispatchUiEvent } from '../legacy/dispatcher';
+import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { setFrameworkLogger, getFrameworkLogger } from '../utils/logger';
 import {
   type SimpleViewConfig,
@@ -318,7 +319,7 @@ class FrameworkSingleton {
     };
 
     // Hydrate state
-    dispatchUiEvent(root, 'state/hydrate', { state: mergedState });
+    dispatchUiEvent(root, ActionCatalog.StateHydrate, { state: mergedState });
 
     logger?.info?.('Framework initialized', {
       mountTarget:

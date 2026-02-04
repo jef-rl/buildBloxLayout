@@ -2,6 +2,7 @@ import type { EffectRegistry } from '../legacy/registry/effect-registry';
 import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import type { LayoutPreset, LayoutPresets } from '../types/state';
+import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { presetPersistence } from '../utils/persistence';
 import { hybridPersistence } from '../utils/hybrid-persistence';
 import { getFrameworkLogger } from '../utils/logger';
@@ -14,7 +15,7 @@ const dispatchLog = (
 ) => {
   dispatch([
     {
-      type: 'logs/append',
+      type: ActionCatalog.LogsAppend,
       payload: {
         level,
         message,
@@ -28,7 +29,7 @@ const dispatchLog = (
 export const registerPresetEffects = (
   registry: EffectRegistry<FrameworkContextState>,
 ): void => {
-  registry.register('effects/presets/save', (_context, action, _dispatch) => {
+  registry.register(ActionCatalog.EffectsPresetsSave, (_context, action, _dispatch) => {
     const payload = (action.payload ?? {}) as { name?: string; preset?: LayoutPreset };
     if (!payload.name || !payload.preset) {
       return;
@@ -41,7 +42,7 @@ export const registerPresetEffects = (
     }
   });
 
-  registry.register('effects/presets/delete', (_context, action, _dispatch) => {
+  registry.register(ActionCatalog.EffectsPresetsDelete, (_context, action, _dispatch) => {
     const payload = (action.payload ?? {}) as { name?: string };
     if (!payload.name) {
       return;
@@ -54,7 +55,7 @@ export const registerPresetEffects = (
     }
   });
 
-  registry.register('effects/presets/rename', (_context, action, _dispatch) => {
+  registry.register(ActionCatalog.EffectsPresetsRename, (_context, action, _dispatch) => {
     const payload = (action.payload ?? {}) as { oldName?: string; newName?: string };
     if (!payload.oldName || !payload.newName) {
       return;
@@ -67,7 +68,7 @@ export const registerPresetEffects = (
     }
   });
 
-  registry.register('effects/presets/hydrate', (_context, _action, dispatch) => {
+  registry.register(ActionCatalog.EffectsPresetsHydrate, (_context, _action, dispatch) => {
     const loadedPresets = presetPersistence.loadAll();
     if (!loadedPresets) {
       dispatchLog(dispatch, 'warn', 'No presets loaded from localStorage.');
@@ -76,7 +77,7 @@ export const registerPresetEffects = (
 
     dispatch([
       {
-        type: 'presets/hydrate',
+        type: ActionCatalog.PresetsHydrate,
         payload: { presets: loadedPresets as LayoutPresets },
       },
     ]);

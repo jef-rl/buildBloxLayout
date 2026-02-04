@@ -2,6 +2,7 @@ import { applyContextUpdate } from '../../state/context-update';
 import { getFrameworkLogger } from '../../utils/logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 import type { Action } from '../../nxt/runtime/actions/action';
+import type { ActionName } from '../../nxt/runtime/actions/action-catalog';
 import { HandlerImplRegistry } from '../../nxt/runtime/registries/handlers/handler-impl-registry';
 import { HandlerRegistry as NxtHandlerRegistry } from '../../nxt/runtime/registries/handlers/handler-registry';
 import { ReducerHandler } from '../../core/registry/ReducerHandler.type';
@@ -265,7 +266,7 @@ export const createHandlerRegistry = <TState>(
   const registry = new NxtHandlerRegistry<TState>(impls);
 
   const toNxtAction = (action: HandlerAction): Action<any> => ({
-    action: action.type,
+    action: action.type as ActionName,
     payload: action.payload,
   });
 

@@ -1,5 +1,6 @@
 import type { Action } from '../../runtime/actions/action';
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { logout } from '../../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
@@ -22,11 +23,11 @@ export const authLogoutEffect: EffectImpl = (_action, dispatch, runtime) => {
   logout()
     .then(() => {
       const followUps: Action<any>[] = [
-        { action: 'auth/setUser', payload: { user: null } },
-        { action: 'auth/setUi', payload: { loading: false, error: null, success: 'Logged out successfully' } },
+        { action: ActionCatalog.AuthSetUser, payload: { user: null } },
+        { action: ActionCatalog.AuthSetUi, payload: { loading: false, error: null, success: 'Logged out successfully' } },
       ];
       if (shouldOpenOverlay) {
-        followUps.push({ action: 'layout/setOverlayView', payload: { viewId: authViewId } });
+        followUps.push({ action: ActionCatalog.LayoutSetOverlayView, payload: { viewId: authViewId } });
       }
       dispatchActions(dispatch, followUps);
       clearAuthSuccessLater(dispatch, 1500);

@@ -2,6 +2,7 @@ import type { EffectRegistry } from '../legacy/registry/effect-registry';
 import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import type { FrameworkMenuConfig } from '../types/state';
+import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { frameworkMenuPersistence } from '../utils/framework-menu-persistence';
 import { getFrameworkLogger } from '../utils/logger';
 
@@ -13,7 +14,7 @@ const dispatchLog = (
 ) => {
   dispatch([
     {
-      type: 'logs/append',
+      type: ActionCatalog.LogsAppend,
       payload: {
         level,
         message,
@@ -27,7 +28,7 @@ const dispatchLog = (
 export const registerFrameworkMenuEffects = (
   registry: EffectRegistry<FrameworkContextState>,
 ): void => {
-  registry.register('effects/frameworkMenu/save', (_context, action, _dispatch) => {
+  registry.register(ActionCatalog.EffectsFrameworkMenuSave, (_context, action, _dispatch) => {
     const payload = (action.payload ?? {}) as { config?: FrameworkMenuConfig };
     if (!payload.config) {
       return;
@@ -40,14 +41,14 @@ export const registerFrameworkMenuEffects = (
     }
   });
 
-  registry.register('effects/frameworkMenu/hydrate', (_context, _action, dispatch) => {
+  registry.register(ActionCatalog.EffectsFrameworkMenuHydrate, (_context, _action, dispatch) => {
     const loadedConfig = frameworkMenuPersistence.load();
     if (!loadedConfig) {
       dispatchLog(dispatch, 'warn', 'No framework menu config loaded from localStorage.');
     }
     dispatch([
       {
-        type: 'frameworkMenu/hydrate',
+        type: ActionCatalog.FrameworkMenuHydrate,
         payload: { config: loadedConfig ?? frameworkMenuPersistence.getDefaultConfig() },
       },
     ]);

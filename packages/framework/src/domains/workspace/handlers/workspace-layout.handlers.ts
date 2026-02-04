@@ -1,6 +1,7 @@
 import type { LayoutExpansion, LayoutState, MainAreaPanelCount } from '../../../types/state';
 import type { ViewportWidthMode } from '../../../types/core';
 import { toggleExpanderState, type ExpanderState } from '../../../utils/expansion-helpers.js';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 const VIEWPORT_WIDTH_MODES: ViewportWidthMode[] = ['1x', '2x', '3x', '4x', '5x'];
 
@@ -59,7 +60,7 @@ export const applyLayoutAction = (
     payload: { type: string; [key: string]: unknown },
 ): LayoutState | null => {
     switch (payload.type) {
-        case 'layout/setExpansion': {
+        case ActionCatalog.LayoutSetExpansion: {
             const side = payload.side as 'left' | 'right' | 'bottom';
             const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof LayoutExpansion;
 
@@ -85,25 +86,25 @@ export const applyLayoutAction = (
                 expansion: resolveExpansion(layout.expansion, side, newState),
             };
         }
-        case 'layout/setOverlayView': {
+        case ActionCatalog.LayoutSetOverlayView: {
             return {
                 ...layout,
                 overlayView: (payload.viewId as string | null | undefined) ?? null,
             };
         }
-        case 'layout/setOverlayExpander': {
+        case ActionCatalog.LayoutSetOverlayExpander: {
             return {
                 ...layout,
                 overlayExpander: (payload.viewId as string | null | undefined) ?? null,
             };
         }
-        case 'layout/unsetOverlayExpander': {
+        case ActionCatalog.LayoutUnsetOverlayExpander: {
             return {
                 ...layout,
                 overlayExpander: null,
             };
         }
-        case 'layout/resetExpanders': {
+        case ActionCatalog.LayoutResetExpanders: {
             return {
                 ...layout,
                 expansion: {
@@ -113,14 +114,14 @@ export const applyLayoutAction = (
                 },
             };
         }
-        case 'layout/setViewportWidthMode': {
+        case ActionCatalog.LayoutSetViewportWidthMode: {
             const mode = normalizeViewportWidthMode(payload.mode);
             return {
                 ...layout,
                 viewportWidthMode: mode,
             };
         }
-        case 'layout/setMainAreaCount': {
+        case ActionCatalog.LayoutSetMainAreaCount: {
             return {
                 ...layout,
                 mainAreaCount: normalizeMainAreaCount(

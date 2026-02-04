@@ -1,5 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import type { LayoutPresets } from '../../../types/state';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { presetPersistence } from '../../../utils/persistence';
 import { dispatchActions, dispatchLog } from './preset-effect-helpers';
 
@@ -14,7 +15,7 @@ export const presetsHydrateEffect: EffectImpl = (_action, dispatch) => {
 
   dispatchActions(dispatch, [
     {
-      action: 'presets/hydrate',
+      action: ActionCatalog.PresetsHydrate,
       payload: { presets: loadedPresets as LayoutPresets },
     },
   ]);

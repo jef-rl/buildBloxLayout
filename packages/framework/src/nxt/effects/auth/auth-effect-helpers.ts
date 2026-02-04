@@ -1,4 +1,5 @@
 import type { Action } from '../../runtime/actions/action';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 export type ActionDispatch = (action: Action<any>) => void;
 
@@ -31,7 +32,7 @@ export const dispatchAuthUi = (
   dispatch: ActionDispatch,
   payload: { loading?: boolean; error?: string | null; success?: string | null },
 ): void => {
-  dispatch({ action: 'auth/setUi', payload });
+  dispatch({ action: ActionCatalog.AuthSetUi, payload });
 };
 
 export const clearAuthSuccessLater = (dispatch: ActionDispatch, delayMs: number): void => {
