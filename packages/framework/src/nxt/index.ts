@@ -1,7 +1,7 @@
-    // NXT framework scaffold entrypoint
-    // Expose core types and registries for progressive migration.
+// NXT public API surface.
+// Only the minimal runtime contracts are exported here; all other NXT internals
+// are implementation detail and may change without notice.
 
-    export * from './runtime/actions/action';
-    export * from './runtime/registries/core-registries';
-    export * from './runtime/context/core-context';
-  
+export type { Action, ActionName } from './runtime/actions/action';
+export { CoreContext } from './runtime/context/core-context';
+export { coreContext } from './runtime/context/core-context-key';

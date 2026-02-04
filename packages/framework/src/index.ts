@@ -1,44 +1,29 @@
 // ============================================
 // PUBLIC API - Framework Entry Point
 // ============================================
+// This file defines the supported, stable surface for framework consumers.
+// Everything else in src/nxt and internal folders is implementation detail
+// and may change without notice.
 
-// Shared/Foundational Components
-export * from './components';
+// Framework bootstrap/configuration
+export { Framework, type FrameworkConfig } from './core/framework-singleton';
+export { bootstrapFramework, type BootstrapFrameworkOptions } from './core/bootstrap';
+export { view, frameworkView, type ViewDecoratorOptions } from './core/decorators';
+export { type SimpleViewConfig } from './core/simple-view-config';
 
-// Domain Exports
-export * from './domains/workspace';
-export * from './domains/panels';
-export * from './domains/dock';
-export * from './domains/layout';
-export * from './domains/auth';
-export * from './domains/logging';
+// Core UI root component
+export { FrameworkRoot } from './components/FrameworkRoot';
 
-// Core Framework (Bootstrap & Registries)
-export * from './core';
+// Built-in view components intended for embedding/extension
+export { LogView } from './domains/logging/components/LogView';
+export { ToolbarContainer } from './domains/layout/components/ToolbarContainer';
+export { CustomToolbar } from './domains/layout/components/CustomToolbar';
 
-// State Management
-export * from './state';
-export { ContextConsumer, ContextProvider } from '@lit/context';
+// Context and event dispatch
 export { uiStateContext } from './state/context';
 export type { UiStateContextValue } from './state/ui-state';
-
-// Event Handling & Utilities
-export * from './utils';
 export { dispatchUiEvent } from './legacy/dispatcher';
 
-// Types & Interfaces
-export * from './types';
-
-// Backward Compatibility Exports (Legacy Paths)
-// These maintain the old import paths for existing consumers
-export { ViewRegistry, viewRegistry } from './nxt/runtime/registries/views/view-registry-legacy-api';
-// export { Workspace } from './domains/layout/components/Workspace';
-export { DockContainer } from './domains/dock/components/DockContainer';
-export { DockManager } from './domains/dock/components/DockManager';
-export { PositionPicker } from './domains/dock/components/PositionPicker';
-export { FrameworkRoot } from './components/FrameworkRoot';
-export { OverlayExpander as OverlayLayer } from './domains/workspace/components/OverlayLayer';
-export { WorkspaceRoot } from './domains/workspace/components/WorkspaceRoot';
-export { PanelView } from './domains/workspace/components/PanelView';
-// export { Icons } from './components/Icons';
-export * from './nxt';
+// Public types
+export type { MainAreaPanelCount, UIState, FrameworkAuthConfig } from './types/state';
+export type { Panel, View, ViewDefinition } from './domains/panels/types';
