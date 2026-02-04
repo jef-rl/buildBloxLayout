@@ -13,6 +13,10 @@ import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
 import { coreContext } from '../nxt/runtime/context/core-context-key';
+import type { CoreContext } from '../nxt/runtime/context/core-context';
+import type { Action } from '../nxt/runtime/actions/action';
+import { CoreRegistries } from '../nxt/runtime/registries/core-registries';
+import { UiStateStore } from '../nxt/runtime/state/store/ui-state-store';
 import { getFrameworkLogger } from '../utils/logger';
 import { validateState } from '../state/state-validator';
 import {
@@ -77,6 +81,8 @@ export class FrameworkRoot extends LitElement {
   `;
 
   private state = uiState.getState();
+  private coreStore = new UiStateStore<UIState>(uiState.getState());
+  private coreRegistries = new CoreRegistries<UIState>();
 
   private unsubscribe: (() => void) | null = null;
   private firestoreUnsubscribe: (() => void) | null = null;
@@ -99,15 +105,11 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([{ type: payload.type, payload }]);
   };
 
-  private coreAdapter = {
-    store: {
-      subscribe: (listener: (state: UIState) => void) => {
-        listener(uiState.getState());
-        return uiState.subscribe(listener);
-      },
-    },
+  private coreAdapter: CoreContext<UIState> = {
+    registries: this.coreRegistries,
+    store: this.coreStore,
     getState: () => uiState.getState(),
-    dispatch: (action: { action: string; payload?: Record<string, unknown> }) => {
+    dispatch: (action: Action) => {
       if (!action?.action) {
         return;
       }
@@ -146,6 +148,7 @@ export class FrameworkRoot extends LitElement {
         }
       }
       this.state = nextState;
+      this.coreStore.setState(nextState);
       this.refreshContext();
     });
     this.refreshContext();
