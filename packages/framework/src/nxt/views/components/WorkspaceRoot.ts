@@ -1,14 +1,15 @@
 // @ts-nocheck
 import { LitElement, html, css, nothing } from 'lit';
-import { ContextConsumer } from '@lit/context';
+import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
+import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import { DockManager } from '../../../domains/dock/components/DockManager.js';
 import '../../../domains/layout/components/FrameworkMenu.js';
 import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
-import '../../../domains/workspace/components/OverlayLayer.js';
+import './OverlayLayer.js';
 import '../host/view-host.js';
 import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
 
@@ -200,15 +201,9 @@ export class WorkspaceRoot extends LitElement {
 
     private dockManager = new DockManager();
 
-    private core: CoreContext<UIState> | null = null;
     private unsubscribe: (() => void) | null = null;
-    private coreConsumer = new ContextConsumer(this, {
-        context: coreContext,
-        subscribe: true,
-        callback: (value: CoreContext<UIState> | undefined) => {
-            this.attachCore(value ?? null);
-        },
-    });
+    @consume({ context: coreContext, subscribe: true })
+    core?: CoreContext<UIState>;
 
     disconnectedCallback() {
         if (this.unsubscribe) {
@@ -218,12 +213,18 @@ export class WorkspaceRoot extends LitElement {
         super.disconnectedCallback();
     }
 
+    protected updated(changedProps: Map<PropertyKey, unknown>) {
+        if (changedProps.has('core')) {
+            this.attachCore(this.core ?? null);
+        }
+        super.updated(changedProps);
+    }
+
     private attachCore(core: CoreContext<UIState> | null) {
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
         }
-        this.core = core;
         if (core) {
             this.unsubscribe = core.store.subscribe(() => {
                 this.requestUpdate();
@@ -233,10 +234,7 @@ export class WorkspaceRoot extends LitElement {
     }
 
     private dispatch(action: string, payload?: Record<string, unknown>) {
-        if (!this.core) {
-            return;
-        }
-        this.core.dispatch({ action, payload });
+        this.core?.dispatch({ action, payload });
     }
 
     private resolveViewId(view: any): string | null {
@@ -267,6 +265,31 @@ export class WorkspaceRoot extends LitElement {
         }
     }
 
+    private buildViewInstance(state: UIState | null | undefined, viewId: string | null | undefined): ViewInstanceDto | null {
+        if (!state || !viewId) {
+            return null;
+        }
+        const instance = state.viewInstances?.[viewId];
+        if (instance) {
+            return {
+                instanceId: instance.instanceId,
+                viewId: instance.definitionId,
+                settings: instance.localContext,
+            };
+        }
+
+        const legacyView = state.views?.find((view) => view.id === viewId);
+        if (legacyView) {
+            return {
+                instanceId: legacyView.id,
+                viewId: legacyView.component,
+                settings: (legacyView.data as Record<string, unknown>) ?? {},
+            };
+        }
+
+        return { instanceId: viewId, viewId };
+    }
+
     private renderSidePanelStack(
         state: UIState | null,
         region: 'left' | 'right' | 'bottom',
@@ -290,11 +313,16 @@ export class WorkspaceRoot extends LitElement {
                 ></div>
                 ` : nothing}
                 
-                ${viewOrder.map(viewId => html`
-                    <div class="stack-item">
-                        <view-host .panelId=${panelId} .viewId=${viewId}></view-host>
-                    </div>
-                `)}
+                ${viewOrder.map((viewId) => {
+                    const instance = this.buildViewInstance(state, viewId);
+                    return instance
+                        ? html`
+                            <div class="stack-item">
+                                <view-host .instances=${[instance]}></view-host>
+                            </div>
+                        `
+                        : nothing;
+                })}
                 
                 ${showDropZones ? html`
                 <div 
@@ -375,7 +403,6 @@ export class WorkspaceRoot extends LitElement {
         const rightWidth = rightOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
         const bottomHeight = bottomOpen ? 'clamp(180px, 26vh, 320px)' : '0px';
 
-        const overlayView = layout.overlayView ?? null;
         const mainPanels = panels.filter((panel) => panel.region === 'main');
         const totalMainPanels = mainPanels.length;
         const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / clamp(Number.isFinite(viewportCount) ? viewportCount : (totalMainPanels || 1), 1, 5)}%`;
@@ -385,8 +412,6 @@ export class WorkspaceRoot extends LitElement {
         const mainPanelsToRender = mainPanels;
         const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
             panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
-        const getPanelViewInstanceId = (panel: { view?: { id?: string } | null } | null) =>
-            panel?.view?.id ?? null;
 
         const leftViewOrder = layout.leftViewOrder || (leftPanel?.viewId ? [leftPanel.viewId] : []);
         const rightViewOrder = layout.rightViewOrder || (rightPanel?.viewId ? [rightPanel.viewId] : []);
@@ -416,11 +441,12 @@ export class WorkspaceRoot extends LitElement {
                                 class="main-panel"
                                 @click=${() => panel && this.dispatch('panels/selectPanel', { panelId: panel.id })}
                             >
-                                <view-host
-                                    .panelId=${panel.id}
-                                    .viewId=${getPanelViewId(panel)}
-                                    .viewInstanceId=${getPanelViewInstanceId(panel)}
-                                ></view-host>
+                                ${(() => {
+                                    const viewId = getPanelViewId(panel);
+                                    const instance = this.buildViewInstance(state, viewId);
+                                    const instances = instance ? [instance] : [];
+                                    return html`<view-host .instances=${instances}></view-host>`;
+                                })()}
                             </div>
                         `)}
                     </div>
@@ -450,9 +476,7 @@ export class WorkspaceRoot extends LitElement {
                 </dock-container>
 
 
-                ${overlayView ? html`
-                    <overlay-expander .viewId="${overlayView}"></overlay-expander>
-                ` : nothing}
+                <overlay-expander></overlay-expander>
             </div>
         `;
     }
