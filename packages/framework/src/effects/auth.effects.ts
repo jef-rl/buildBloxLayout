@@ -1,4 +1,4 @@
-import type { EffectRegistry } from '../core/registry/effect-registry';
+import type { EffectRegistry } from '../legacy/registry/effect-registry';
 import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import {

@@ -1,0 +1,485 @@
+// @ts-nocheck
+import { LitElement, html, css, nothing } from 'lit';
+import { consume } from '@lit/context';
+import type { CoreContext } from '../../runtime/context/core-context';
+import { coreContext } from '../../runtime/context/core-context-key';
+import type { UIState } from '../../../types/state';
+import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
+import { DockManager } from '../../../domains/dock/components/DockManager.js';
+import '../../../domains/layout/components/FrameworkMenu.js';
+import '../../../domains/layout/components/ViewRegistryPanel.js';
+import '../../../domains/dock/components/DockContainer.js';
+import './OverlayLayer.js';
+import '../host/view-host.js';
+import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+export class WorkspaceRoot extends LitElement {
+    static styles = css`
+        :host {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            z-index:50;
+            background-color: #0f172a;
+        }
+
+        .workspace {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .layout {
+            position: relative;
+            display: grid;
+            grid-template-columns: var(--left-width) minmax(0, 1fr) var(--right-width);
+            grid-template-rows: minmax(0, 1fr) var(--bottom-height);
+            width: 100%;
+            height: 100%;
+            transition: grid-template-columns 0.2s ease, grid-template-rows 0.2s ease;
+        }
+
+        .expander {
+            position: relative;
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            overflow: visible;
+            transition: opacity 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .expander.collapsed {
+            opacity: 1;
+            border-width: 0;
+        }
+
+        .expander-left {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+        }
+
+        .expander-right {
+            grid-column: 3;
+            grid-row: 1 / span 2;
+        }
+
+        .expander-bottom {
+            grid-column: 2;
+            grid-row: 2;
+            border-top: none;
+        }
+
+        .main-area {
+            grid-column: 2;
+            grid-row: 1;
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: var(--main-panel-width);
+            grid-template-columns: repeat(auto-fit, var(--main-panel-width));
+            height: 100%;
+            min-width: 0;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background-color: #0b1220;
+            z-inddex:0;
+        }
+
+        .main-panel {
+            min-height: 0;
+            min-width: 0;
+            border-left: 1px solid #1f2937;
+        }
+
+        .main-panel:first-child {
+            border-left: none;
+        }
+
+        /* Stack Styles */
+        .side-panel-stack {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        .stack-item {
+            flex: 0 0 auto;
+            min-height: 200px;
+            border-bottom: 1px solid #1f2937;
+            position: relative;
+        }
+
+        .drop-zone {
+            height: 10px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            height: 40px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px dashed #3b82f6;
+        }
+        
+        .drop-zone.top {
+            border-bottom: none;
+        }
+        
+        .drop-zone.bottom {
+            border-top: none;
+            flex-grow: 1; /* Allow bottom drop zone to fill remaining space */
+            min-height: 20px;
+        }
+        
+        .drop-zone.hidden {
+            height: 0;
+            max-height: 0;
+            border: none;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Sash Toggles */
+        .sash-toggle {
+            position: absolute;
+            z-index: 999; /* Above panels */
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #94a3b8;
+            padding: 0;
+        }
+
+        .sash-toggle:hover {
+            background-color: #334155;
+            color: white;
+        }
+
+        .sash-toggle.left {
+            left: var(--left-width, 0px);
+            top: 120px; /* Y offset */
+            width: 24px;
+            height: 32px;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            transition: left 0.2s ease;
+        }
+
+        .sash-toggle.right {
+            right: var(--right-width, 0px);
+            top: 120px; /* Y offset */
+            width: 24px;
+            height: 32px;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            transition: right 0.2s ease;
+        }
+
+        .sash-toggle.bottom {
+            bottom: var(--bottom-height, 0px);
+            left: 120px; /* X offset */
+            width: 32px;
+            height: 24px;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            transition: bottom 0.2s ease;
+        }
+    `;
+
+    private dockManager = new DockManager();
+
+    private unsubscribe: (() => void) | null = null;
+    @consume({ context: coreContext, subscribe: true })
+    core?: CoreContext<UIState>;
+
+    disconnectedCallback() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+            this.unsubscribe = null;
+        }
+        super.disconnectedCallback();
+    }
+
+    protected updated(changedProps: Map<PropertyKey, unknown>) {
+        if (changedProps.has('core')) {
+            this.attachCore(this.core ?? null);
+        }
+        super.updated(changedProps);
+    }
+
+    private attachCore(core: CoreContext<UIState> | null) {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+            this.unsubscribe = null;
+        }
+        if (core) {
+            this.unsubscribe = core.store.subscribe(() => {
+                this.requestUpdate();
+            });
+        }
+        this.requestUpdate();
+    }
+
+    private dispatch(action: string, payload?: Record<string, unknown>) {
+        this.core?.dispatch({ action, payload });
+    }
+
+    private resolveViewId(view: any): string | null {
+        return view?.component ?? view?.viewType ?? view?.id ?? null;
+    }
+
+    private handleDragOver(e: DragEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'move';
+        }
+        (e.target as HTMLElement).classList.add('drag-over');
+    }
+
+    private handleDragLeave(e: DragEvent) {
+        (e.target as HTMLElement).classList.remove('drag-over');
+    }
+
+    private handleDrop(e: DragEvent, region: string, panelId: string, placement: 'top' | 'bottom') {
+        e.preventDefault();
+        e.stopPropagation();
+        (e.target as HTMLElement).classList.remove('drag-over');
+
+        const viewId = e.dataTransfer?.getData('application/x-view-id');
+        if (viewId) {
+            this.dispatch('panels/assignView', { viewId, panelId, placement });
+        }
+    }
+
+    private buildViewInstance(state: UIState | null | undefined, viewId: string | null | undefined): ViewInstanceDto | null {
+        if (!state || !viewId) {
+            return null;
+        }
+        const instance = state.viewInstances?.[viewId];
+        if (instance) {
+            return {
+                instanceId: instance.instanceId,
+                viewId: instance.definitionId,
+                settings: instance.localContext,
+            };
+        }
+
+        const legacyView = state.views?.find((view) => view.id === viewId);
+        if (legacyView) {
+            return {
+                instanceId: legacyView.id,
+                viewId: legacyView.component,
+                settings: (legacyView.data as Record<string, unknown>) ?? {},
+            };
+        }
+
+        return { instanceId: viewId, viewId };
+    }
+
+    private renderSidePanelStack(
+        state: UIState | null,
+        region: 'left' | 'right' | 'bottom',
+        viewOrder: string[],
+        panelId: string,
+    ) {
+        const inDesign = state?.layout?.inDesign;
+        const isAdmin = state?.auth?.isAdmin;
+        const showDropZones = inDesign && isAdmin;
+        const isEmpty = viewOrder.length === 0;
+
+        return html`
+            <div class="side-panel-stack">
+                ${showDropZones ? html`
+                <div 
+                    class="drop-zone top"
+                    @dragover=${this.handleDragOver}
+                    @dragleave=${this.handleDragLeave}
+                    @drop=${(e: DragEvent) => this.handleDrop(e, region, panelId, 'top')}
+                    title="Drop to add to top"
+                ></div>
+                ` : nothing}
+                
+                ${viewOrder.map((viewId) => {
+                    const instance = this.buildViewInstance(state, viewId);
+                    return instance
+                        ? html`
+                            <div class="stack-item">
+                                <view-host .instances=${[instance]}></view-host>
+                            </div>
+                        `
+                        : nothing;
+                })}
+                
+                ${showDropZones ? html`
+                <div 
+                    class="drop-zone bottom"
+                    @dragover=${this.handleDragOver}
+                    @dragleave=${this.handleDragLeave}
+                    @drop=${(e: DragEvent) => this.handleDrop(e, region, panelId, 'bottom')}
+                    title="Drop to add to bottom"
+                    style="${isEmpty ? 'height: 100%;' : ''}"
+                ></div>
+                ` : nothing}
+            </div>
+        `;
+    }
+
+    private renderSash(expansion: UIState['layout']['expansion'] | null | undefined, side: 'left' | 'right' | 'bottom') {
+        const key = `expander${side.charAt(0).toUpperCase()}${side.slice(1)}` as keyof typeof expansion;
+        const state = expansion?.[key] ?? 'Closed';
+
+        // Only show if Closed or Opened
+        if (state !== 'Closed' && state !== 'Opened') {
+            return nothing;
+        }
+
+        const isClosed = state === 'Closed';
+        const newState = isClosed ? 'Opened' : 'Closed';
+        
+        let iconPath = '';
+        if (side === 'left') {
+            iconPath = isClosed ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7";
+        } else if (side === 'right') {
+            iconPath = isClosed ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7";
+        } else {
+            iconPath = isClosed ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7";
+        }
+
+        return html`
+            <button 
+                class="sash-toggle ${side}" 
+                @click=${() => this.dispatch('layout/setExpansion', { side, state: newState })}
+                title="${isClosed ? 'Open' : 'Close'} ${side} panel"
+            >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="${iconPath}" />
+                </svg>
+            </button>
+        `;
+    }
+
+    render() {
+        const state = this.core?.getState();
+        if (!state) {
+            return html``;
+        }
+        const layout = state.layout ?? {};
+        const expansion = layout.expansion ?? {
+            expanderLeft: 'Closed',
+            expanderRight: 'Closed',
+            expanderBottom: 'Closed'
+        };
+        const panels = state.panels ?? [];
+
+        const viewportMode = layout.viewportWidthMode ?? '1x';
+        const viewportCount = Number.parseInt(viewportMode, 10);
+        const viewportWidthMap: Record<string, string> = {
+            '1x': '100%',
+            '2x': '50%',
+            '3x': '33.333%',
+            '4x': '25%',
+            '5x': '20%',
+        };
+
+        const leftOpen = isExpanderPanelOpen(expansion.expanderLeft);
+        const rightOpen = isExpanderPanelOpen(expansion.expanderRight);
+        const bottomOpen = isExpanderPanelOpen(expansion.expanderBottom);
+
+        const leftWidth = leftOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
+        const rightWidth = rightOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
+        const bottomHeight = bottomOpen ? 'clamp(180px, 26vh, 320px)' : '0px';
+
+        const mainPanels = panels.filter((panel) => panel.region === 'main');
+        const totalMainPanels = mainPanels.length;
+        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / clamp(Number.isFinite(viewportCount) ? viewportCount : (totalMainPanels || 1), 1, 5)}%`;
+        const leftPanel = panels.find((panel) => panel.region === 'left');
+        const rightPanel = panels.find((panel) => panel.region === 'right');
+        const bottomPanel = panels.find((panel) => panel.region === 'bottom');
+        const mainPanelsToRender = mainPanels;
+        const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
+            panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
+
+        const leftViewOrder = layout.leftViewOrder || (leftPanel?.viewId ? [leftPanel.viewId] : []);
+        const rightViewOrder = layout.rightViewOrder || (rightPanel?.viewId ? [rightPanel.viewId] : []);
+        const bottomViewOrder = layout.bottomViewOrder || (bottomPanel?.viewId ? [bottomPanel.viewId] : []);
+
+        return html`
+            <div class="workspace">
+                <div
+                    class="layout"
+                    style="
+                        --left-width: ${leftWidth};
+                        --right-width: ${rightWidth};
+                        --bottom-height: ${bottomHeight};
+                        --main-panel-count: ${Math.max(mainPanelsToRender.length, 1)};
+                        --main-panel-width: ${mainPanelWidth};
+                    "
+                >
+                    <div class="expander expander-left ${leftOpen ? '' : 'collapsed'}">
+                            ${this.renderSash(expansion, 'left')}
+            
+                        ${leftPanel ? this.renderSidePanelStack(state, 'left', leftViewOrder, leftPanel.id) : nothing}
+                    </div>
+
+                    <div class="main-area">
+                        ${mainPanelsToRender.map((panel) => html`
+                            <div
+                                class="main-panel"
+                                @click=${() => panel && this.dispatch('panels/selectPanel', { panelId: panel.id })}
+                            >
+                                ${(() => {
+                                    const viewId = getPanelViewId(panel);
+                                    const instance = this.buildViewInstance(state, viewId);
+                                    const instances = instance ? [instance] : [];
+                                    return html`<view-host .instances=${instances}></view-host>`;
+                                })()}
+                            </div>
+                        `)}
+                    </div>
+
+                    <div class="expander expander-right ${rightOpen ? '' : 'collapsed'}">
+                    ${this.renderSash(expansion, 'right')}
+                        ${rightPanel ? this.renderSidePanelStack(state, 'right', rightViewOrder, rightPanel.id) : nothing}
+                    </div>
+
+                    <div class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}">
+                    ${this.renderSash(expansion, 'bottom')}
+                    ${bottomPanel ? this.renderSidePanelStack(state, 'bottom', bottomViewOrder, bottomPanel.id) : nothing}
+                    </div>
+
+                </div>
+
+                <dock-container .manager=${this.dockManager} toolbarId="burger" fallbackPosition="top-left" disablePositionPicker>
+                    <framework-menu></framework-menu>
+                </dock-container>
+
+                <dock-container .manager=${this.dockManager} toolbarId="registry" fallbackPosition="bottom-right">
+                    <view-registry-panel></view-registry-panel>
+                </dock-container>
+
+                <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center" disablePositionPicker>
+                    <embed-view viewId="main-toolbar-1" class="workspace-toolbar"></embed-view>
+                </dock-container>
+
+
+                <overlay-expander></overlay-expander>
+            </div>
+        `;
+    }
+}
+
+customElements.define('workspace-root', WorkspaceRoot);

@@ -1,5 +1,8 @@
-import type { View, ViewDefinition, ViewInstance } from '../../types/index';
-import { getFrameworkLogger } from '../../utils/logger';
+import type { View, ViewDefinition, ViewInstance } from '../../../../types/index';
+import { getFrameworkLogger } from '../../../../utils/logger';
+import type { ViewDefDto } from '../../../definitions/dto/view-def.dto';
+import { ViewHost } from '../../../views/host/view-host';
+import { CoreRegistries } from '../core-registries';
 
 export type ViewRegistryChangeDetail = {
     type: 'register';
@@ -8,14 +11,31 @@ export type ViewRegistryChangeDetail = {
     total: number;
 };
 
-class ViewRegistryImpl extends EventTarget {
-    private readonly viewDefinitions: Map<string, ViewDefinition> = new Map();
-    private readonly componentCache: Map<string, any> = new Map();
-    private readonly elementCache: Map<string, HTMLElement> = new Map();
+const buildLegacyDefinition = (
+    def: ViewDefDto,
+    component: () => Promise<unknown>,
+): ViewDefinition => {
+    const name = def.name ?? def.title ?? def.id;
+    const title = def.title ?? def.name ?? def.id;
+
+    return {
+        id: def.id,
+        name,
+        title,
+        tag: def.tagName,
+        icon: def.icon ?? '',
+        component,
+        defaultContext: def.defaultContext,
+    };
+};
+
+class ViewRegistryLegacyApiImpl extends EventTarget {
+    private readonly registries = new CoreRegistries();
+    private readonly componentCache = new Map<string, unknown>();
 
     register(definition: ViewDefinition): void {
         const logger = getFrameworkLogger();
-        const wasRegistered = this.viewDefinitions.has(definition.id);
+        const wasRegistered = Boolean(this.registries.viewDefs.get(definition.id));
 
         if (!definition.icon || definition.icon.trim() === '') {
             logger?.warn?.('ViewRegistry register failed. Missing icon for view.', {
@@ -26,7 +46,21 @@ class ViewRegistryImpl extends EventTarget {
             return;
         }
 
-        this.viewDefinitions.set(definition.id, definition);
+        const implKey = definition.id;
+        this.registries.viewDefs.register({
+            id: definition.id,
+            tagName: definition.tag,
+            implKey,
+            name: definition.name,
+            title: definition.title,
+            icon: definition.icon,
+            defaultContext: definition.defaultContext,
+        });
+        this.registries.viewImpls.register(implKey, {
+            tagName: definition.tag,
+            preload: definition.component,
+        });
+
         logger?.info?.('ViewRegistry registered view.', {
             viewId: definition.id,
             title: definition.title,
@@ -37,27 +71,45 @@ class ViewRegistryImpl extends EventTarget {
         this.emitRegistryChange({
             type: 'register',
             viewId: definition.id,
-            definition,
-            total: this.viewDefinitions.size,
+            definition: this.get(definition.id) ?? definition,
+            total: this.registries.viewDefs.entries().length,
         });
     }
 
     get(id: string): ViewDefinition | undefined {
-        return this.viewDefinitions.get(id);
+        const def = this.registries.viewDefs.get(id);
+        if (!def) {
+            return undefined;
+        }
+        const implKey = def.implKey ?? def.id;
+        const impl = this.registries.viewImpls.get(implKey);
+        const component = async () => {
+            if (!impl?.preload) {
+                return undefined;
+            }
+            return impl.preload();
+        };
+        return buildLegacyDefinition(def, component);
     }
 
-    async getComponent(id: string): Promise<any | undefined> {
+    async getComponent(id: string): Promise<unknown | undefined> {
         if (this.componentCache.has(id)) {
             return this.componentCache.get(id);
         }
 
-        const definition = this.get(id);
-        if (!definition) {
+        const def = this.registries.viewDefs.get(id);
+        if (!def) {
+            return undefined;
+        }
+
+        const implKey = def.implKey ?? def.id;
+        const impl = this.registries.viewImpls.get(implKey);
+        if (!impl?.preload) {
             return undefined;
         }
 
         try {
-            const component = await definition.component();
+            const component = await impl.preload();
             this.componentCache.set(id, component);
             return component;
         } catch (error) {
@@ -76,41 +128,52 @@ class ViewRegistryImpl extends EventTarget {
         return {
             id: instanceId ?? `${viewId}-${Date.now()}`,
             name: definition.title,
-            component: viewId, // Store the component ID, not the loaded component
+            component: viewId,
             data: data || {},
         };
     }
 
     createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined {
-        const definition = this.get(definitionId);
-        if (!definition) {
+        const def = this.registries.viewDefs.get(definitionId);
+        if (!def) {
             console.warn(`View definition not found for '${definitionId}'`);
             return undefined;
         }
 
-        const instanceId = overrides?.instanceId ?? `${definitionId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const instanceId =
+            overrides?.instanceId ?? `${definitionId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         return {
             instanceId,
             definitionId,
-            title: overrides?.title ?? definition.title,
+            title: overrides?.title ?? def.title,
             localContext: {
-                ...(definition.defaultContext || {}),
-                ...(overrides?.localContext || {})
-            }
+                ...(def.defaultContext || {}),
+                ...(overrides?.localContext || {}),
+            },
         };
     }
 
     getAllViews(): ViewDefinition[] {
-        return Array.from(this.viewDefinitions.values());
+        return this.registries.viewDefs.entries().map((def) => {
+            const implKey = def.implKey ?? def.id;
+            const impl = this.registries.viewImpls.get(implKey);
+            const component = async () => {
+                if (!impl?.preload) {
+                    return undefined;
+                }
+                return impl.preload();
+            };
+            return buildLegacyDefinition(def, component);
+        });
     }
 
     getElement(instanceId: string): HTMLElement | undefined {
-        return this.elementCache.get(instanceId);
+        return ViewHost.getElement(instanceId);
     }
 
     setElement(instanceId: string, element: HTMLElement): void {
-        this.elementCache.set(instanceId, element);
+        ViewHost.setElement(instanceId, element);
     }
 
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void {
@@ -131,7 +194,7 @@ class ViewRegistryImpl extends EventTarget {
 export interface ViewRegistryApi {
     register(definition: ViewDefinition): void;
     get(id: string): ViewDefinition | undefined;
-    getComponent(id: string): Promise<any | undefined>;
+    getComponent(id: string): Promise<unknown | undefined>;
     createView(viewId: string, data?: unknown, instanceId?: string): View | undefined;
     createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined;
     getAllViews(): ViewDefinition[];
@@ -140,8 +203,6 @@ export interface ViewRegistryApi {
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void;
 }
 
-// Export the singleton instance
-export const viewRegistry = new ViewRegistryImpl();
+export const viewRegistry = new ViewRegistryLegacyApiImpl();
 
-// Export as ViewRegistry for backward compatibility
 export const ViewRegistry: ViewRegistryApi = viewRegistry;

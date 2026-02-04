@@ -5,13 +5,18 @@ import type { Auth } from 'firebase/auth';
 import {
   coreHandlers,
   createHandlerRegistry,
-} from '../core/registry/handler-registry';
+} from '../legacy/registry/handler-registry';
 import { type HandlerAction } from '../core/registry/HandlerAction.type';
 import { type ReducerHandler } from '../core/registry/ReducerHandler.type';
-import { createEffectRegistry } from '../core/registry/effect-registry';
+import { createEffectRegistry } from '../legacy/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
+import { coreContext } from '../nxt/runtime/context/core-context-key';
+import type { CoreContext } from '../nxt/runtime/context/core-context';
+import type { Action } from '../nxt/runtime/actions/action';
+import { CoreRegistries } from '../nxt/runtime/registries/core-registries';
+import { UiStateStore } from '../nxt/runtime/state/store/ui-state-store';
 import { getFrameworkLogger } from '../utils/logger';
 import { validateState } from '../state/state-validator';
 import {
@@ -23,15 +28,21 @@ import { hybridPersistence } from '../utils/hybrid-persistence';
 import { setFirestoreSyncCallback } from '../utils/persistence';
 import { firestorePersistence } from '../utils/firestore-persistence';
 import { configureFrameworkAuth, onFrameworkAuthStateChange } from '../utils/firebase-auth';
-import { viewRegistry } from '../core/registry/view-registry';
+import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
 import '../domains/workspace/components/WorkspaceRoot';
-import { UiEventDetail } from './UiEventDetail.type';
-import { UiDispatchPayload } from './UiDispatchPayload.type';
 import { shouldLogAction } from './shouldLogAction.helper';
 import { createLogAction } from './createLogAction.helper';
 import { summarizeUpdate } from './summarizeUpdate.helper';
 
 const isDev = import.meta.env.DEV;
+type UiDispatchPayload = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
+type UiEventDetail = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
 
 const wrapCoreHandler = (
   handler: ReducerHandler<UIState>,
@@ -76,6 +87,8 @@ export class FrameworkRoot extends LitElement {
   `;
 
   private state = uiState.getState();
+  private coreStore = new UiStateStore<UIState>(uiState.getState());
+  private coreRegistries = new CoreRegistries<UIState>();
 
   private unsubscribe: (() => void) | null = null;
   private firestoreUnsubscribe: (() => void) | null = null;
@@ -98,6 +111,23 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([{ type: payload.type, payload }]);
   };
 
+  private coreAdapter: CoreContext<UIState> = {
+    registries: this.coreRegistries,
+    store: this.coreStore,
+    getState: () => uiState.getState(),
+    dispatch: (action: Action) => {
+      if (!action?.action) {
+        return;
+      }
+      this.dispatchActions([
+        {
+          type: action.action,
+          payload: action.payload ?? {},
+        },
+      ]);
+    },
+  };
+
   private provider = new ContextProvider(this, {
     context: uiStateContext,
     initialValue: {
@@ -105,6 +135,31 @@ export class FrameworkRoot extends LitElement {
       dispatch: this.dispatchUiAction,
     },
   });
+
+  private coreProvider = new ContextProvider(this, {
+    context: coreContext,
+    initialValue: this.coreAdapter,
+  });
+
+  private syncViewRegistryToCore(): void {
+    const views = viewRegistry.getAllViews();
+    views.forEach((view) => {
+      this.coreRegistries.viewDefs.register({
+        id: view.id,
+        tagName: view.tag,
+        implKey: view.id,
+        name: view.name,
+        title: view.title,
+        icon: view.icon,
+        defaultContext: view.defaultContext,
+        defaultSettings: view.defaultContext,
+      });
+      this.coreRegistries.viewImpls.register(view.id, {
+        tagName: view.tag,
+        preload: view.component,
+      });
+    });
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -119,6 +174,7 @@ export class FrameworkRoot extends LitElement {
         }
       }
       this.state = nextState;
+      this.coreStore.setState(nextState);
       this.refreshContext();
     });
     this.refreshContext();
@@ -135,6 +191,7 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([{ type: 'effects/frameworkMenu/hydrate', payload: {} }]);
 
     this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
+      this.syncViewRegistryToCore();
       const viewDefinitions = viewRegistry.getAllViews().map((view) => ({
         id: view.id,
         name: view.name,
@@ -148,6 +205,7 @@ export class FrameworkRoot extends LitElement {
         },
       ]);
     });
+    this.syncViewRegistryToCore();
 
     // Set up Firestore sync callback
     setFirestoreSyncCallback((presets) => {
@@ -283,6 +341,13 @@ export class FrameworkRoot extends LitElement {
       state: this.getContextState(),
       dispatch: this.dispatchUiAction,
     });
+    const nextCoreContext: CoreContext<UIState> = {
+      registries: this.coreRegistries,
+      store: this.coreStore,
+      getState: this.coreAdapter.getState,
+      dispatch: this.coreAdapter.dispatch,
+    };
+    this.coreProvider.setValue(nextCoreContext);
     this.requestUpdate();
   }
 

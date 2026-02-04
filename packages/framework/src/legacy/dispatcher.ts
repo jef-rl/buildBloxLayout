@@ -1,4 +1,7 @@
-import type { UiEventDetail } from '../types/events';
+type UiEventDetail = {
+  type: string;
+  payload: unknown;
+};
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
