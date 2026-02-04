@@ -5,6 +5,8 @@ import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
+import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
+import { viewInstanceResolverSelectorKey } from '../../selectors/view-instances/resolve-view-instance.selector';
 import '../host/view-host.js';
 
 export class PanelView extends LitElement {
@@ -22,39 +24,21 @@ export class PanelView extends LitElement {
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
 
-    private buildInstance(): ViewInstanceDto | null {
+    private resolveInstance(): ViewInstanceDto | null {
         if (this.instance) {
             return this.instance;
         }
 
-        if (!this.viewId) {
+        const resolver = this.core?.select<ViewInstanceResolver>(viewInstanceResolverSelectorKey);
+        if (!resolver) {
             return null;
         }
 
-        const state = this.core?.getState();
-        const instance = state?.viewInstances?.[this.viewId];
-        if (instance) {
-            return {
-                instanceId: instance.instanceId,
-                viewId: instance.definitionId,
-                settings: instance.localContext,
-            };
-        }
-
-        const legacyView = state?.views?.find((view) => view.id === this.viewId);
-        if (legacyView) {
-            return {
-                instanceId: legacyView.id,
-                viewId: legacyView.component,
-                settings: (legacyView.data as Record<string, unknown>) ?? {},
-            };
-        }
-
-        return { instanceId: this.viewId, viewId: this.viewId };
+        return resolver(this.viewId);
     }
 
     render() {
-        const resolvedInstance = this.buildInstance();
+        const resolvedInstance = this.resolveInstance();
         const instances = resolvedInstance ? [resolvedInstance] : [];
         return html`
             <view-host .instances=${instances}></view-host>

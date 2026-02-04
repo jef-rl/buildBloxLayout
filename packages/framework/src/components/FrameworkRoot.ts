@@ -116,6 +116,10 @@ export class FrameworkRoot extends LitElement {
     registries: this.coreRegistries,
     store: this.coreStore,
     getState: () => uiState.getState(),
+    select: (key: string) => {
+      const selector = this.coreRegistries.selectorImpls.getOrThrow(key);
+      return selector(uiState.getState());
+    },
     dispatch: (action: Action) => {
       if (!action?.action) {
         return;
@@ -344,6 +348,7 @@ export class FrameworkRoot extends LitElement {
       registries: this.coreRegistries,
       store: this.coreStore,
       getState: this.coreAdapter.getState,
+      select: this.coreAdapter.select,
       dispatch: this.coreAdapter.dispatch,
     };
     this.coreProvider.setValue(nextCoreContext);

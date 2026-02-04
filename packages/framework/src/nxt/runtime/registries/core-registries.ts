@@ -7,6 +7,7 @@ import { ViewDefinitionRegistry } from './views/view-definition-registry';
 import { ViewImplRegistry } from './views/view-impl-registry';
 import { SelectorImplRegistry } from './selectors/selector-impl-registry';
 import { applyFrameworkEffectDefs, registerFrameworkEffectImpls } from '../../effects/register-framework-effects';
+import { registerFrameworkSelectorImpls } from '../../selectors/register-framework-selectors';
 
 export class CoreRegistries<S = any> {
   readonly actions = new ActionRegistry();
@@ -20,6 +21,7 @@ export class CoreRegistries<S = any> {
 
   constructor() {
     registerFrameworkEffectImpls(this.effectImpls);
+    registerFrameworkSelectorImpls(this.selectorImpls);
     applyFrameworkEffectDefs(this.effects);
   }
 }

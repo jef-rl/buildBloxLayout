@@ -18,6 +18,11 @@ export class CoreContext<S extends FrameworkState> {
         return this.store.getState();
       }
 
+      select<R>(key: string): R {
+        const selector = this.registries.selectorImpls.getOrThrow(key);
+        return selector(this.getState()) as R;
+      }
+
       dispatch(action: Action<any>): void {
         const env = {
           registries: this.registries,

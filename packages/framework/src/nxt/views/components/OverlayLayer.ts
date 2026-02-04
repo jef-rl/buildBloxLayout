@@ -4,7 +4,8 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
-import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
+import type { OverlayViewState } from '../../selectors/overlay/overlay-view.selector';
+import { overlayViewSelectorKey } from '../../selectors/overlay/overlay-view.selector';
 import '../host/view-host.js';
 
 export class OverlayLayer extends LitElement {
@@ -93,7 +94,8 @@ export class OverlayLayer extends LitElement {
     }
 
     private handleKeydown = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && this.overlayViewId) {
+        const overlayState = this.getOverlayState();
+        if (event.key === 'Escape' && overlayState?.isOpen) {
             this.close();
         }
     };
@@ -108,46 +110,21 @@ export class OverlayLayer extends LitElement {
         super.disconnectedCallback();
     }
 
-    private get overlayViewId(): string | null {
-        return this.core?.getState()?.layout?.overlayView ?? null;
-    }
-
-    private buildInstance(viewId: string | null): ViewInstanceDto | null {
-        if (!viewId) {
-            return null;
-        }
-        const state = this.core?.getState();
-        const instance = state?.viewInstances?.[viewId];
-        if (instance) {
-            return {
-                instanceId: instance.instanceId,
-                viewId: instance.definitionId,
-                settings: instance.localContext,
-            };
-        }
-
-        const legacyView = state?.views?.find((view) => view.id === viewId);
-        if (legacyView) {
-            return {
-                instanceId: legacyView.id,
-                viewId: legacyView.component,
-                settings: (legacyView.data as Record<string, unknown>) ?? {},
-            };
-        }
-
-        return { instanceId: viewId, viewId };
+    private getOverlayState(): OverlayViewState | null {
+        return this.core?.select<OverlayViewState>(overlayViewSelectorKey) ?? null;
     }
 
     render() {
-        const overlayViewId = this.overlayViewId;
-        const isOpen = Boolean(overlayViewId);
+        const overlayState = this.getOverlayState();
+        const overlayViewId = overlayState?.overlayViewId ?? null;
+        const isOpen = overlayState?.isOpen ?? false;
         if (isOpen) {
             this.setAttribute('open', '');
         } else {
             this.removeAttribute('open');
         }
 
-        const instance = this.buildInstance(overlayViewId);
+        const instance = overlayState?.instance ?? null;
         const instances = instance ? [instance] : [];
 
         return html`
