@@ -437,7 +437,7 @@ export class WorkspaceRoot extends LitElement {
                 </dock-container>
 
                 <dock-container .manager=${this.dockManager} toolbarId="control" fallbackPosition="top-center" disablePositionPicker>
-                    <toolbar-view viewId="main-toolbar-1" class="workspace-toolbar"></toolbar-view>
+                    <embed-view viewId="main-toolbar-1" class="workspace-toolbar"></embed-view>
                 </dock-container>
 
 

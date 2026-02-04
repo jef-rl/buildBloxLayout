@@ -214,4 +214,4 @@ export class ToolbarView extends LitElement {
     }
 }
 
-customElements.define('toolbar-view', ToolbarView);
+customElements.define('embed-view', ToolbarView);

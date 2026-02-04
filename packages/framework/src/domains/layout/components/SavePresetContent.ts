@@ -33,6 +33,7 @@ export class SavePresetContent extends LitElement {
         :host {
             display: block;
             width: 320px;
+            background : #3a4f78;
         }
 
         .dialog-header {
@@ -40,7 +41,6 @@ export class SavePresetContent extends LitElement {
             align-items: center;
             justify-content: space-between;
             padding: 16px 20px;
-            background: linear-gradient(to bottom, rgba(37, 99, 235, 0.15), transparent);
             border-bottom: 1px solid #374151;
         }
 
@@ -74,7 +74,7 @@ export class SavePresetContent extends LitElement {
             padding: 10px 12px;
             border-radius: 6px;
             border: 1px solid #374151;
-            background: #111827;
+            background: #3a4f78;
             color: #f3f4f6;
             font-size: 13px;
             outline: none;
@@ -109,7 +109,7 @@ export class SavePresetContent extends LitElement {
         }
 
         .action-button.secondary {
-            background: #374151;
+            background: #3a4f78;
             color: #e5e7eb;
         }
 

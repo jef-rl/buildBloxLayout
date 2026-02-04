@@ -43,7 +43,7 @@ export class ToolbarContainer extends LitElement {
             min-width: 0;
         }
 
-        .toolbar-item toolbar-view {
+        .toolbar-item embed-view {
             width: 100%;
         }
 
@@ -158,7 +158,7 @@ export class ToolbarContainer extends LitElement {
                             draggable="true"
                             @dragstart=${(event: DragEvent) => this.handleDragStart(event, viewId)}
                         >
-                            <toolbar-view .viewId=${viewId}></toolbar-view>
+                            <embed-view .viewId=${viewId}></embed-view>
                         </div>
                     `;
                 })}

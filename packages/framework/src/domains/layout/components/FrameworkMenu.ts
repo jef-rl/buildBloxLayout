@@ -68,7 +68,7 @@ export class FrameworkMenu extends LitElement {
             margin-top: 8px;
             min-width: 220px;
             max-width: 320px;
-            background: #111827;
+            background: #3a4f78;
             border: 1px solid #374151;
             border-radius: 8px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
@@ -139,7 +139,7 @@ export class FrameworkMenu extends LitElement {
         }
 
         .menu-item.drop-target {
-            background: rgba(37, 99, 235, 0.2);
+            background: #3a4f78;
             border-top: 2px solid #2563eb;
         }
 
@@ -197,7 +197,7 @@ export class FrameworkMenu extends LitElement {
         .system-badge {
             font-size: 9px;
             padding: 2px 6px;
-            background: rgba(37, 99, 235, 0.2);
+            background: #fff;
             color: #60a5fa;
             border-radius: 4px;
             text-transform: uppercase;
