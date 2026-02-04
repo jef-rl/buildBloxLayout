@@ -75,7 +75,6 @@ export interface FrameworkMenuConfig {
 export type LayoutState = {
   expansion: LayoutExpansion;
   overlayView: string | null;
-  overlayExpander?: string | null;
   inDesign: boolean;
   viewportWidthMode: ViewportWidthMode;
   mainAreaCount: MainAreaPanelCount;
@@ -89,22 +88,20 @@ export type LayoutState = {
   draggedViewId?: string | null;
 };
 
-export type RegisteredViewSummary = {
-  id: string;
-  label: string;
-  };
-
-export type ViewTokenState = {
-  registered: RegisteredViewSummary[];
-  activeSlots: Array<string | null>;
-  tokenOrder: string[];
-};
-
 export type ViewDefinitionSummary = {
   id: string;
   name: string;
   title: string;
   icon: string;
+};
+
+/**
+ * @deprecated Legacy-only view token cache. Prefer deriving tokens from viewDefinitions.
+ */
+export type LegacyViewTokenState = {
+  registered: Array<{ id: string; label: string }>;
+  activeSlots: Array<string | null>;
+  tokenOrder: string[];
 };
 
 export type ToolbarState = {
@@ -167,7 +164,7 @@ export type UIState = {
   viewInstances: Record<string, ViewInstance>;
   viewDefinitions: ViewDefinitionSummary[];
   viewInstanceCounter: number;
-  viewTokens: ViewTokenState;
+  viewTokens?: LegacyViewTokenState;
   layout: LayoutState;
   toolbars: ToolbarState;
   activeView: string | null;

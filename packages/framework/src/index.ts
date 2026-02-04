@@ -18,6 +18,7 @@ export { FrameworkRoot } from './components/FrameworkRoot';
 export { LogView } from './domains/logging/components/LogView';
 export { ToolbarContainer } from './domains/layout/components/ToolbarContainer';
 export { CustomToolbar } from './domains/layout/components/CustomToolbar';
+export { AuthView } from './domains/auth/components/AuthView';
 
 // Context and event dispatch
 export { uiStateContext } from './state/context';

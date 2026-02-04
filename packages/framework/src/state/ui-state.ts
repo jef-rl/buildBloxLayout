@@ -27,11 +27,6 @@ export class UiState {
         viewInstances: {},
         viewDefinitions: [],
         viewInstanceCounter: 0,
-        viewTokens: {
-            registered: [],
-            activeSlots: [null, null, null, null, null],
-            tokenOrder: [],
-        },
         activeView: null,
         layout: {
             expansion: { expanderLeft: 'Closed', expanderRight: 'Closed', expanderBottom: 'Closed' },
