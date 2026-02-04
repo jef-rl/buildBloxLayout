@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { hybridPersistence } from '../../../utils/hybrid-persistence';
-import { getFrameworkLogger } from '../../../utils/logger';
+import { logWarn } from '../../runtime/engine/logging/framework-logger';
 
 export const presetsDeleteImplKey = 'effect:presets/delete@1';
 
@@ -12,7 +12,6 @@ export const presetsDeleteEffect: EffectImpl<{ name?: string }> = (action) => {
   try {
     hybridPersistence.deletePreset(payload.name);
   } catch (error) {
-    const logger = getFrameworkLogger();
-    logger?.warn?.('Preset delete failed in effect.', { error });
+    logWarn('Preset delete failed in effect.', { error });
   }
 };

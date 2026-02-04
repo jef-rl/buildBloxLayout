@@ -5,6 +5,7 @@
 
 import type { ViewDefinition, ViewComponent } from '../types/index';
 import { inferIcon, deriveNameFromId, deriveTagFromId } from './defaults';
+import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 /**
  * Simplified view configuration that users provide.
@@ -101,10 +102,10 @@ export function normalizeViewConfig(config: SimpleViewConfig): ViewDefinition {
       if (fallbackTag) {
         tag = fallbackTag;
       } else {
-        console.warn(
+        logWarn(
           `[Framework] Could not register component for view "${id}". ` +
             `The component may already be registered with a different tag.`,
-          e
+          { error: e }
         );
       }
     }

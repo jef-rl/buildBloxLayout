@@ -11,6 +11,7 @@ import { dispatchUiEvent } from '../../../legacy/dispatcher';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { AuthMode, AuthConfig } from '../../../types/auth';
 import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { logInfo } from '../../../nxt/runtime/engine/logging/framework-logger';
 
 @customElement('auth-view')
 export class AuthView extends LitElement {
@@ -209,7 +210,7 @@ export class AuthView extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    console.log('[AuthView] connectedCallback executed');
+    logInfo('[AuthView] connectedCallback executed');
   }
 
   private get isAuthenticated(): boolean {

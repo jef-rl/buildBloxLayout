@@ -1,5 +1,6 @@
 import type { UIState, View, Panel } from '../types';
 import { ExpanderState } from '../utils/expansion-helpers';
+import { logError } from '../nxt/runtime/engine/logging/framework-logger';
 
 /**
  * A collection of validation functions to verify the integrity of the UI state.
@@ -121,7 +122,7 @@ export function validateState(state: UIState): void {
 
     if (allErrors.length > 0) {
         const errorMessage = `UIState validation failed:\n- ${allErrors.join('\n- ')}`;
-        console.error(errorMessage, { state });
+        logError(new Error(errorMessage), { state });
         throw new Error(errorMessage);
     }
 }

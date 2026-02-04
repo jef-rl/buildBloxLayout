@@ -1,5 +1,6 @@
 import type { Action } from '../../actions/action';
 import type { CoreRegistries } from '../../registries/core-registries';
+import { logAction, summarizeState } from '../logging/framework-logger';
 
 export interface DispatchEnv<S> {
   registries: CoreRegistries<S>;
@@ -12,12 +13,15 @@ export function dispatchAction<S>(env: DispatchEnv<S>, action: Action<any>): voi
   const handlers = registries.handlers.getForAction(action.action);
   if (!handlers.length) return;
 
-  let state = getState();
+  const prevState = getState();
+  const prevStateSummary = summarizeState(prevState);
+  let state = prevState;
   for (const entry of handlers) {
     state = entry.reduce(state, action, entry.config);
   }
   setState(state);
 
   void registries.effects.runForAction(action, (a) => dispatchAction(env, a), getState);
+  logAction(action, prevStateSummary, summarizeState(state));
 }
   

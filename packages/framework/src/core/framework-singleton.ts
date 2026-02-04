@@ -24,13 +24,14 @@ import type { FrameworkRoot } from '../components/FrameworkRoot';
 import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
 import { dispatchUiEvent } from '../legacy/dispatcher';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
-import { setFrameworkLogger, getFrameworkLogger } from '../utils/logger';
+import { setFrameworkLogger } from '../utils/logger';
 import {
   type SimpleViewConfig,
   normalizeViewConfig,
 } from './simple-view-config';
 import { registerBuiltInViews, BUILT_IN_VIEWS } from './built-in-views';
 import { DEFAULT_DEV_LOGGER, NOOP_LOGGER } from './defaults';
+import { logInfo } from '../nxt/runtime/engine/logging/framework-logger';
 
 // Import FrameworkRoot component to ensure it's registered
 import '../components/FrameworkRoot';
@@ -258,11 +259,9 @@ class FrameworkSingleton {
       return this.root;
     }
 
-    const logger = getFrameworkLogger();
-
     // Register built-in framework views first
     registerBuiltInViews(viewRegistry);
-    logger?.info?.('Framework built-in views registered', {
+    logInfo('Framework built-in views registered', {
       count: BUILT_IN_VIEWS.length,
       viewIds: BUILT_IN_VIEWS.map((v) => v.id),
     });
@@ -279,7 +278,7 @@ class FrameworkSingleton {
       }
     });
 
-    logger?.info?.('Framework user views registered', {
+    logInfo('Framework user views registered', {
       count: this.pendingViews.length,
       viewIds: this.pendingViews.map((v) => v.id),
     });
@@ -293,7 +292,7 @@ class FrameworkSingleton {
     // Configure auth BEFORE mounting
     if (this.config.auth) {
       (root as any).authConfig = this.config.auth;
-      logger?.info?.('Framework auth configured', {
+      logInfo('Framework auth configured', {
         enabled: this.config.auth.enabled,
         authViewId: this.config.auth.authViewId ?? 'firebase-auth',
         autoShowOnStartup: this.config.auth.autoShowOnStartup ?? false,
@@ -321,7 +320,7 @@ class FrameworkSingleton {
     // Hydrate state
     dispatchUiEvent(root, ActionCatalog.StateHydrate, { state: mergedState });
 
-    logger?.info?.('Framework initialized', {
+    logInfo('Framework initialized', {
       mountTarget:
         mountTarget instanceof Element
           ? mountTarget.tagName.toLowerCase()

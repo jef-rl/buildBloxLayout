@@ -15,6 +15,7 @@ import {
   type DocumentData,
 } from 'firebase/firestore';
 import type { LayoutPreset, LayoutPresets } from '../types/state';
+import { logError, logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 export interface FirestorePreset extends LayoutPreset {
   userId: string | null;
@@ -46,7 +47,7 @@ export const firestorePersistence = {
 
   async saveAll(presets: LayoutPresets): Promise<void> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping saveAll');
+      logWarn('Firestore not initialized, skipping saveAll');
       return;
     }
 
@@ -63,24 +64,24 @@ export const firestorePersistence = {
       });
       await Promise.all(savePromises);
     } catch (error) {
-      console.warn('Failed to save presets to Firestore:', error);
+      logWarn('Failed to save presets to Firestore.', { error });
     }
   },
 
   async loadAll(): Promise<LayoutPresets | null> {
     if (!firestoreDb) {
-      console.warn('[FirestorePersistence] Firestore not initialized, skipping loadAll');
+      logWarn('[FirestorePersistence] Firestore not initialized, skipping loadAll');
       return null;
     }
 
     try {
-      console.log('[FirestorePersistence] Loading presets from Firestore...', { currentUserId });
+      logInfo('[FirestorePersistence] Loading presets from Firestore...', { currentUserId });
       const presetsCollection = collection(firestoreDb, COLLECTION_NAME);
       const userIds = currentUserId ? [null, currentUserId] : [null];
       const q = query(presetsCollection, where('userId', 'in', userIds));
       const snapshot = await getDocs(q);
 
-      console.log('[FirestorePersistence] Firestore snapshot received:', {
+      logInfo('[FirestorePersistence] Firestore snapshot received:', {
         docsCount: snapshot.docs.length,
         userIds,
       });
@@ -90,20 +91,20 @@ export const firestorePersistence = {
         const data = docSnap.data() as FirestorePreset;
         const { userId: _userId, updatedAt: _updatedAt, ...preset } = data;
         presets[preset.name] = preset;
-        console.log('[FirestorePersistence] Loaded preset:', preset.name);
+        logInfo('[FirestorePersistence] Loaded preset.', { name: preset.name });
       });
 
-      console.log('[FirestorePersistence] Total presets loaded:', Object.keys(presets).length);
+      logInfo('[FirestorePersistence] Total presets loaded.', { count: Object.keys(presets).length });
       return Object.keys(presets).length > 0 ? presets : null;
     } catch (error: unknown) {
-      console.error('[FirestorePersistence] Failed to load presets from Firestore:', error);
+      logError(error, { message: '[FirestorePersistence] Failed to load presets from Firestore.' });
       return null;
     }
   },
 
   async loadSystemPresets(): Promise<LayoutPresets | null> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping loadSystemPresets');
+      logWarn('Firestore not initialized, skipping loadSystemPresets');
       return null;
     }
 
@@ -121,14 +122,14 @@ export const firestorePersistence = {
 
       return Object.keys(presets).length > 0 ? presets : null;
     } catch (error: unknown) {
-      console.warn('Failed to load system presets from Firestore:', error);
+      logWarn('Failed to load system presets from Firestore.', { error });
       return null;
     }
   },
 
   async savePreset(name: string, preset: LayoutPreset): Promise<void> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping savePreset');
+      logWarn('Firestore not initialized, skipping savePreset');
       return;
     }
 
@@ -142,13 +143,13 @@ export const firestorePersistence = {
       };
       await setDoc(doc(presetsCollection, docId), firestorePreset);
     } catch (error) {
-      console.warn('Failed to save preset to Firestore:', error);
+      logWarn('Failed to save preset to Firestore.', { error });
     }
   },
 
   async deletePreset(name: string): Promise<void> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping deletePreset');
+      logWarn('Firestore not initialized, skipping deletePreset');
       return;
     }
 
@@ -157,13 +158,13 @@ export const firestorePersistence = {
       const presetsCollection = collection(firestoreDb, COLLECTION_NAME);
       await deleteDoc(doc(presetsCollection, docId));
     } catch (error) {
-      console.warn('Failed to delete preset from Firestore:', error);
+      logWarn('Failed to delete preset from Firestore.', { error });
     }
   },
 
   async renamePreset(oldName: string, newName: string): Promise<void> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping renamePreset');
+      logWarn('Firestore not initialized, skipping renamePreset');
       return;
     }
 
@@ -188,13 +189,13 @@ export const firestorePersistence = {
         await deleteDoc(oldDoc);
       }
     } catch (error) {
-      console.warn('Failed to rename preset in Firestore:', error);
+      logWarn('Failed to rename preset in Firestore.', { error });
     }
   },
 
   async clear(): Promise<void> {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping clear');
+      logWarn('Firestore not initialized, skipping clear');
       return;
     }
 
@@ -210,13 +211,13 @@ export const firestorePersistence = {
       );
       await Promise.all(deletePromises);
     } catch (error: unknown) {
-      console.warn('Failed to clear presets from Firestore:', error);
+      logWarn('Failed to clear presets from Firestore.', { error });
     }
   },
 
   onPresetsChanged(callback: (presets: LayoutPresets) => void): Unsubscribe {
     if (!firestoreDb) {
-      console.warn('Firestore not initialized, skipping onPresetsChanged');
+      logWarn('Firestore not initialized, skipping onPresetsChanged');
       return () => {};
     }
 
@@ -236,7 +237,7 @@ export const firestorePersistence = {
         callback(presets);
       },
       (error: unknown) => {
-        console.warn('Firestore snapshot listener error:', error);
+        logWarn('Firestore snapshot listener error.', { error });
       }
     );
   },

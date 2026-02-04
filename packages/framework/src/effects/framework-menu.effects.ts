@@ -4,7 +4,7 @@ import type { FrameworkContextState } from '../domains/workspace/handlers/regist
 import type { FrameworkMenuConfig } from '../types/state';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { frameworkMenuPersistence } from '../utils/framework-menu-persistence';
-import { getFrameworkLogger } from '../utils/logger';
+import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 const dispatchLog = (
   dispatch: (actions: HandlerAction[]) => void,
@@ -36,8 +36,7 @@ export const registerFrameworkMenuEffects = (
     try {
       frameworkMenuPersistence.save(payload.config);
     } catch (error) {
-      const logger = getFrameworkLogger();
-      logger?.warn?.('Framework menu save failed in effect.', { error });
+      logWarn('Framework menu save failed in effect.', { error });
     }
   });
 

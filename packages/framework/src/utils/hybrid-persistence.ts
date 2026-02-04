@@ -2,6 +2,7 @@ import type { Firestore } from 'firebase/firestore';
 import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { presetPersistence } from './persistence';
 import { firestorePersistence } from './firestore-persistence';
+import { logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 export interface HybridPersistenceConfig {
   firestore: Firestore;
@@ -33,7 +34,7 @@ export const hybridPersistence = {
     presetPersistence.saveAll(presets, { skipSync: true });
     if (isConfigured) {
       firestorePersistence.saveAll(presets).catch((error) => {
-        console.warn('Background Firestore sync failed:', error);
+        logWarn('Background Firestore sync failed.', { error });
       });
     }
   },
@@ -43,16 +44,16 @@ export const hybridPersistence = {
   },
 
   savePreset(name: string, preset: LayoutPreset): void {
-    console.log('[HybridPersistence] savePreset called:', { name, isConfigured });
+    logInfo('[HybridPersistence] savePreset called:', { name, isConfigured });
     // Skip sync callback because we handle Firestore sync explicitly below
     presetPersistence.savePreset(name, preset, { skipSync: true });
     if (isConfigured) {
-      console.log('[HybridPersistence] Syncing to Firestore...');
+      logInfo('[HybridPersistence] Syncing to Firestore...');
       firestorePersistence.savePreset(name, preset).catch((error) => {
-        console.warn('Background Firestore sync failed:', error);
+        logWarn('Background Firestore sync failed.', { error });
       });
     } else {
-      console.log('[HybridPersistence] Firestore not configured, skipping sync');
+      logInfo('[HybridPersistence] Firestore not configured, skipping sync');
     }
   },
 
@@ -61,7 +62,7 @@ export const hybridPersistence = {
     presetPersistence.deletePreset(name, { skipSync: true });
     if (isConfigured) {
       firestorePersistence.deletePreset(name).catch((error) => {
-        console.warn('Background Firestore delete failed:', error);
+        logWarn('Background Firestore delete failed.', { error });
       });
     }
   },
@@ -77,7 +78,7 @@ export const hybridPersistence = {
 
       if (isConfigured) {
         firestorePersistence.renamePreset(oldName, newName).catch((error) => {
-          console.warn('Background Firestore rename failed:', error);
+          logWarn('Background Firestore rename failed.', { error });
         });
       }
     }
@@ -87,20 +88,20 @@ export const hybridPersistence = {
     presetPersistence.clear();
     if (isConfigured) {
       firestorePersistence.clear().catch((error) => {
-        console.warn('Background Firestore clear failed:', error);
+        logWarn('Background Firestore clear failed.', { error });
       });
     }
   },
 
   async syncFromFirestore(): Promise<LayoutPresets | null> {
-    console.log('[HybridPersistence] syncFromFirestore called', { isConfigured });
+    logInfo('[HybridPersistence] syncFromFirestore called', { isConfigured });
     if (!isConfigured) {
-      console.log('[HybridPersistence] Not configured yet, returning null');
+      logInfo('[HybridPersistence] Not configured yet, returning null');
       return null;
     }
 
     const results = await firestorePersistence.loadAll();
-    console.log('[HybridPersistence] syncFromFirestore result', {
+    logInfo('[HybridPersistence] syncFromFirestore result', {
       presetsLoaded: results ? Object.keys(results).length : 0,
       hasPresets: !!results,
     });
@@ -138,18 +139,18 @@ export const hybridPersistence = {
 
   onPresetsChanged(callback: (presets: LayoutPresets) => void): () => void {
     if (!isConfigured) {
-      console.log('[HybridPersistence] onPresetsChanged skipped (not configured)');
+      logInfo('[HybridPersistence] onPresetsChanged skipped (not configured)');
       return () => {};
     }
 
-    console.log('[HybridPersistence] onPresetsChanged registered', {
+    logInfo('[HybridPersistence] onPresetsChanged registered', {
       currentUserId: firestorePersistence.getUserId(),
     });
 
     return firestorePersistence.onPresetsChanged((firestorePresets) => {
       const localPresets = presetPersistence.loadAll() ?? {};
       const merged = { ...firestorePresets, ...localPresets };
-      console.log('[HybridPersistence] onPresetsChanged merged presets', {
+      logInfo('[HybridPersistence] onPresetsChanged merged presets', {
         firestoreCount: Object.keys(firestorePresets).length,
         localCount: Object.keys(localPresets).length,
         mergedCount: Object.keys(merged).length,

@@ -5,7 +5,7 @@ import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { presetPersistence } from '../utils/persistence';
 import { hybridPersistence } from '../utils/hybrid-persistence';
-import { getFrameworkLogger } from '../utils/logger';
+import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 const dispatchLog = (
   dispatch: (actions: HandlerAction[]) => void,
@@ -37,8 +37,7 @@ export const registerPresetEffects = (
     try {
       hybridPersistence.savePreset(payload.name, payload.preset);
     } catch (error) {
-      const logger = getFrameworkLogger();
-      logger?.warn?.('Preset save failed in effect.', { error });
+      logWarn('Preset save failed in effect.', { error });
     }
   });
 
@@ -50,8 +49,7 @@ export const registerPresetEffects = (
     try {
       hybridPersistence.deletePreset(payload.name);
     } catch (error) {
-      const logger = getFrameworkLogger();
-      logger?.warn?.('Preset delete failed in effect.', { error });
+      logWarn('Preset delete failed in effect.', { error });
     }
   });
 
@@ -63,8 +61,7 @@ export const registerPresetEffects = (
     try {
       hybridPersistence.renamePreset(payload.oldName, payload.newName);
     } catch (error) {
-      const logger = getFrameworkLogger();
-      logger?.warn?.('Preset rename failed in effect.', { error });
+      logWarn('Preset rename failed in effect.', { error });
     }
   });
 
