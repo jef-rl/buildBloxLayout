@@ -1,4 +1,5 @@
 import type { FrameworkMenuConfig, FrameworkMenuItem } from '../types/state';
+import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 const STORAGE_KEY = 'buildblox-framework-menu-config';
 const STORAGE_VERSION = 1;
@@ -17,7 +18,7 @@ export const frameworkMenuPersistence = {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
-      console.warn('Failed to persist framework menu config:', error);
+      logWarn('Failed to persist framework menu config.', { error });
     }
   },
 
@@ -27,13 +28,13 @@ export const frameworkMenuPersistence = {
       if (!raw) return null;
       const data: PersistedFrameworkMenuConfig = JSON.parse(raw);
       if (data.version !== STORAGE_VERSION) {
-        console.warn('Framework menu config version mismatch, clearing stored data');
+        logWarn('Framework menu config version mismatch, clearing stored data');
         this.clear();
         return null;
       }
       return data.config;
     } catch (error) {
-      console.warn('Failed to load persisted framework menu config:', error);
+      logWarn('Failed to load persisted framework menu config.', { error });
       return null;
     }
   },
@@ -42,7 +43,7 @@ export const frameworkMenuPersistence = {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
-      console.warn('Failed to clear persisted framework menu config:', error);
+      logWarn('Failed to clear persisted framework menu config.', { error });
     }
   },
 

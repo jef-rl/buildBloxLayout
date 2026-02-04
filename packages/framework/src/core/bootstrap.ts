@@ -1,8 +1,8 @@
 import type { UIState, ViewDefinition, FrameworkAuthConfig } from '../types/index';
 import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
 import { dispatchUiEvent } from '../legacy/dispatcher';
-import { getFrameworkLogger } from '../utils/logger';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { logInfo } from '../nxt/runtime/engine/logging/framework-logger';
 import '../components/FrameworkRoot';
 
 export type BootstrapFrameworkOptions = {
@@ -23,13 +23,11 @@ const summarizeState = (state?: Partial<UIState>) => {
 };
 
 export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrameworkOptions) => {
-    const logger = getFrameworkLogger();
-
     views.forEach((view) => {
         viewRegistry.register(view);
     });
 
-    logger?.info?.('bootstrapFramework views registered.', {
+    logInfo('bootstrapFramework views registered.', {
         count: views.length,
         viewIds: views.map((view) => view.id),
     });
@@ -46,7 +44,7 @@ export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrame
     // Configure auth BEFORE mounting so connectedCallback can access it
     if (auth) {
         root.authConfig = auth;
-        logger?.info?.('bootstrapFramework auth configured.', {
+        logInfo('bootstrapFramework auth configured.', {
             enabled: auth.enabled,
             authViewId: auth.authViewId ?? 'firebase-auth',
             autoShowOnStartup: auth.autoShowOnStartup ?? false,
@@ -60,9 +58,9 @@ export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrame
         : { viewDefinitions };
     dispatchUiEvent(root, ActionCatalog.StateHydrate, { state: mergedState });
 
-    logger?.info?.('bootstrapFramework state hydrated.', summarizeState(mergedState));
+    logInfo('bootstrapFramework state hydrated.', summarizeState(mergedState));
 
-    logger?.info?.('bootstrapFramework root mounted.', {
+    logInfo('bootstrapFramework root mounted.', {
         tagName: root.tagName.toLowerCase(),
         mountNode: mountTarget instanceof Element ? mountTarget.tagName.toLowerCase() : mountTarget.nodeName,
     });

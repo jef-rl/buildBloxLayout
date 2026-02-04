@@ -1,8 +1,8 @@
 import type { View, ViewDefinition, ViewInstance } from '../../../../types/index';
-import { getFrameworkLogger } from '../../../../utils/logger';
 import type { ViewDefDto } from '../../../definitions/dto/view-def.dto';
 import { ViewHost } from '../../../views/host/view-host';
 import { CoreRegistries } from '../core-registries';
+import { logError, logInfo, logWarn } from '../../engine/logging/framework-logger';
 
 export type ViewRegistryChangeDetail = {
     type: 'register';
@@ -34,11 +34,10 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
     private readonly componentCache = new Map<string, unknown>();
 
     register(definition: ViewDefinition): void {
-        const logger = getFrameworkLogger();
         const wasRegistered = Boolean(this.registries.viewDefs.get(definition.id));
 
         if (!definition.icon || definition.icon.trim() === '') {
-            logger?.warn?.('ViewRegistry register failed. Missing icon for view.', {
+            logWarn('ViewRegistry register failed. Missing icon for view.', {
                 viewId: definition.id,
                 title: definition.title,
                 tag: definition.tag,
@@ -61,7 +60,7 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
             preload: definition.component,
         });
 
-        logger?.info?.('ViewRegistry registered view.', {
+        logInfo('ViewRegistry registered view.', {
             viewId: definition.id,
             title: definition.title,
             tag: definition.tag,
@@ -113,7 +112,7 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
             this.componentCache.set(id, component);
             return component;
         } catch (error) {
-            console.error(`Error loading component for view '${id}':`, error);
+            logError(error, { message: `Error loading component for view '${id}'.`, viewId: id });
             return undefined;
         }
     }
@@ -121,7 +120,7 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
     createView(viewId: string, data?: unknown, instanceId?: string): View | undefined {
         const definition = this.get(viewId);
         if (!definition) {
-            console.warn(`View definition not found for '${viewId}'`);
+            logWarn(`View definition not found for '${viewId}'`, { viewId });
             return undefined;
         }
 
@@ -136,7 +135,7 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
     createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined {
         const def = this.registries.viewDefs.get(definitionId);
         if (!def) {
-            console.warn(`View definition not found for '${definitionId}'`);
+            logWarn(`View definition not found for '${definitionId}'`, { definitionId });
             return undefined;
         }
 
@@ -185,9 +184,8 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
     }
 
     private emitRegistryChange(detail: ViewRegistryChangeDetail) {
-        const logger = getFrameworkLogger();
         this.dispatchEvent(new CustomEvent<ViewRegistryChangeDetail>('registry-change', { detail }));
-        logger?.info?.('ViewRegistry registry change.', detail);
+        logInfo('ViewRegistry registry change.', detail);
     }
 }
 

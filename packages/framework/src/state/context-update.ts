@@ -1,4 +1,4 @@
-import { getFrameworkLogger } from '../utils/logger';
+import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 const NAMESPACE_ALLOWLIST = new Set([
   'framework',
@@ -41,8 +41,7 @@ export const applyContextUpdate = <T extends Record<string, unknown>>(
   const [namespace] = segments;
 
   if (!namespace || !NAMESPACE_ALLOWLIST.has(namespace)) {
-    const logger = getFrameworkLogger();
-    logger?.warn?.('Rejected context update due to invalid namespace.', {
+    logWarn('Rejected context update due to invalid namespace.', {
       path,
       value,
       allowedNamespaces: Array.from(NAMESPACE_ALLOWLIST),

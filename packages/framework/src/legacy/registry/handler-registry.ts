@@ -1,4 +1,4 @@
-import { getFrameworkLogger } from '../../utils/logger';
+import { logInfo } from '../../nxt/runtime/engine/logging/framework-logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 import type { Action } from '../../nxt/runtime/actions/action';
 import type { ActionName } from '../../nxt/runtime/actions/action-catalog';
@@ -82,9 +82,8 @@ const buildLogEntry = (payload: Record<string, unknown>, state: UIState): LogEnt
   };
 };
 
-const logAction = (actionType: string, namespace: string | null, changes: unknown) => {
-  const logger = getFrameworkLogger();
-  logger?.info?.('Handled action.', {
+const logHandledAction = (actionType: string, namespace: string | null, changes: unknown) => {
+  logInfo('Handled action.', {
     actionType,
     namespace,
     changes: summarizeChanges(changes),
@@ -103,7 +102,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
     const payload = action.payload ?? {};
     const patch = (payload.state ?? payload.patch ?? payload.value) as Partial<UIState> | undefined;
     if (!patch || typeof patch !== 'object') {
-      logAction(action.type, 'state', patch);
+      logHandledAction(action.type, 'state', patch);
       return { state, followUps: toFollowUps(payload.followUps) };
     }
     // Deep merge layout to preserve presets
@@ -116,7 +115,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
         presets: state.layout?.presets ?? patch.layout?.presets ?? {},
       } : state.layout,
     };
-    logAction(action.type, 'state', patch);
+    logHandledAction(action.type, 'state', patch);
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
   'logs/append': (state, action) => {
@@ -124,7 +123,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
     const currentLogs = normalizeLogState(state);
     const entry = buildLogEntry(payload, state);
     if (!entry) {
-      logAction(action.type, 'logs', { reason: 'invalid-payload' });
+      logHandledAction(action.type, 'logs', { reason: 'invalid-payload' });
       return { state, followUps: toFollowUps(payload.followUps) };
     }
     const nextEntries = [...currentLogs.entries, entry];
@@ -139,7 +138,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
         maxEntries: currentLogs.maxEntries,
       },
     };
-    logAction(action.type, 'logs', { count: trimmedEntries.length });
+    logHandledAction(action.type, 'logs', { count: trimmedEntries.length });
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
   'logs/clear': (state, action) => {
@@ -155,7 +154,7 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
         entries: [],
       },
     };
-    logAction(action.type, 'logs', { cleared: currentLogs.entries.length });
+    logHandledAction(action.type, 'logs', { cleared: currentLogs.entries.length });
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
 };

@@ -1,5 +1,6 @@
 import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from './expansion-helpers.js';
+import { logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 
 const STORAGE_KEY = 'buildblox-layout-presets';
 const STORAGE_VERSION = 2;
@@ -25,18 +26,18 @@ export interface PersistenceOptions {
 export const presetPersistence = {
   saveAll: (presets: LayoutPresets, options?: PersistenceOptions): void => {
     try {
-      console.log('[Persistence] saveAll called with presets:', Object.keys(presets));
+      logInfo('[Persistence] saveAll called with presets:', { count: Object.keys(presets).length });
       const data: PersistedPresets = {
         version: STORAGE_VERSION,
         presets,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      console.log('[Persistence] Saved to localStorage with key:', STORAGE_KEY);
+      logInfo('[Persistence] Saved to localStorage with key:', { key: STORAGE_KEY });
       if (!options?.skipSync) {
         firestoreSyncCallback?.(presets);
       }
     } catch (error) {
-      console.warn('Failed to persist layout presets:', error);
+      logWarn('Failed to persist layout presets.', { error });
     }
   },
 
@@ -67,23 +68,23 @@ export const presetPersistence = {
       }
 
       if (data.version !== STORAGE_VERSION) {
-        console.warn('Layout presets version mismatch, clearing stored data');
+        logWarn('Layout presets version mismatch, clearing stored data');
         presetPersistence.clear();
         return null;
       }
       return data.presets;
     } catch (error) {
-      console.warn('Failed to load persisted layout presets:', error);
+      logWarn('Failed to load persisted layout presets.', { error });
       return null;
     }
   },
 
   savePreset: (name: string, preset: LayoutPreset, options?: PersistenceOptions): void => {
-    console.log('[Persistence] savePreset called:', { name, preset });
+    logInfo('[Persistence] savePreset called:', { name });
     const current = presetPersistence.loadAll() ?? {};
     current[name] = preset;
     presetPersistence.saveAll(current, options);
-    console.log('[Persistence] savePreset completed, total presets:', Object.keys(current).length);
+    logInfo('[Persistence] savePreset completed, total presets:', { count: Object.keys(current).length });
   },
 
   deletePreset: (name: string, options?: PersistenceOptions): void => {
@@ -96,7 +97,7 @@ export const presetPersistence = {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
-      console.warn('Failed to clear persisted layout presets:', error);
+      logWarn('Failed to clear persisted layout presets.', { error });
     }
   },
 };

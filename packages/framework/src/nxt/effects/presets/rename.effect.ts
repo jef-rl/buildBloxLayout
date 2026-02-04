@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { hybridPersistence } from '../../../utils/hybrid-persistence';
-import { getFrameworkLogger } from '../../../utils/logger';
+import { logWarn } from '../../runtime/engine/logging/framework-logger';
 
 export const presetsRenameImplKey = 'effect:presets/rename@1';
 
@@ -12,7 +12,6 @@ export const presetsRenameEffect: EffectImpl<{ oldName?: string; newName?: strin
   try {
     hybridPersistence.renamePreset(payload.oldName, payload.newName);
   } catch (error) {
-    const logger = getFrameworkLogger();
-    logger?.warn?.('Preset rename failed in effect.', { error });
+    logWarn('Preset rename failed in effect.', { error });
   }
 };

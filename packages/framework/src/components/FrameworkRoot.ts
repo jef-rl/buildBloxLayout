@@ -18,7 +18,7 @@ import type { Action } from '../nxt/runtime/actions/action';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { CoreRegistries } from '../nxt/runtime/registries/core-registries';
 import { UiStateStore } from '../nxt/runtime/state/store/ui-state-store';
-import { getFrameworkLogger } from '../utils/logger';
+import { logError, logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
 import { validateState } from '../state/state-validator';
 import {
   registerWorkspaceHandlers,
@@ -170,7 +170,7 @@ export class FrameworkRoot extends LitElement {
         try {
           validateState(nextState);
         } catch (error) {
-          console.error("State validation failed after subscription update:", error);
+          logError(error, { message: 'State validation failed after subscription update.' });
           return;
         }
       }
@@ -212,19 +212,19 @@ export class FrameworkRoot extends LitElement {
     setFirestoreSyncCallback((presets) => {
       if (hybridPersistence.isConfigured()) {
         firestorePersistence.saveAll(presets).catch((error) => {
-          console.warn('Firestore sync failed:', error);
+          logWarn('Firestore sync failed.', { error });
         });
       }
     });
   }
 
   configureFirestore(firestore: Firestore): void {
-    console.log('[FrameworkRoot] configureFirestore called');
+    logInfo('[FrameworkRoot] configureFirestore called');
     this.firestore = firestore;
     const userId = this.state.auth?.user?.uid ?? null;
-    console.log('[FrameworkRoot] Configuring hybrid persistence with userId:', userId);
+    logInfo('[FrameworkRoot] Configuring hybrid persistence with userId:', { userId });
     hybridPersistence.configure({ firestore, userId });
-    console.log('[FrameworkRoot] Hybrid persistence configured, initializing...');
+    logInfo('[FrameworkRoot] Hybrid persistence configured, initializing...');
     this.initializeFirestorePersistence();
   }
 
@@ -253,11 +253,9 @@ export class FrameworkRoot extends LitElement {
         const userId = user?.uid ?? null;
         hybridPersistence.setUserId(userId);
       }
-
-      const logger = getFrameworkLogger();
       if (!initialAuthCheckDone) {
         initialAuthCheckDone = true;
-        logger?.info?.('Initial auth state check', {
+        logInfo('Initial auth state check', {
           hasUser: !!user,
           authEnabled: this.authConfig?.enabled,
           autoShowOnStartup: this.authConfig?.autoShowOnStartup,
@@ -268,25 +266,25 @@ export class FrameworkRoot extends LitElement {
 
   private async initializeFirestorePersistence(): Promise<void> {
     if (!hybridPersistence.isConfigured()) {
-      console.log('[FrameworkRoot] Hybrid persistence not configured, skipping initialization');
+      logInfo('[FrameworkRoot] Hybrid persistence not configured, skipping initialization');
       return;
     }
 
     try {
-      console.log('[FrameworkRoot] Starting Firestore persistence initialization...');
+      logInfo('[FrameworkRoot] Starting Firestore persistence initialization...');
       // Load presets from Firestore and merge with localStorage
       const firestorePresets = await hybridPersistence.syncFromFirestore();
       const firestorePresetCount = firestorePresets ? Object.keys(firestorePresets).length : 0;
-      console.log('[FrameworkRoot] Firestore presets loaded:', {
+      logInfo('[FrameworkRoot] Firestore presets loaded:', {
         count: firestorePresetCount,
         presets: firestorePresets ? Object.keys(firestorePresets) : [],
       });
       if (!firestorePresets) {
-        console.log('[FrameworkRoot] No presets returned from Firestore (count 0)');
+        logInfo('[FrameworkRoot] No presets returned from Firestore (count 0)');
       }
 
       if (firestorePresets && Object.keys(firestorePresets).length > 0) {
-        console.log('[FrameworkRoot] Dispatching presets/hydrate action with Firestore presets');
+        logInfo('[FrameworkRoot] Dispatching presets/hydrate action with Firestore presets');
         this.dispatchActions([{
           type: ActionCatalog.PresetsHydrate,
           payload: { presets: firestorePresets },
@@ -294,17 +292,17 @@ export class FrameworkRoot extends LitElement {
       }
 
       // Set up real-time listener for cross-device sync
-      console.log('[FrameworkRoot] Setting up real-time Firestore listener');
+      logInfo('[FrameworkRoot] Setting up real-time Firestore listener');
       this.firestoreUnsubscribe = hybridPersistence.onPresetsChanged((presets) => {
-        console.log('[FrameworkRoot] Firestore preset change detected:', Object.keys(presets));
+        logInfo('[FrameworkRoot] Firestore preset change detected:', { presetCount: Object.keys(presets).length });
         this.dispatchActions([{
           type: ActionCatalog.PresetsHydrate,
           payload: { presets },
         }]);
       });
-      console.log('[FrameworkRoot] Firestore persistence initialization complete');
+      logInfo('[FrameworkRoot] Firestore persistence initialization complete');
     } catch (error) {
-      console.error('[FrameworkRoot] Firestore persistence initialization failed:', error);
+      logError(error, { message: '[FrameworkRoot] Firestore persistence initialization failed.' });
     }
   }
 
@@ -367,10 +365,9 @@ export class FrameworkRoot extends LitElement {
   };
 
   private dispatchActions(actions: HandlerAction[]) {
-    const logger = getFrameworkLogger();
     const queue = [...actions];
 
-    logger?.info?.('FrameworkRoot dispatch start.', {
+    logInfo('FrameworkRoot dispatch start.', {
       actionCount: queue.length,
       actionTypes: queue.map((action) => action.type),
     });
@@ -403,9 +400,9 @@ export class FrameworkRoot extends LitElement {
       try {
         result = frameworkHandlers.handle(context, action);
       } catch (error) {
-        logger?.error?.('FrameworkRoot handler error.', {
+        logError(error, {
+          message: 'FrameworkRoot handler error.',
           actionType: action.type,
-          error,
         });
         if (shouldLogAction(action.type)) {
           queue.unshift(createLogAction('error', 'Handler error.', {
@@ -424,7 +421,7 @@ export class FrameworkRoot extends LitElement {
             try {
                 validateState(nextState);
             } catch (error) {
-                console.error(`State validation failed after action: ${action.type}`, error);
+                logError(error, { message: `State validation failed after action: ${action.type}` });
                 if (shouldLogAction(action.type)) {
                   queue.unshift(createLogAction('error', 'State validation failed.', {
                     type: action.type,
@@ -435,7 +432,7 @@ export class FrameworkRoot extends LitElement {
             }
         }
         uiState.update(nextState);
-        logger?.info?.('FrameworkRoot state update.', {
+        logInfo('FrameworkRoot state update.', {
             actionType: action.type,
             summary: summarizeUpdate(previousState, nextState),
         });
@@ -454,7 +451,7 @@ export class FrameworkRoot extends LitElement {
             }
           });
         } catch (error) {
-          logger?.warn?.('FrameworkRoot effect error.', {
+          logWarn('FrameworkRoot effect error.', {
             actionType: action.type,
             error,
           });
@@ -462,7 +459,7 @@ export class FrameworkRoot extends LitElement {
       }
     }
 
-    logger?.info?.('FrameworkRoot dispatch end.');
+    logInfo('FrameworkRoot dispatch end.');
   }
 
   render() {
