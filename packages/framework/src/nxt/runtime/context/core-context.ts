@@ -1,10 +1,11 @@
-    import type { Action } from '../actions/action';
-    import { dispatchAction } from '../engine/dispatch/dispatch-action';
-    import { CoreRegistries } from '../registries/core-registries';
-    import { UiStateStore } from '../state/store/ui-state-store';
-    import { validateState } from '../state/validation/validate-state';
+import type { Action } from '../actions/action';
+import { dispatchAction } from '../engine/dispatch/dispatch-action';
+import { CoreRegistries } from '../registries/core-registries';
+import type { FrameworkState } from '../state/framework-state';
+import { UiStateStore } from '../state/store/ui-state-store';
+import { validateState } from '../state/validation/validate-state';
 
-    export class CoreContext<S> {
+export class CoreContext<S extends FrameworkState> {
       readonly registries: CoreRegistries<S>;
       readonly store: UiStateStore<S>;
 
