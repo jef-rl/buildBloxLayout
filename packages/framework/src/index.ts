@@ -24,6 +24,7 @@ export type { UiStateContextValue } from './state/ui-state';
 
 // Event Handling & Utilities
 export * from './utils';
+export { dispatchUiEvent } from './legacy/dispatcher';
 
 // Types & Interfaces
 export * from './types';
