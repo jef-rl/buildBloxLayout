@@ -341,6 +341,7 @@ export class FrameworkRoot extends LitElement {
       state: this.getContextState(),
       dispatch: this.dispatchUiAction,
     });
+    this.coreProvider.setValue({ ...this.coreAdapter });
     this.requestUpdate();
   }
 
