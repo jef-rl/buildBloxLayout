@@ -141,6 +141,26 @@ export class FrameworkRoot extends LitElement {
     initialValue: this.coreAdapter,
   });
 
+  private syncViewRegistryToCore(): void {
+    const views = viewRegistry.getAllViews();
+    views.forEach((view) => {
+      this.coreRegistries.viewDefs.register({
+        id: view.id,
+        tagName: view.tag,
+        implKey: view.id,
+        name: view.name,
+        title: view.title,
+        icon: view.icon,
+        defaultContext: view.defaultContext,
+        defaultSettings: view.defaultContext,
+      });
+      this.coreRegistries.viewImpls.register(view.id, {
+        tagName: view.tag,
+        preload: view.component,
+      });
+    });
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('ui-event', this.handleUiEvent as EventListener);
@@ -171,6 +191,7 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([{ type: 'effects/frameworkMenu/hydrate', payload: {} }]);
 
     this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
+      this.syncViewRegistryToCore();
       const viewDefinitions = viewRegistry.getAllViews().map((view) => ({
         id: view.id,
         name: view.name,
@@ -184,6 +205,7 @@ export class FrameworkRoot extends LitElement {
         },
       ]);
     });
+    this.syncViewRegistryToCore();
 
     // Set up Firestore sync callback
     setFirestoreSyncCallback((presets) => {
