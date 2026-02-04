@@ -1,6 +1,9 @@
 import { applyContextUpdate } from '../../state/context-update';
 import { getFrameworkLogger } from '../../utils/logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
+import type { Action } from '../../nxt/runtime/actions/action';
+import { HandlerImplRegistry } from '../../nxt/runtime/registries/handlers/handler-impl-registry';
+import { HandlerRegistry as NxtHandlerRegistry } from '../../nxt/runtime/registries/handlers/handler-registry';
 import { ReducerHandler } from './ReducerHandler.type';
 import { HandlerRegistry } from './HandlerRegistry.type';
 import { HandlerAction } from './HandlerAction.type';
@@ -256,19 +259,49 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
 export const createHandlerRegistry = <TState>(
   initialHandlers: Record<string, ReducerHandler<TState>> = {},
 ): HandlerRegistry<TState> => {
-  const handlers = new Map<string, ReducerHandler<TState>>(Object.entries(initialHandlers));
+  const handlers = new Map<string, ReducerHandler<TState>>();
+  const followUpsByAction = new Map<string, HandlerAction[]>();
+  const impls = new HandlerImplRegistry<TState>();
+  const registry = new NxtHandlerRegistry<TState>(impls);
+
+  const toNxtAction = (action: HandlerAction): Action<any> => ({
+    action: action.type,
+    payload: action.payload,
+  });
+
+  const registerHandler = (type: string, handler: ReducerHandler<TState>) => {
+    handlers.set(type, handler);
+    const implKey = `legacy:${type}`;
+    impls.register(implKey, (state, action) => {
+      const result = handler(state, { type: action.action, payload: action.payload });
+      followUpsByAction.set(type, result.followUps);
+      return result.state;
+    });
+    registry.applyDefinition({
+      id: `handler:${type}`,
+      action: type,
+      implKey,
+    });
+  };
+
+  Object.entries(initialHandlers).forEach(([type, handler]) => {
+    registerHandler(type, handler);
+  });
 
   return {
     register: (type, handler) => {
-      handlers.set(type, handler);
+      registerHandler(type, handler);
     },
     get: (type) => handlers.get(type),
     handle: (state, action) => {
-      const handler = handlers.get(action.type);
-      if (!handler) {
+      const entries = registry.getForAction(action.type);
+      if (!entries.length) {
         return { state, followUps: [] };
       }
-      return handler(state, action);
+      const entry = entries[entries.length - 1];
+      const nextState = entry.reduce(state, toNxtAction(action), entry.config);
+      const followUps = followUpsByAction.get(action.type) ?? [];
+      return { state: nextState, followUps };
     },
     list: () => Array.from(handlers.keys()),
   };
