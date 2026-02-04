@@ -8,8 +8,12 @@
       id: string;                  // "view:firebase-auth"
       tagName: string;             // "auth-view"
       implKey?: string;            // "component:auth-view@1"
+      name?: string;
+      title?: string;
+      icon?: string;
       defaultSelector?: SelectorRefDto;
       defaultSettings?: Record<string, unknown>;
+      defaultContext?: Record<string, unknown>;
       description?: string;
     }
   
