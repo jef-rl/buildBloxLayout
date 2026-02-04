@@ -341,7 +341,13 @@ export class FrameworkRoot extends LitElement {
       state: this.getContextState(),
       dispatch: this.dispatchUiAction,
     });
-    this.coreProvider.setValue({ ...this.coreAdapter });
+    const nextCoreContext: CoreContext<UIState> = {
+      registries: this.coreRegistries,
+      store: this.coreStore,
+      getState: this.coreAdapter.getState,
+      dispatch: this.coreAdapter.dispatch,
+    };
+    this.coreProvider.setValue(nextCoreContext);
     this.requestUpdate();
   }
 
