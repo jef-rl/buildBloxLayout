@@ -12,6 +12,7 @@ import { createEffectRegistry } from '../core/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
+import { coreContext } from '../nxt/runtime/context/core-context-key';
 import { getFrameworkLogger } from '../utils/logger';
 import { validateState } from '../state/state-validator';
 import {
@@ -98,12 +99,38 @@ export class FrameworkRoot extends LitElement {
     this.dispatchActions([{ type: payload.type, payload }]);
   };
 
+  private coreAdapter = {
+    store: {
+      subscribe: (listener: (state: UIState) => void) => {
+        listener(uiState.getState());
+        return uiState.subscribe(listener);
+      },
+    },
+    getState: () => uiState.getState(),
+    dispatch: (action: { action: string; payload?: Record<string, unknown> }) => {
+      if (!action?.action) {
+        return;
+      }
+      this.dispatchActions([
+        {
+          type: action.action,
+          payload: action.payload ?? {},
+        },
+      ]);
+    },
+  };
+
   private provider = new ContextProvider(this, {
     context: uiStateContext,
     initialValue: {
       state: this.getContextState(),
       dispatch: this.dispatchUiAction,
     },
+  });
+
+  private coreProvider = new ContextProvider(this, {
+    context: coreContext,
+    initialValue: this.coreAdapter,
   });
 
   connectedCallback() {
