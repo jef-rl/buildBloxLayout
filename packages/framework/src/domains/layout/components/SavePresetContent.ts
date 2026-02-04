@@ -3,6 +3,7 @@ import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 /**
  * Content component for saving a new preset.
@@ -147,14 +148,14 @@ export class SavePresetContent extends LitElement {
 
     private close() {
         this.presetName = '';
-        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: null });
+        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
     }
 
     private confirmSave() {
         if (this.presetName.trim()) {
-            this.uiDispatch?.({ type: 'presets/save', name: this.presetName.trim() });
+            this.uiDispatch?.({ type: ActionCatalog.PresetsSave, name: this.presetName.trim() });
             this.presetName = '';
-            this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: null });
+            this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
         }
     }
 

@@ -1,6 +1,7 @@
 import type { EffectDefDto } from '../definitions/dto/effect-def.dto';
 import type { EffectImplRegistry } from '../runtime/registries/effects/effect-impl-registry';
 import type { EffectRegistry } from '../runtime/registries/effects/effect-registry';
+import { ActionCatalog } from '../runtime/actions/action-catalog';
 import { authGoogleLoginEffect, authGoogleLoginImplKey } from './auth/google-login.effect';
 import { authLoginEffect, authLoginImplKey } from './auth/login.effect';
 import { authLogoutEffect, authLogoutImplKey } from './auth/logout.effect';
@@ -17,73 +18,73 @@ import { presetsSaveEffect, presetsSaveImplKey } from './presets/save.effect';
 export const frameworkEffectDefs: EffectDefDto[] = [
   {
     id: 'effect:auth/login-requested',
-    forAction: 'auth/loginRequested',
+    forAction: ActionCatalog.AuthLoginRequested,
     implKey: authLoginImplKey,
     description: 'Handle email/password login.',
   },
   {
     id: 'effect:auth/signup-requested',
-    forAction: 'auth/signupRequested',
+    forAction: ActionCatalog.AuthSignupRequested,
     implKey: authSignupImplKey,
     description: 'Handle email/password signup.',
   },
   {
     id: 'effect:auth/google-login-requested',
-    forAction: 'auth/googleLoginRequested',
+    forAction: ActionCatalog.AuthGoogleLoginRequested,
     implKey: authGoogleLoginImplKey,
     description: 'Handle Google login.',
   },
   {
     id: 'effect:auth/password-reset-requested',
-    forAction: 'auth/passwordResetRequested',
+    forAction: ActionCatalog.AuthPasswordResetRequested,
     implKey: authPasswordResetImplKey,
     description: 'Handle password reset email.',
   },
   {
     id: 'effect:auth/logout-requested',
-    forAction: 'auth/logoutRequested',
+    forAction: ActionCatalog.AuthLogoutRequested,
     implKey: authLogoutImplKey,
     description: 'Handle logout and UI cleanup.',
   },
   {
     id: 'effect:auth/logout-trigger',
-    forAction: 'effects/auth/logout',
+    forAction: ActionCatalog.EffectsAuthLogout,
     implKey: authLogoutTriggerImplKey,
     description: 'Trigger logout request action.',
   },
   {
     id: 'effect:presets/save',
-    forAction: 'effects/presets/save',
+    forAction: ActionCatalog.EffectsPresetsSave,
     implKey: presetsSaveImplKey,
     description: 'Persist preset updates.',
   },
   {
     id: 'effect:presets/delete',
-    forAction: 'effects/presets/delete',
+    forAction: ActionCatalog.EffectsPresetsDelete,
     implKey: presetsDeleteImplKey,
     description: 'Delete stored presets.',
   },
   {
     id: 'effect:presets/rename',
-    forAction: 'effects/presets/rename',
+    forAction: ActionCatalog.EffectsPresetsRename,
     implKey: presetsRenameImplKey,
     description: 'Rename stored presets.',
   },
   {
     id: 'effect:presets/hydrate',
-    forAction: 'effects/presets/hydrate',
+    forAction: ActionCatalog.EffectsPresetsHydrate,
     implKey: presetsHydrateImplKey,
     description: 'Hydrate presets from persistence.',
   },
   {
     id: 'effect:framework-menu/save',
-    forAction: 'effects/frameworkMenu/save',
+    forAction: ActionCatalog.EffectsFrameworkMenuSave,
     implKey: frameworkMenuSaveImplKey,
     description: 'Persist framework menu configuration.',
   },
   {
     id: 'effect:framework-menu/hydrate',
-    forAction: 'effects/frameworkMenu/hydrate',
+    forAction: ActionCatalog.EffectsFrameworkMenuHydrate,
     implKey: frameworkMenuHydrateImplKey,
     description: 'Hydrate framework menu configuration.',
   },

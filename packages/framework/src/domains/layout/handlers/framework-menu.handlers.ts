@@ -1,5 +1,6 @@
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { FrameworkMenuItem, FrameworkMenuPresetItem, FrameworkMenuConfig } from '../../../types/state';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 type UiDispatch = UiStateContextValue['dispatch'];
 
@@ -20,7 +21,7 @@ export const createFrameworkMenuHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'presets/load', name: item.presetName });
+        dispatch({ type: ActionCatalog.PresetsLoad, name: item.presetName });
     },
 
     executeAction: (item: FrameworkMenuItem) => {
@@ -30,7 +31,7 @@ export const createFrameworkMenuHandlers = (
         }
 
         if (item.type === 'preset') {
-            dispatch({ type: 'presets/load', name: item.presetName });
+            dispatch({ type: ActionCatalog.PresetsLoad, name: item.presetName });
         } else if (item.type === 'action') {
             dispatch({ type: item.actionType, ...item.payload });
         }
@@ -41,7 +42,7 @@ export const createFrameworkMenuHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'frameworkMenu/reorderItems', draggedId, targetId });
+        dispatch({ type: ActionCatalog.FrameworkMenuReorderItems, draggedId, targetId });
     },
 
     updateConfig: (config: FrameworkMenuConfig) => {
@@ -49,7 +50,7 @@ export const createFrameworkMenuHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'frameworkMenu/updateConfig', config });
+        dispatch({ type: ActionCatalog.FrameworkMenuUpdateConfig, config });
     },
 
     hydrateMenu: () => {
@@ -57,6 +58,6 @@ export const createFrameworkMenuHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'effects/frameworkMenu/hydrate' });
+        dispatch({ type: ActionCatalog.EffectsFrameworkMenuHydrate });
     },
 });

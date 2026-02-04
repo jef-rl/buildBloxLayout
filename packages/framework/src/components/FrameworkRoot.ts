@@ -15,6 +15,7 @@ import { uiStateContext } from '../state/context';
 import { coreContext } from '../nxt/runtime/context/core-context-key';
 import type { CoreContext } from '../nxt/runtime/context/core-context';
 import type { Action } from '../nxt/runtime/actions/action';
+import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { CoreRegistries } from '../nxt/runtime/registries/core-registries';
 import { UiStateStore } from '../nxt/runtime/state/store/ui-state-store';
 import { getFrameworkLogger } from '../utils/logger';
@@ -187,8 +188,8 @@ export class FrameworkRoot extends LitElement {
     }
 
     // Hydrate presets from localStorage on startup
-    this.dispatchActions([{ type: 'effects/presets/hydrate', payload: {} }]);
-    this.dispatchActions([{ type: 'effects/frameworkMenu/hydrate', payload: {} }]);
+    this.dispatchActions([{ type: ActionCatalog.EffectsPresetsHydrate, payload: {} }]);
+    this.dispatchActions([{ type: ActionCatalog.EffectsFrameworkMenuHydrate, payload: {} }]);
 
     this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
       this.syncViewRegistryToCore();
@@ -200,7 +201,7 @@ export class FrameworkRoot extends LitElement {
       }));
       this.dispatchActions([
         {
-          type: 'state/hydrate',
+          type: ActionCatalog.StateHydrate,
           payload: { state: { viewDefinitions } },
         },
       ]);
@@ -237,12 +238,12 @@ export class FrameworkRoot extends LitElement {
     onFrameworkAuthStateChange((user) => {
       this.dispatchActions([
         {
-          type: 'auth/setUser',
+          type: ActionCatalog.AuthSetUser,
           payload: { user }
         },
         // Refresh menu to show/hide auth items based on login state
         {
-          type: 'effects/frameworkMenu/hydrate',
+          type: ActionCatalog.EffectsFrameworkMenuHydrate,
           payload: {}
         }
       ]);
@@ -287,7 +288,7 @@ export class FrameworkRoot extends LitElement {
       if (firestorePresets && Object.keys(firestorePresets).length > 0) {
         console.log('[FrameworkRoot] Dispatching presets/hydrate action with Firestore presets');
         this.dispatchActions([{
-          type: 'presets/hydrate',
+          type: ActionCatalog.PresetsHydrate,
           payload: { presets: firestorePresets },
         }]);
       }
@@ -297,7 +298,7 @@ export class FrameworkRoot extends LitElement {
       this.firestoreUnsubscribe = hybridPersistence.onPresetsChanged((presets) => {
         console.log('[FrameworkRoot] Firestore preset change detected:', Object.keys(presets));
         this.dispatchActions([{
-          type: 'presets/hydrate',
+          type: ActionCatalog.PresetsHydrate,
           payload: { presets },
         }]);
       });

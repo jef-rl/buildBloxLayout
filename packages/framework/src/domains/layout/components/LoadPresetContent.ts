@@ -3,6 +3,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { LayoutPreset } from '../../../types/state';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 /**
  * Content component for loading a saved preset.
@@ -141,12 +142,12 @@ export class LoadPresetContent extends LitElement {
     }
 
     private close() {
-        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: null });
+        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
     }
 
     private handleLoad(name: string) {
-        this.uiDispatch?.({ type: 'presets/load', name });
-        this.uiDispatch?.({ type: 'layout/setOverlayView', viewId: null });
+        this.uiDispatch?.({ type: ActionCatalog.PresetsLoad, name });
+        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
     }
 
     connectedCallback() {

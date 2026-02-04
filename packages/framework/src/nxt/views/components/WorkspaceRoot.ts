@@ -3,6 +3,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
+import { ActionCatalog, type ActionName } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import { DockManager } from '../../../domains/dock/components/DockManager.js';
@@ -233,7 +234,7 @@ export class WorkspaceRoot extends LitElement {
         this.requestUpdate();
     }
 
-    private dispatch(action: string, payload?: Record<string, unknown>) {
+    private dispatch(action: ActionName, payload?: Record<string, unknown>) {
         this.core?.dispatch({ action, payload });
     }
 
@@ -261,7 +262,7 @@ export class WorkspaceRoot extends LitElement {
 
         const viewId = e.dataTransfer?.getData('application/x-view-id');
         if (viewId) {
-            this.dispatch('panels/assignView', { viewId, panelId, placement });
+            this.dispatch(ActionCatalog.PanelsAssignView, { viewId, panelId, placement });
         }
     }
 
@@ -362,7 +363,7 @@ export class WorkspaceRoot extends LitElement {
         return html`
             <button 
                 class="sash-toggle ${side}" 
-                @click=${() => this.dispatch('layout/setExpansion', { side, state: newState })}
+                @click=${() => this.dispatch(ActionCatalog.LayoutSetExpansion, { side, state: newState })}
                 title="${isClosed ? 'Open' : 'Close'} ${side} panel"
             >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -439,7 +440,7 @@ export class WorkspaceRoot extends LitElement {
                         ${mainPanelsToRender.map((panel) => html`
                             <div
                                 class="main-panel"
-                                @click=${() => panel && this.dispatch('panels/selectPanel', { panelId: panel.id })}
+                                @click=${() => panel && this.dispatch(ActionCatalog.PanelsSelectPanel, { panelId: panel.id })}
                             >
                                 ${(() => {
                                     const viewId = getPanelViewId(panel);

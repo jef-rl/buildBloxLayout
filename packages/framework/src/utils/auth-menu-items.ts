@@ -1,4 +1,5 @@
 import type { FrameworkMenuItem, AuthUser, FrameworkAuthConfig, AuthState } from '../types/state';
+import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 
 /**
  * Generate authentication-related menu items based on auth state
@@ -28,7 +29,7 @@ export const generateAuthMenuItems = (
       type: 'action',
       label: 'Login',
       icon: 'login',
-      actionType: 'layout/setOverlayView',
+      actionType: ActionCatalog.LayoutSetOverlayView,
       payload: { viewId: authViewId },
       order: 0,
     });
@@ -39,7 +40,7 @@ export const generateAuthMenuItems = (
         type: 'action',
         label: 'Designer',
         icon: 'designer',
-        actionType: 'layout/toggleInDesign',
+        actionType: ActionCatalog.LayoutToggleInDesign,
         payload: {
           overlayViewId: 'visual-editor',
         },
@@ -62,7 +63,7 @@ export const generateAuthMenuItems = (
           type: 'action',
           label: 'View Profile',
           icon: 'person',
-          actionType: 'layout/setOverlayView',
+          actionType: ActionCatalog.LayoutSetOverlayView,
           payload: { viewId: authViewId },
           order: 0,
         },
@@ -71,7 +72,7 @@ export const generateAuthMenuItems = (
           type: 'action',
           label: 'Logout',
           icon: 'logout',
-          actionType: 'auth/logoutRequested',
+          actionType: ActionCatalog.AuthLogoutRequested,
           payload: {},
           order: 1,
         },

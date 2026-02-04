@@ -1,4 +1,5 @@
 import type { Action } from '../../runtime/actions/action';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 export type ActionDispatch = (action: Action<any>) => void;
 
@@ -9,7 +10,7 @@ export const dispatchLog = (
   data?: Record<string, unknown>,
 ): void => {
   dispatch({
-    action: 'logs/append',
+    action: ActionCatalog.LogsAppend,
     payload: {
       level,
       message,

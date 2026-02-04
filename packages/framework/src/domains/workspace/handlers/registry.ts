@@ -9,6 +9,7 @@ import { viewInstanceHandlers } from '../../layout/handlers/view-instances';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 export const FRAMEWORK_ADMIN_EMAILS: string[] = ['jef@@gourmetguide.co.uk']
 
@@ -38,7 +39,7 @@ const buildLogAction = (
   message: string,
   data?: Record<string, unknown>,
 ): HandlerAction => ({
-  type: 'logs/append',
+  type: ActionCatalog.LogsAppend,
   payload: {
     level,
     message,
@@ -124,7 +125,7 @@ const handleToggleInDesign: ReducerHandler<FrameworkContextState> = (context, ac
   const followUps = toFollowUps(payload);
   if (nextInDesign && payload.overlayViewId) {
     followUps.push({
-      type: 'layout/setOverlayView',
+      type: ActionCatalog.LayoutSetOverlayView,
       payload: { viewId: payload.overlayViewId },
     });
   }
@@ -372,7 +373,7 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
   const followUps = toFollowUps(payload);
   if (shouldOpenAuthOverlay) {
     followUps.push({
-      type: 'layout/setOverlayView',
+      type: ActionCatalog.LayoutSetOverlayView,
       payload: { viewId: authViewId },
     });
   }
@@ -397,7 +398,7 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
 const handleAuthLogout: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const followUps = toFollowUps(payload);
-  followUps.push({ type: 'effects/auth/logout', payload: {} });
+  followUps.push({ type: ActionCatalog.EffectsAuthLogout, payload: {} });
   return { state: context, followUps };
 };
 
@@ -496,7 +497,7 @@ const handlePresetSave: ReducerHandler<FrameworkContextState> = (context, action
     { name },
   );
   followUps.push({
-    type: 'effects/presets/save',
+    type: ActionCatalog.EffectsPresetsSave,
     payload: { name, preset },
   });
 
@@ -559,24 +560,24 @@ const handlePresetLoad: ReducerHandler<FrameworkContextState> = (context, action
   if (preset.leftViewId) {
     const leftPanel = clearedPanels.find(p => p.region === 'left');
     if (leftPanel) {
-      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.leftViewId, panelId: leftPanel.id } });
+      followUps.push({ type: ActionCatalog.PanelsAssignView, payload: { viewId: preset.leftViewId, panelId: leftPanel.id } });
     }
   }
   if (preset.rightViewId) {
     const rightPanel = clearedPanels.find(p => p.region === 'right');
     if (rightPanel) {
-      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.rightViewId, panelId: rightPanel.id } });
+      followUps.push({ type: ActionCatalog.PanelsAssignView, payload: { viewId: preset.rightViewId, panelId: rightPanel.id } });
     }
   }
   if (preset.bottomViewId) {
     const bottomPanel = clearedPanels.find(p => p.region === 'bottom');
     if (bottomPanel) {
-      followUps.push({ type: 'panels/assignView', payload: { viewId: preset.bottomViewId, panelId: bottomPanel.id } });
+      followUps.push({ type: ActionCatalog.PanelsAssignView, payload: { viewId: preset.bottomViewId, panelId: bottomPanel.id } });
     }
   }
 
   // Apply main view order after setting main area count
-  followUps.push({ type: 'panels/setMainViewOrder', payload: { viewOrder: preset.mainViewOrder } });
+  followUps.push({ type: ActionCatalog.PanelsSetMainViewOrder, payload: { viewOrder: preset.mainViewOrder } });
 
   // Migrate expansion if needed
   let expansion: LayoutExpansion;
@@ -621,7 +622,7 @@ const handlePresetDelete: ReducerHandler<FrameworkContextState> = (context, acti
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: 'effects/presets/delete',
+    type: ActionCatalog.EffectsPresetsDelete,
     payload: { name },
   });
 
@@ -666,7 +667,7 @@ const handlePresetRename: ReducerHandler<FrameworkContextState> = (context, acti
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: 'effects/presets/rename',
+    type: ActionCatalog.EffectsPresetsRename,
     payload: { oldName, newName },
   });
 
@@ -750,7 +751,7 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: 'effects/frameworkMenu/save',
+    type: ActionCatalog.EffectsFrameworkMenuSave,
     payload: { config: newConfig },
   });
 
@@ -780,7 +781,7 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: 'effects/frameworkMenu/save',
+    type: ActionCatalog.EffectsFrameworkMenuSave,
     payload: { config },
   });
 
@@ -863,24 +864,29 @@ const registerHandler = (
 export const registerWorkspaceHandlers = (
   registry: HandlerRegistry<FrameworkContextState>,
 ): void => {
-  ['layout/setExpansion', 'layout/setOverlayView', 'layout/setViewportWidthMode', 'layout/setOverlayExpander', 'layout/unsetOverlayExpander', 'layout/resetExpanders'].forEach((type) =>
-    registerHandler(registry, type, handleLayoutAction),
-  );
-  registerHandler(registry, 'layout/setMainAreaCount', handleMainAreaCount);
-  registerHandler(registry, 'layout/toggleInDesign', handleToggleInDesign);
-  registerHandler(registry, 'panels/selectPanel', handleSelectPanel);
+  [
+    ActionCatalog.LayoutSetExpansion,
+    ActionCatalog.LayoutSetOverlayView,
+    ActionCatalog.LayoutSetViewportWidthMode,
+    ActionCatalog.LayoutSetOverlayExpander,
+    ActionCatalog.LayoutUnsetOverlayExpander,
+    ActionCatalog.LayoutResetExpanders,
+  ].forEach((type) => registerHandler(registry, type, handleLayoutAction));
+  registerHandler(registry, ActionCatalog.LayoutSetMainAreaCount, handleMainAreaCount);
+  registerHandler(registry, ActionCatalog.LayoutToggleInDesign, handleToggleInDesign);
+  registerHandler(registry, ActionCatalog.PanelsSelectPanel, handleSelectPanel);
   
   // Use the robust handler from workspace-panels.handlers
-  registerHandler(registry, 'panels/assignView', wrapHandler(workspacePanelHandlers['panels/assignView']));
-  registerHandler(registry, 'panels/removeView', wrapHandler(workspacePanelHandlers['panels/removeView']));
+  registerHandler(registry, ActionCatalog.PanelsAssignView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsAssignView]));
+  registerHandler(registry, ActionCatalog.PanelsRemoveView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsRemoveView]));
   
-  registerHandler(registry, 'panels/setMainViewOrder', handleSetMainViewOrder);
-  registerHandler(registry, 'panels/togglePanel', handleTogglePanel);
-  registerHandler(registry, 'panels/setScopeMode', handleSetScopeMode);
-  registerHandler(registry, 'session/reset', handleSessionReset);
-  registerHandler(registry, 'auth/setUser', handleAuthSetUser);
-  registerHandler(registry, 'auth/logout', handleAuthLogout);
-  registerHandler(registry, 'auth/setUi', handleAuthSetUi);
+  registerHandler(registry, ActionCatalog.PanelsSetMainViewOrder, handleSetMainViewOrder);
+  registerHandler(registry, ActionCatalog.PanelsTogglePanel, handleTogglePanel);
+  registerHandler(registry, ActionCatalog.PanelsSetScopeMode, handleSetScopeMode);
+  registerHandler(registry, ActionCatalog.SessionReset, handleSessionReset);
+  registerHandler(registry, ActionCatalog.AuthSetUser, handleAuthSetUser);
+  registerHandler(registry, ActionCatalog.AuthLogout, handleAuthLogout);
+  registerHandler(registry, ActionCatalog.AuthSetUi, handleAuthSetUi);
 
   // Register Drag Handlers
   Object.entries(dragHandlers).forEach(([type, handler]) => {
@@ -893,14 +899,14 @@ export const registerWorkspaceHandlers = (
   });
 
   // Preset handlers
-  registerHandler(registry, 'presets/save', handlePresetSave);
-  registerHandler(registry, 'presets/load', handlePresetLoad);
-  registerHandler(registry, 'presets/delete', handlePresetDelete);
-  registerHandler(registry, 'presets/rename', handlePresetRename);
-  registerHandler(registry, 'presets/hydrate', handlePresetHydrate);
+  registerHandler(registry, ActionCatalog.PresetsSave, handlePresetSave);
+  registerHandler(registry, ActionCatalog.PresetsLoad, handlePresetLoad);
+  registerHandler(registry, ActionCatalog.PresetsDelete, handlePresetDelete);
+  registerHandler(registry, ActionCatalog.PresetsRename, handlePresetRename);
+  registerHandler(registry, ActionCatalog.PresetsHydrate, handlePresetHydrate);
 
   // Framework menu handlers
-  registerHandler(registry, 'frameworkMenu/reorderItems', handleFrameworkMenuReorderItems);
-  registerHandler(registry, 'frameworkMenu/updateConfig', handleFrameworkMenuUpdateConfig);
-  registerHandler(registry, 'frameworkMenu/hydrate', handleFrameworkMenuHydrate);
+  registerHandler(registry, ActionCatalog.FrameworkMenuReorderItems, handleFrameworkMenuReorderItems);
+  registerHandler(registry, ActionCatalog.FrameworkMenuUpdateConfig, handleFrameworkMenuUpdateConfig);
+  registerHandler(registry, ActionCatalog.FrameworkMenuHydrate, handleFrameworkMenuHydrate);
 };

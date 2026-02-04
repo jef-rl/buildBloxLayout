@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import '../host/view-host.js';
@@ -88,7 +89,7 @@ export class OverlayLayer extends LitElement {
     core?: CoreContext<UIState>;
 
     private close() {
-        this.core?.dispatch({ action: 'layout/setOverlayView', payload: { viewId: null } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetOverlayView, payload: { viewId: null } });
     }
 
     private handleKeydown = (event: KeyboardEvent) => {

@@ -1,4 +1,5 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
 import { dispatchActions, dispatchLog } from './framework-menu-effect-helpers';
 
@@ -11,7 +12,7 @@ export const frameworkMenuHydrateEffect: EffectImpl = (_action, dispatch) => {
   }
   dispatchActions(dispatch, [
     {
-      action: 'frameworkMenu/hydrate',
+      action: ActionCatalog.FrameworkMenuHydrate,
       payload: { config: loadedConfig ?? frameworkMenuPersistence.getDefaultConfig() },
     },
   ]);

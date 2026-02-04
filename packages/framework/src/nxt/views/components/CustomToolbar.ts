@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import type { ExpanderState } from '../../../utils/expansion-helpers.js';
 
@@ -70,15 +71,15 @@ export class CustomToolbar extends LitElement {
     `;
 
     private setExpanderState(side: 'left' | 'right' | 'bottom', state: ExpanderState) {
-        this.core?.dispatch({ action: 'layout/setExpansion', payload: { side, state } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side, state } });
     }
 
     private setMainAreaCount(count: number) {
-        this.core?.dispatch({ action: 'layout/setMainAreaCount', payload: { count } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetMainAreaCount, payload: { count } });
     }
 
     private setViewportWidthMode(mode: string) {
-        this.core?.dispatch({ action: 'layout/setViewportWidthMode', payload: { mode } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetViewportWidthMode, payload: { mode } });
     }
 
     private resetLayout() {
@@ -87,27 +88,27 @@ export class CustomToolbar extends LitElement {
             return;
         }
 
-        this.core?.dispatch({ action: 'layout/setExpansion', payload: { side: 'left', state: 'Closed' } });
-        this.core?.dispatch({ action: 'layout/setExpansion', payload: { side: 'right', state: 'Closed' } });
-        this.core?.dispatch({ action: 'layout/setExpansion', payload: { side: 'bottom', state: 'Closed' } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'left', state: 'Closed' } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'right', state: 'Closed' } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'bottom', state: 'Closed' } });
 
         state.panels.forEach((panel) => {
             if (panel.id) {
-                this.core?.dispatch({ action: 'panels/removeView', payload: { panelId: panel.id } });
+                this.core?.dispatch({ action: ActionCatalog.PanelsRemoveView, payload: { panelId: panel.id } });
             }
         });
     }
 
     private toggleInDesign() {
-        this.core?.dispatch({ action: 'layout/toggleInDesign', payload: {} });
+        this.core?.dispatch({ action: ActionCatalog.LayoutToggleInDesign, payload: {} });
     }
 
     private openSavePresetOverlay() {
-        this.core?.dispatch({ action: 'layout/setOverlayView', payload: { viewId: 'save-preset' } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetOverlayView, payload: { viewId: 'save-preset' } });
     }
 
     private openLoadPresetOverlay() {
-        this.core?.dispatch({ action: 'layout/setOverlayView', payload: { viewId: 'load-preset' } });
+        this.core?.dispatch({ action: ActionCatalog.LayoutSetOverlayView, payload: { viewId: 'load-preset' } });
     }
 
     private renderButton(index: number, content?: string, isImage = false, onClick?: () => void) {

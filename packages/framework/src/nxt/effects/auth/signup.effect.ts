@@ -1,4 +1,5 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { signupWithEmail } from '../../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
@@ -13,8 +14,8 @@ export const authSignupEffect: EffectImpl<{ email?: string; password?: string }>
   signupWithEmail(payload.email ?? '', payload.password ?? '')
     .then((user) => {
       dispatchActions(dispatch, [
-        { action: 'auth/setUser', payload: { user } },
-        { action: 'auth/setUi', payload: { loading: false, error: null, success: 'Account created successfully!' } },
+        { action: ActionCatalog.AuthSetUser, payload: { user } },
+        { action: ActionCatalog.AuthSetUi, payload: { loading: false, error: null, success: 'Account created successfully!' } },
       ]);
       clearAuthSuccessLater(dispatch, 1500);
     })

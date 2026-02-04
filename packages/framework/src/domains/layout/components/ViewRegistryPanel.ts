@@ -4,6 +4,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { ViewDefinitionSummary } from '../../../types/state';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 // import { Icons } from '../../../components/Icons';
 
 /**
@@ -76,14 +77,14 @@ export class ViewRegistryPanel extends LitElement {
         setTimeout(() => document.body.removeChild(ghost), 0);
 
         // Dispatch the action to notify the global state
-        this.uiDispatch?.({ type: 'layout/dragStart', viewId });
+        this.uiDispatch?.({ type: ActionCatalog.LayoutDragStart, viewId });
     }
 
     /**
      * Handles the drag end event to clean up the global state.
      */
     private handleDragEnd() {
-        this.uiDispatch?.({ type: 'layout/dragEnd' });
+        this.uiDispatch?.({ type: ActionCatalog.LayoutDragEnd });
     }
 
     private renderRegistryItem(view: ViewDefinitionSummary) {

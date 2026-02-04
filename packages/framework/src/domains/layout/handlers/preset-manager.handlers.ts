@@ -1,4 +1,5 @@
 import type { UiStateContextValue } from '../../../state/ui-state';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 type UiDispatch = UiStateContextValue['dispatch'];
 
@@ -19,7 +20,7 @@ export const createPresetManagerHandlers = (
         if (!dispatch || !name.trim()) {
             return;
         }
-        dispatch({ type: 'presets/save', name: name.trim() });
+        dispatch({ type: ActionCatalog.PresetsSave, name: name.trim() });
     },
 
     loadPreset: (name: string) => {
@@ -27,7 +28,7 @@ export const createPresetManagerHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'presets/load', name });
+        dispatch({ type: ActionCatalog.PresetsLoad, name });
     },
 
     deletePreset: (name: string) => {
@@ -35,7 +36,7 @@ export const createPresetManagerHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'presets/delete', name });
+        dispatch({ type: ActionCatalog.PresetsDelete, name });
     },
 
     renamePreset: (oldName: string, newName: string) => {
@@ -43,7 +44,7 @@ export const createPresetManagerHandlers = (
         if (!dispatch || !newName.trim()) {
             return;
         }
-        dispatch({ type: 'presets/rename', oldName, newName: newName.trim() });
+        dispatch({ type: ActionCatalog.PresetsRename, oldName, newName: newName.trim() });
     },
 
     toggleDesignMode: (inDesign?: boolean) => {
@@ -51,6 +52,6 @@ export const createPresetManagerHandlers = (
         if (!dispatch) {
             return;
         }
-        dispatch({ type: 'layout/toggleInDesign', inDesign });
+        dispatch({ type: ActionCatalog.LayoutToggleInDesign, inDesign });
     },
 });

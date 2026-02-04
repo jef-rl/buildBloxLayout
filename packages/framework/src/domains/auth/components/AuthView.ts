@@ -10,6 +10,7 @@ import { uiStateContext } from '../../../state/context';
 import { dispatchUiEvent } from '../../../legacy/dispatcher';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { AuthMode, AuthConfig } from '../../../types/auth';
+import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
 
 @customElement('auth-view')
 export class AuthView extends LitElement {
@@ -232,13 +233,13 @@ export class AuthView extends LitElement {
   private switchMode(newMode: AuthMode) {
     this.mode = newMode;
     this.resetForm();
-    dispatchUiEvent(this, 'auth/setUi', { error: null, success: null });
+    dispatchUiEvent(this, ActionCatalog.AuthSetUi, { error: null, success: null });
   }
 
   private handleLogin(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password) {
-      dispatchUiEvent(this, 'auth/setUi', {
+      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
         error: 'Please enter email and password',
         success: null,
         loading: false,
@@ -246,7 +247,7 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'login';
-    dispatchUiEvent(this, 'auth/loginRequested', {
+    dispatchUiEvent(this, ActionCatalog.AuthLoginRequested, {
       email: this.email,
       password: this.password,
     });
@@ -255,7 +256,7 @@ export class AuthView extends LitElement {
   private handleSignup(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password || !this.confirmPassword) {
-      dispatchUiEvent(this, 'auth/setUi', {
+      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
         error: 'Please fill in all fields',
         success: null,
         loading: false,
@@ -264,7 +265,7 @@ export class AuthView extends LitElement {
     }
 
     if (this.password !== this.confirmPassword) {
-      dispatchUiEvent(this, 'auth/setUi', {
+      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
         error: 'Passwords do not match',
         success: null,
         loading: false,
@@ -273,7 +274,7 @@ export class AuthView extends LitElement {
     }
 
     if (this.password.length < 6) {
-      dispatchUiEvent(this, 'auth/setUi', {
+      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
         error: 'Password must be at least 6 characters',
         success: null,
         loading: false,
@@ -281,7 +282,7 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'signup';
-    dispatchUiEvent(this, 'auth/signupRequested', {
+    dispatchUiEvent(this, ActionCatalog.AuthSignupRequested, {
       email: this.email,
       password: this.password,
     });
@@ -290,7 +291,7 @@ export class AuthView extends LitElement {
   private handlePasswordReset(event: Event) {
     event.preventDefault();
     if (!this.email) {
-      dispatchUiEvent(this, 'auth/setUi', {
+      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
         error: 'Please enter your email address',
         success: null,
         loading: false,
@@ -298,17 +299,17 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'reset-password';
-    dispatchUiEvent(this, 'auth/passwordResetRequested', { email: this.email });
+    dispatchUiEvent(this, ActionCatalog.AuthPasswordResetRequested, { email: this.email });
   }
 
   private handleGoogleLogin() {
     this.pendingAction = 'google';
-    dispatchUiEvent(this, 'auth/googleLoginRequested', {});
+    dispatchUiEvent(this, ActionCatalog.AuthGoogleLoginRequested, {});
   }
 
   private handleLogout() {
     this.pendingAction = 'logout';
-    dispatchUiEvent(this, 'auth/logoutRequested', {});
+    dispatchUiEvent(this, ActionCatalog.AuthLogoutRequested, {});
   }
 
   protected updated() {

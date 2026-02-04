@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import '../../../domains/workspace/components/ToolbarView.js';
 
@@ -75,7 +76,7 @@ export class ToolbarContainer extends LitElement {
             return;
         }
         this.core?.dispatch({
-            action: 'view/updateLocalContext',
+            action: ActionCatalog.ViewUpdateLocalContext,
             payload: { instanceId: this.instanceId, context: { viewIds: nextOrder } },
         });
     }

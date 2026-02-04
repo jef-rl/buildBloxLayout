@@ -1,4 +1,6 @@
-    export type ActionName = string;
+    import type { ActionName } from './action-catalog';
+
+    export type { ActionName } from './action-catalog';
 
     export interface Action<P = any> {
       action: ActionName;

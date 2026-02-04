@@ -1,4 +1,5 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
+import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { sendPasswordReset } from '../../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
@@ -11,7 +12,7 @@ export const authPasswordResetEffect: EffectImpl<{ email?: string }> = (action, 
     .then(() => {
       dispatchActions(dispatch, [
         {
-          action: 'auth/setUi',
+          action: ActionCatalog.AuthSetUi,
           payload: { loading: false, error: null, success: 'Password reset email sent! Check your inbox.' },
         },
       ]);
