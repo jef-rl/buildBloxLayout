@@ -6,7 +6,7 @@ on:
 
 jobs:
   auto-merge:
-    if: contains(github.event.pull_request.labels.*.name, 'codex-auto')
+    if: contains(github.event.pull_request.labels.*.name, 'codex')
     runs-on: ubuntu-latest
 
     permissions:
