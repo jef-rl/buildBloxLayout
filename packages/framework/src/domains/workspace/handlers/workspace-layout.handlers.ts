@@ -92,28 +92,6 @@ export const applyLayoutAction = (
                 overlayView: (payload.viewId as string | null | undefined) ?? null,
             };
         }
-        case ActionCatalog.LayoutSetOverlayExpander: {
-            return {
-                ...layout,
-                overlayExpander: (payload.viewId as string | null | undefined) ?? null,
-            };
-        }
-        case ActionCatalog.LayoutUnsetOverlayExpander: {
-            return {
-                ...layout,
-                overlayExpander: null,
-            };
-        }
-        case ActionCatalog.LayoutResetExpanders: {
-            return {
-                ...layout,
-                expansion: {
-                    expanderLeft: 'Closed',
-                    expanderRight: 'Closed',
-                    expanderBottom: 'Closed',
-                },
-            };
-        }
         case ActionCatalog.LayoutSetViewportWidthMode: {
             const mode = normalizeViewportWidthMode(payload.mode);
             return {

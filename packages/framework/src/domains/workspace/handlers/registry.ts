@@ -284,73 +284,6 @@ const handleSetMainViewOrder: ReducerHandler<FrameworkContextState> = (context, 
   };
 };
 
-const handleTogglePanel: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload;
-  const panelId = (payload.panelId ?? payload.viewId) as string | undefined;
-  if (!panelId) {
-    return { state: context, followUps: toFollowUps(payload) };
-  }
-
-  const nextOpen = !context.state.panelState.open[panelId];
-  return {
-    state: {
-      ...context,
-      state: {
-        ...context.state,
-        panelState: {
-          ...context.state.panelState,
-          open: {
-            ...context.state.panelState.open,
-            [panelId]: nextOpen,
-          },
-        },
-      },
-    },
-    followUps: toFollowUps(payload),
-  };
-};
-
-const handleSetScopeMode: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload;
-  return {
-    state: {
-      ...context,
-      state: {
-        ...context.state,
-        panelState: {
-          ...context.state.panelState,
-          data: {
-            ...context.state.panelState.data,
-            scope: {
-              ...(typeof context.state.panelState.data?.scope === 'object' && !Array.isArray(context.state.panelState.data?.scope) ? context.state.panelState.data.scope : {} as Record<string, unknown>),
-              mode: payload.mode,
-            },
-          },
-        },
-      },
-    },
-    followUps: toFollowUps(payload),
-  };
-};
-
-const handleSessionReset: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload;
-  return {
-    state: {
-      ...context,
-      state: {
-        ...context.state,
-        panelState: {
-          ...context.state.panelState,
-          errors: {},
-          data: {},
-        },
-      },
-    },
-    followUps: toFollowUps(payload),
-  };
-};
-
 const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeAuthState(context.state);
@@ -393,13 +326,6 @@ const handleAuthSetUser: ReducerHandler<FrameworkContextState> = (context, actio
     },
     followUps,
   };
-};
-
-const handleAuthLogout: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload;
-  const followUps = toFollowUps(payload);
-  followUps.push({ type: ActionCatalog.EffectsAuthLogout, payload: {} });
-  return { state: context, followUps };
 };
 
 const handleAuthSetUi: ReducerHandler<FrameworkContextState> = (context, action) => {
@@ -868,9 +794,6 @@ export const registerWorkspaceHandlers = (
     ActionCatalog.LayoutSetExpansion,
     ActionCatalog.LayoutSetOverlayView,
     ActionCatalog.LayoutSetViewportWidthMode,
-    ActionCatalog.LayoutSetOverlayExpander,
-    ActionCatalog.LayoutUnsetOverlayExpander,
-    ActionCatalog.LayoutResetExpanders,
   ].forEach((type) => registerHandler(registry, type, handleLayoutAction));
   registerHandler(registry, ActionCatalog.LayoutSetMainAreaCount, handleMainAreaCount);
   registerHandler(registry, ActionCatalog.LayoutToggleInDesign, handleToggleInDesign);
@@ -881,11 +804,7 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, ActionCatalog.PanelsRemoveView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsRemoveView]));
   
   registerHandler(registry, ActionCatalog.PanelsSetMainViewOrder, handleSetMainViewOrder);
-  registerHandler(registry, ActionCatalog.PanelsTogglePanel, handleTogglePanel);
-  registerHandler(registry, ActionCatalog.PanelsSetScopeMode, handleSetScopeMode);
-  registerHandler(registry, ActionCatalog.SessionReset, handleSessionReset);
   registerHandler(registry, ActionCatalog.AuthSetUser, handleAuthSetUser);
-  registerHandler(registry, ActionCatalog.AuthLogout, handleAuthLogout);
   registerHandler(registry, ActionCatalog.AuthSetUi, handleAuthSetUi);
 
   // Register Drag Handlers

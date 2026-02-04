@@ -141,7 +141,4 @@ export const registerAuthEffects = (
       });
   });
 
-  registry.register(ActionCatalog.EffectsAuthLogout, (_context, _action, dispatch) => {
-    dispatch([{ type: ActionCatalog.AuthLogoutRequested, payload: {} }]);
-  });
 };

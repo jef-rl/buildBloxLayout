@@ -1,33 +1,6 @@
-import { viewRegistry } from '../../../nxt/runtime/registries/views/view-registry-legacy-api';
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import type { FrameworkContextState } from '../../workspace/handlers/registry';
-import type { ViewInstance } from '../../panels/types';
 import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
-
-export const createInstance: ReducerHandler<FrameworkContextState> = (context, action) => {
-    const { definitionId, overrides } = action.payload as { definitionId: string, overrides?: Partial<ViewInstance> };
-    const instance = viewRegistry.createInstance(definitionId, overrides);
-
-    if (!instance) {
-        return { state: context, followUps: [] };
-    }
-
-    const nextInstances = {
-        ...(context.state.viewInstances || {}),
-        [instance.instanceId]: instance
-    };
-
-    return {
-        state: {
-            ...context,
-            state: {
-                ...context.state,
-                viewInstances: nextInstances
-            }
-        },
-        followUps: []
-    };
-};
 
 export const updateLocalContext: ReducerHandler<FrameworkContextState> = (context, action) => {
     const { instanceId, context: newContext } = action.payload as { instanceId: string, context: Record<string, any> };
@@ -60,24 +33,6 @@ export const updateLocalContext: ReducerHandler<FrameworkContextState> = (contex
     };
 };
 
-export const destroyInstance: ReducerHandler<FrameworkContextState> = (context, action) => {
-    const { instanceId } = action.payload as { instanceId: string };
-    const { [instanceId]: _, ...remainingInstances } = context.state.viewInstances || {};
-
-    return {
-        state: {
-            ...context,
-            state: {
-                ...context.state,
-                viewInstances: remainingInstances
-            }
-        },
-        followUps: []
-    };
-};
-
 export const viewInstanceHandlers = {
-    [ActionCatalog.ViewCreateInstance]: createInstance,
     [ActionCatalog.ViewUpdateLocalContext]: updateLocalContext,
-    [ActionCatalog.ViewDestroyInstance]: destroyInstance
 };

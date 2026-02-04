@@ -1,4 +1,3 @@
-import { applyContextUpdate } from '../../state/context-update';
 import { getFrameworkLogger } from '../../utils/logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 import type { Action } from '../../nxt/runtime/actions/action';
@@ -92,20 +91,6 @@ const logAction = (actionType: string, namespace: string | null, changes: unknow
   });
 };
 
-const normalizeNamespace = (path?: string | string[]) => {
-  if (Array.isArray(path)) {
-    return typeof path[0] === 'string' ? path[0] : null;
-  }
-  if (typeof path === 'string') {
-    const [namespace] = path.split('.');
-    return namespace ?? null;
-  }
-  return null;
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
 const toFollowUps = (actions: unknown): HandlerAction[] => {
   if (!Array.isArray(actions)) {
     return [];
@@ -132,68 +117,6 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
       } : state.layout,
     };
     logAction(action.type, 'state', patch);
-    return { state: nextState, followUps: toFollowUps(payload.followUps) };
-  },
-  'context/update': (state, action) => {
-    const payload = action.payload ?? {};
-    const path = payload.path as string | string[] | undefined;
-    const value = payload.value;
-    const nextState = applyContextUpdate(state, { path: path ?? '', value });
-    logAction(action.type, normalizeNamespace(path), { path, value });
-    return { state: nextState, followUps: toFollowUps(payload.followUps) };
-  },
-  'context/patch': (state, action) => {
-    const payload = action.payload ?? {};
-    const namespace = (payload.namespace as string | undefined) ?? null;
-    const patch = (payload.changes ?? payload.patch ?? payload.value) as unknown;
-    if (!namespace) {
-      logAction(action.type, null, patch);
-      return { state, followUps: toFollowUps(payload.followUps) };
-    }
-    const currentValue = (state as Record<string, unknown>)[namespace];
-    const nextValue =
-      isRecord(currentValue) && isRecord(patch) ? { ...currentValue, ...patch } : patch;
-    const nextState = {
-      ...state,
-      [namespace]: nextValue,
-    };
-    logAction(action.type, namespace, patch);
-    return { state: nextState, followUps: toFollowUps(payload.followUps) };
-  },
-  'layout/update': (state, action) => {
-    const payload = action.payload ?? {};
-    const changes = (payload.changes ?? payload.layout ?? payload.value) as unknown;
-    if (!isRecord(changes)) {
-      logAction(action.type, 'layout', changes);
-      return { state, followUps: toFollowUps(payload.followUps) };
-    }
-    const nextState = {
-      ...state,
-      layout: {
-        ...state.layout,
-        ...changes,
-      },
-    };
-    logAction(action.type, 'layout', changes);
-    return { state: nextState, followUps: toFollowUps(payload.followUps) };
-  },
-  'panels/update': (state, action) => {
-    const payload = action.payload ?? {};
-    const panels = payload.panels as UIState['panels'] | undefined;
-    const panelId = payload.panelId as string | undefined;
-    const changes = (payload.changes ?? payload.panel ?? payload.value) as unknown;
-    let nextPanels = state.panels;
-
-    if (Array.isArray(panels)) {
-      nextPanels = panels;
-    } else if (panelId && isRecord(changes)) {
-      nextPanels = state.panels.map((panel) =>
-        panel.id === panelId ? { ...panel, ...changes } : panel,
-      );
-    }
-
-    const nextState = nextPanels === state.panels ? state : { ...state, panels: nextPanels };
-    logAction(action.type, 'panels', panels ?? { panelId, changes });
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
   'logs/append': (state, action) => {
@@ -233,26 +156,6 @@ export const coreHandlers: Record<string, ReducerHandler<UIState>> = {
       },
     };
     logAction(action.type, 'logs', { cleared: currentLogs.entries.length });
-    return { state: nextState, followUps: toFollowUps(payload.followUps) };
-  },
-  'logs/setMax': (state, action) => {
-    const payload = (action.payload ?? {}) as Record<string, unknown>;
-    const currentLogs = normalizeLogState(state);
-    const nextMax = Number.isFinite(Number(payload.maxEntries))
-      ? Math.max(1, Math.floor(Number(payload.maxEntries)))
-      : currentLogs.maxEntries;
-    const trimmedEntries =
-      currentLogs.entries.length > nextMax
-        ? currentLogs.entries.slice(currentLogs.entries.length - nextMax)
-        : currentLogs.entries;
-    const nextState = {
-      ...state,
-      logs: {
-        entries: trimmedEntries,
-        maxEntries: nextMax,
-      },
-    };
-    logAction(action.type, 'logs', { maxEntries: nextMax });
     return { state: nextState, followUps: toFollowUps(payload.followUps) };
   },
 };

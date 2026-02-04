@@ -5,7 +5,6 @@ import { ActionCatalog } from '../runtime/actions/action-catalog';
 import { authGoogleLoginEffect, authGoogleLoginImplKey } from './auth/google-login.effect';
 import { authLoginEffect, authLoginImplKey } from './auth/login.effect';
 import { authLogoutEffect, authLogoutImplKey } from './auth/logout.effect';
-import { authLogoutTriggerEffect, authLogoutTriggerImplKey } from './auth/logout-trigger.effect';
 import { authPasswordResetEffect, authPasswordResetImplKey } from './auth/password-reset.effect';
 import { authSignupEffect, authSignupImplKey } from './auth/signup.effect';
 import { frameworkMenuHydrateEffect, frameworkMenuHydrateImplKey } from './framework-menu/hydrate.effect';
@@ -45,12 +44,6 @@ export const frameworkEffectDefs: EffectDefDto[] = [
     forAction: ActionCatalog.AuthLogoutRequested,
     implKey: authLogoutImplKey,
     description: 'Handle logout and UI cleanup.',
-  },
-  {
-    id: 'effect:auth/logout-trigger',
-    forAction: ActionCatalog.EffectsAuthLogout,
-    implKey: authLogoutTriggerImplKey,
-    description: 'Trigger logout request action.',
   },
   {
     id: 'effect:presets/save',
@@ -96,7 +89,6 @@ export const registerFrameworkEffectImpls = (impls: EffectImplRegistry): void =>
   impls.register(authGoogleLoginImplKey, authGoogleLoginEffect);
   impls.register(authPasswordResetImplKey, authPasswordResetEffect);
   impls.register(authLogoutImplKey, authLogoutEffect);
-  impls.register(authLogoutTriggerImplKey, authLogoutTriggerEffect);
   impls.register(presetsSaveImplKey, presetsSaveEffect);
   impls.register(presetsDeleteImplKey, presetsDeleteEffect);
   impls.register(presetsRenameImplKey, presetsRenameEffect);
