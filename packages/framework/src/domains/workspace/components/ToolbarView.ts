@@ -1,29 +1,19 @@
-import { LitElement, html, css, nothing } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
-import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import type { View, ViewInstance } from '../../../types/index';
-import { viewRegistry } from '../../../core/registry/view-registry';
+import { consume } from '@lit/context';
+import type { ViewInstanceDto } from '../../../nxt/definitions/dto/view-instance.dto';
+import type { CoreContext } from '../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../nxt/runtime/context/core-context-key';
+import type { UIState } from '../../../types/state';
+import '../../../nxt/views/host/view-host.js';
 
 export class ToolbarView extends LitElement {
     @property({ type: String }) panelId: string | null = null;
     @property({ type: String }) viewId: string | null = null;
     @property({ type: String }) viewInstanceId: string | null = null;
-    private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
-    private registryUnsubscribe: (() => void) | null = null;
 
-    private _consumer = new ContextConsumer(this, {
-        context: uiStateContext,
-        subscribe: true,
-        callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
-            this.updateElementData();
-            this.requestUpdate();
-        },
-    });
+    @consume({ context: coreContext, subscribe: true })
+    core?: CoreContext<UIState>;
 
     static styles = css`
         :host {
@@ -58,157 +48,41 @@ export class ToolbarView extends LitElement {
         }
     `;
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
-            if (this.viewId) {
-                void this.loadView();
-            }
-        });
-    }
-
-    disconnectedCallback() {
-        if (this.registryUnsubscribe) {
-            this.registryUnsubscribe();
-            this.registryUnsubscribe = null;
-        }
-        super.disconnectedCallback();
-    }
-
-    updated(changedProps: Map<string, unknown>) {
-        if (changedProps.has('viewId') || changedProps.has('viewInstanceId')) {
-            void this.loadView();
-        }
-    }
-
-    private resolveViewData(): { definitionId: string | null; instance: ViewInstance | null } {
-        if (!this.uiState || !this.viewId) {
-            return { definitionId: null, instance: null };
+    private buildInstance(viewId: string | null): ViewInstanceDto | null {
+        if (!viewId) {
+            return null;
         }
 
-        const instance = this.uiState.viewInstances?.[this.viewId];
+        const state = this.core?.getState();
+        const instance = state?.viewInstances?.[viewId];
         if (instance) {
-            return { definitionId: instance.definitionId, instance };
+            return {
+                instanceId: instance.instanceId,
+                viewId: instance.definitionId,
+                settings: instance.localContext,
+            };
         }
 
-        const legacyView = this.uiState.views?.find(v => v.id === this.viewId);
+        const legacyView = state?.views?.find((view) => view.id === viewId);
         if (legacyView) {
-             return { 
-                 definitionId: legacyView.component, 
-                 instance: {
-                     instanceId: legacyView.id,
-                     definitionId: legacyView.component,
-                     title: legacyView.name,
-                     localContext: (legacyView.data as Record<string, any>) || {}
-                 }
-             };
+            return {
+                instanceId: legacyView.id,
+                viewId: legacyView.component,
+                settings: (legacyView.data as Record<string, unknown>) ?? {},
+            };
         }
 
-        const def = viewRegistry.get(this.viewId);
-        if (def) {
-            return { definitionId: this.viewId, instance: null };
-        }
-
-        return { definitionId: null, instance: null };
-    }
-
-    private async loadView() {
-        const container = this.shadowRoot?.querySelector('.view-container');
-        if (!container) return;
-
-        const { definitionId, instance } = this.resolveViewData();
-        const definition = definitionId ? viewRegistry.get(definitionId) : null;
-        
-        const cacheKey = instance?.instanceId ?? this.viewId;
-
-        const cachedElement = cacheKey ? viewRegistry.getElement(cacheKey) : undefined;
-        if (cachedElement && definition && cachedElement.tagName.toLowerCase() === definition.tag) {
-            this.applyViewData(cachedElement, instance);
-            if (container.firstElementChild !== cachedElement) {
-                container.innerHTML = '';
-                container.appendChild(cachedElement);
-            }
-            return;
-        }
-        
-        const currentElement = container.firstElementChild as HTMLElement | null;
-        if (currentElement && definition && currentElement.tagName.toLowerCase() === definition.tag) {
-            this.applyViewData(currentElement, instance);
-            return;
-        }
-        
-        container.innerHTML = '';
-        if (!definition?.tag) {
-            return;
-        }
-
-        await viewRegistry.getComponent(definition.id);
-        const element = document.createElement(definition.tag);
-        if (cacheKey) {
-            viewRegistry.setElement(cacheKey, element);
-        }
-        this.applyViewData(element, instance);
-        container.appendChild(element);
-    }
-
-    private applyViewData(element: HTMLElement, instance: ViewInstance | null) {
-        if (instance) {
-            (element as any).instanceId = instance.instanceId;
-            (element as any).context = instance.localContext;
-            (element as any).data = instance.localContext;
-            
-            const ctx = instance.localContext || {};
-            if (typeof ctx.label === 'string') {
-                (element as { label?: string }).label = ctx.label;
-            }
-            if (typeof ctx.color === 'string') {
-                (element as { color?: string }).color = ctx.color;
-            }
-        }
-    }
-
-    private updateElementData() {
-        const container = this.shadowRoot?.querySelector('.view-container');
-        const element = container?.firstElementChild as HTMLElement | null;
-        if (element) {
-            const { instance } = this.resolveViewData();
-            this.applyViewData(element, instance);
-        }
-    }
-
-    private renderFallback() {
-        let message = '';
-        if (!this.viewId) {
-            message = 'No view selected.';
-        } else {
-            const { definitionId } = this.resolveViewData();
-            if (!definitionId) {
-                // message = `View "${this.viewId}" cannot be resolved.`;
-            } else {
-                const definition = viewRegistry.get(definitionId);
-                if (!definition) {
-                     // message = `View definition "${definitionId}" is not registered.`;
-                } else if (!definition.tag) {
-                     message = `View definition "${definitionId}" is missing a tag.`;
-                }
-            }
-        }
-
-        if (message) {
-            return html`
-                <div class="fallback">
-                    <slot>${message}</slot>
-                </div>
-            `;
-        }
-        return nothing;
+        return { instanceId: viewId, viewId };
     }
 
     render() {
+        const instance = this.buildInstance(this.viewId);
+        const instances = instance ? [instance] : [];
         return html`
             <div class="view-wrapper">
-                <div class="view-container"></div>
-                ${this.renderFallback()}
+                <div class="view-container">
+                    <view-host .instances=${instances}></view-host>
+                </div>
             </div>
         `;
     }
