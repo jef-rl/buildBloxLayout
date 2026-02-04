@@ -10,7 +10,6 @@ import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
 import '../../../domains/workspace/components/OverlayLayer.js';
 import '../host/view-host.js';
-import { viewRegistry } from '../../../core/registry/view-registry.js';
 import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -203,8 +202,6 @@ export class WorkspaceRoot extends LitElement {
 
     private core: CoreContext<UIState> | null = null;
     private unsubscribe: (() => void) | null = null;
-    private registryUnsubscribe: (() => void) | null = null;
-
     private coreConsumer = new ContextConsumer(this, {
         context: coreContext,
         subscribe: true,
@@ -213,22 +210,10 @@ export class WorkspaceRoot extends LitElement {
         },
     });
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.registryUnsubscribe = viewRegistry.onRegistryChange(() => {
-            this.requestUpdate();
-        });
-        this.requestUpdate();
-    }
-
     disconnectedCallback() {
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
-        }
-        if (this.registryUnsubscribe) {
-            this.registryUnsubscribe();
-            this.registryUnsubscribe = null;
         }
         super.disconnectedCallback();
     }
