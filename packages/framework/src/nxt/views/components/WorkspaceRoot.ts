@@ -5,16 +5,18 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog, type ActionName } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
-import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import { DockManager } from '../../../domains/dock/components/DockManager.js';
 import '../../../domains/layout/components/FrameworkMenu.js';
 import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
 import './OverlayLayer.js';
 import '../host/view-host.js';
-import { isExpanderPanelOpen } from '../../../utils/expansion-helpers.js';
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
+import {
+    viewInstanceResolverSelectorKey,
+} from '../../selectors/view-instances/resolve-view-instance.selector';
+import type { WorkspaceLayoutDerived } from '../../selectors/workspace/workspace-layout.selector';
+import { workspaceLayoutSelectorKey } from '../../selectors/workspace/workspace-layout.selector';
 
 export class WorkspaceRoot extends LitElement {
     static styles = css`
@@ -238,10 +240,6 @@ export class WorkspaceRoot extends LitElement {
         this.core?.dispatch({ action, payload });
     }
 
-    private resolveViewId(view: any): string | null {
-        return view?.component ?? view?.viewType ?? view?.id ?? null;
-    }
-
     private handleDragOver(e: DragEvent) {
         e.preventDefault();
         e.stopPropagation();
@@ -266,41 +264,17 @@ export class WorkspaceRoot extends LitElement {
         }
     }
 
-    private buildViewInstance(state: UIState | null | undefined, viewId: string | null | undefined): ViewInstanceDto | null {
-        if (!state || !viewId) {
-            return null;
-        }
-        const instance = state.viewInstances?.[viewId];
-        if (instance) {
-            return {
-                instanceId: instance.instanceId,
-                viewId: instance.definitionId,
-                settings: instance.localContext,
-            };
-        }
-
-        const legacyView = state.views?.find((view) => view.id === viewId);
-        if (legacyView) {
-            return {
-                instanceId: legacyView.id,
-                viewId: legacyView.component,
-                settings: (legacyView.data as Record<string, unknown>) ?? {},
-            };
-        }
-
-        return { instanceId: viewId, viewId };
-    }
-
     private renderSidePanelStack(
-        state: UIState | null,
         region: 'left' | 'right' | 'bottom',
         viewOrder: string[],
         panelId: string,
+        resolveViewInstance: ViewInstanceResolver | null,
+        showDropZones: boolean,
     ) {
-        const inDesign = state?.layout?.inDesign;
-        const isAdmin = state?.auth?.isAdmin;
-        const showDropZones = inDesign && isAdmin;
         const isEmpty = viewOrder.length === 0;
+        if (!resolveViewInstance) {
+            return nothing;
+        }
 
         return html`
             <div class="side-panel-stack">
@@ -315,7 +289,7 @@ export class WorkspaceRoot extends LitElement {
                 ` : nothing}
                 
                 ${viewOrder.map((viewId) => {
-                    const instance = this.buildViewInstance(state, viewId);
+                    const instance = resolveViewInstance(viewId);
                     return instance
                         ? html`
                             <div class="stack-item">
@@ -375,48 +349,33 @@ export class WorkspaceRoot extends LitElement {
 
     render() {
         const state = this.core?.getState();
+        const workspaceLayout = this.core?.select<WorkspaceLayoutDerived>(workspaceLayoutSelectorKey);
+        const resolveViewInstance = this.core?.select<ViewInstanceResolver>(viewInstanceResolverSelectorKey) ?? null;
         if (!state) {
             return html``;
         }
-        const layout = state.layout ?? {};
-        const expansion = layout.expansion ?? {
-            expanderLeft: 'Closed',
-            expanderRight: 'Closed',
-            expanderBottom: 'Closed'
-        };
-        const panels = state.panels ?? [];
+        if (!workspaceLayout) {
+            return html``;
+        }
 
-        const viewportMode = layout.viewportWidthMode ?? '1x';
-        const viewportCount = Number.parseInt(viewportMode, 10);
-        const viewportWidthMap: Record<string, string> = {
-            '1x': '100%',
-            '2x': '50%',
-            '3x': '33.333%',
-            '4x': '25%',
-            '5x': '20%',
-        };
-
-        const leftOpen = isExpanderPanelOpen(expansion.expanderLeft);
-        const rightOpen = isExpanderPanelOpen(expansion.expanderRight);
-        const bottomOpen = isExpanderPanelOpen(expansion.expanderBottom);
-
-        const leftWidth = leftOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
-        const rightWidth = rightOpen ? 'clamp(220px, 22vw, 360px)' : '0px';
-        const bottomHeight = bottomOpen ? 'clamp(180px, 26vh, 320px)' : '0px';
-
-        const mainPanels = panels.filter((panel) => panel.region === 'main');
-        const totalMainPanels = mainPanels.length;
-        const mainPanelWidth = viewportWidthMap[viewportMode] ?? `${100 / clamp(Number.isFinite(viewportCount) ? viewportCount : (totalMainPanels || 1), 1, 5)}%`;
-        const leftPanel = panels.find((panel) => panel.region === 'left');
-        const rightPanel = panels.find((panel) => panel.region === 'right');
-        const bottomPanel = panels.find((panel) => panel.region === 'bottom');
-        const mainPanelsToRender = mainPanels;
-        const getPanelViewId = (panel: { activeViewId?: string; viewId?: string; view?: unknown } | null) =>
-            panel?.activeViewId ?? panel?.viewId ?? this.resolveViewId(panel?.view);
-
-        const leftViewOrder = layout.leftViewOrder || (leftPanel?.viewId ? [leftPanel.viewId] : []);
-        const rightViewOrder = layout.rightViewOrder || (rightPanel?.viewId ? [rightPanel.viewId] : []);
-        const bottomViewOrder = layout.bottomViewOrder || (bottomPanel?.viewId ? [bottomPanel.viewId] : []);
+        const {
+            expansion,
+            leftOpen,
+            rightOpen,
+            bottomOpen,
+            leftWidth,
+            rightWidth,
+            bottomHeight,
+            mainPanelEntries,
+            mainPanelWidth,
+            leftPanel,
+            rightPanel,
+            bottomPanel,
+            leftViewOrder,
+            rightViewOrder,
+            bottomViewOrder,
+            showDropZones,
+        } = workspaceLayout;
 
         return html`
             <div class="workspace">
@@ -426,25 +385,24 @@ export class WorkspaceRoot extends LitElement {
                         --left-width: ${leftWidth};
                         --right-width: ${rightWidth};
                         --bottom-height: ${bottomHeight};
-                        --main-panel-count: ${Math.max(mainPanelsToRender.length, 1)};
+                        --main-panel-count: ${Math.max(mainPanelEntries.length, 1)};
                         --main-panel-width: ${mainPanelWidth};
                     "
                 >
                     <div class="expander expander-left ${leftOpen ? '' : 'collapsed'}">
                             ${this.renderSash(expansion, 'left')}
             
-                        ${leftPanel ? this.renderSidePanelStack(state, 'left', leftViewOrder, leftPanel.id) : nothing}
+                        ${leftPanel ? this.renderSidePanelStack('left', leftViewOrder, leftPanel.id, resolveViewInstance, showDropZones) : nothing}
                     </div>
 
                     <div class="main-area">
-                        ${mainPanelsToRender.map((panel) => html`
+                        ${mainPanelEntries.map(({ panel, viewId }) => html`
                             <div
                                 class="main-panel"
                                 @click=${() => panel && this.dispatch(ActionCatalog.PanelsSelectPanel, { panelId: panel.id })}
                             >
                                 ${(() => {
-                                    const viewId = getPanelViewId(panel);
-                                    const instance = this.buildViewInstance(state, viewId);
+                                    const instance = resolveViewInstance ? resolveViewInstance(viewId) : null;
                                     const instances = instance ? [instance] : [];
                                     return html`<view-host .instances=${instances}></view-host>`;
                                 })()}
@@ -454,12 +412,12 @@ export class WorkspaceRoot extends LitElement {
 
                     <div class="expander expander-right ${rightOpen ? '' : 'collapsed'}">
                     ${this.renderSash(expansion, 'right')}
-                        ${rightPanel ? this.renderSidePanelStack(state, 'right', rightViewOrder, rightPanel.id) : nothing}
+                        ${rightPanel ? this.renderSidePanelStack('right', rightViewOrder, rightPanel.id, resolveViewInstance, showDropZones) : nothing}
                     </div>
 
                     <div class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}">
                     ${this.renderSash(expansion, 'bottom')}
-                    ${bottomPanel ? this.renderSidePanelStack(state, 'bottom', bottomViewOrder, bottomPanel.id) : nothing}
+                    ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id, resolveViewInstance, showDropZones) : nothing}
                     </div>
 
                 </div>
