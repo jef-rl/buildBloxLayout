@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { ViewInstanceDto } from '../../../nxt/definitions/dto/view-instance.dto';
@@ -6,6 +6,7 @@ import type { CoreContext } from '../../../nxt/runtime/context/core-context';
 import { coreContext } from '../../../nxt/runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
 import '../../../nxt/views/host/view-host.js';
+import { toolbarViewStyles } from './ToolbarView.styles';
 
 export class ToolbarView extends LitElement {
     @property({ type: String }) panelId: string | null = null;
@@ -15,38 +16,7 @@ export class ToolbarView extends LitElement {
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
 
-    static styles = css`
-        :host {
-            display: block;
-            height: 100%;
-            width: 100%;
-            position: relative;
-        }
-
-        .view-wrapper {
-            position: relative;
-            height: 100%;
-            width: 100%;
-        }
-
-        .view-container {
-            height: 100%;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .fallback {
-            display: grid;
-            place-items: center;
-            height: 100%;
-            color: #9ca3af;
-            font-size: 0.9rem;
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-        }
-    `;
+    static styles = [toolbarViewStyles];
 
     private buildInstance(viewId: string | null): ViewInstanceDto | null {
         if (!viewId) {

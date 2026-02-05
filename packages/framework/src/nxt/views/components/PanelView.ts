@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
@@ -8,15 +8,10 @@ import type { UIState } from '../../../types/state';
 import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
 import { viewInstanceResolverSelectorKey } from '../../selectors/view-instances/resolve-view-instance.selector';
 import '../host/view-host.js';
+import { panelViewStyles } from './PanelView.styles';
 
 export class PanelView extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-            height: 100%;
-            width: 100%;
-        }
-    `;
+    static styles = [panelViewStyles];
 
     @property({ attribute: false }) instance?: ViewInstanceDto;
     @property({ type: String }) viewId: string | null = null;
