@@ -298,7 +298,9 @@ export class WorkspaceRoot extends LitElement {
                                     <div class="panel-content" ?inert=${isDesignActive}>
                                         <view-host .instances=${[instance]}></view-host>
                                     </div>
-                                    <panel-overlay class="panel-overlay" .panelId=${panelId}></panel-overlay>
+                                    ${isDesignActive
+                                        ? html`<panel-overlay class="panel-overlay" .panelId=${panelId}></panel-overlay>`
+                                        : nothing}
                                 </div>
                             </div>
                         `
@@ -411,7 +413,9 @@ export class WorkspaceRoot extends LitElement {
                                             <div class="panel-content" ?inert=${isDesignActive}>
                                                 <view-host .panelId=${panel.id}></view-host>
                                             </div>
-                                            <panel-overlay class="panel-overlay" .panelId=${panel.id}></panel-overlay>
+                                            ${isDesignActive
+                                                ? html`<panel-overlay class="panel-overlay" .panelId=${panel.id}></panel-overlay>`
+                                                : nothing}
                                         </div>
                                     `
                                     : nothing}
