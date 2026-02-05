@@ -28,7 +28,8 @@ export class PanelOverlay extends LitElement {
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
-            border: 1px dashed rgba(148, 163, 184, 0.35);
+            border: 1px solid  #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
             background: rgba(148, 163, 184, 0.35);
             opacity: 0;
             transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
@@ -49,7 +50,7 @@ export class PanelOverlay extends LitElement {
             right: 8px;
             border: none;
             border-radius: 999px;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgb(50, 10, 10, 0.9);
             color: #e2e8f0;
             width: 26px;
             height: 26px;
@@ -63,7 +64,7 @@ export class PanelOverlay extends LitElement {
         }
 
         .remove-button:hover {
-            background: rgba(239, 68, 68, 0.9);
+            background: rgb(50, 10, 10);
         }
     `;
 
