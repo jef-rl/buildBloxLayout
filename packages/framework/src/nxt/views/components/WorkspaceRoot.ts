@@ -10,6 +10,7 @@ import '../../../domains/layout/components/FrameworkMenu.js';
 import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
 import './OverlayLayer.js';
+import './PanelOverlay.js';
 import '../host/view-host.js';
 import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
 import {
@@ -97,6 +98,7 @@ export class WorkspaceRoot extends LitElement {
             min-height: 0;
             min-width: 0;
             border-left: 1px solid #1f2937;
+            position: relative;
         }
 
         .main-panel:first-child {
@@ -363,16 +365,17 @@ export class WorkspaceRoot extends LitElement {
                     </div>
 
                     <div class="main-area">
-                        ${mainPanelEntries.map(({ panel, viewId }) => html`
+                        ${mainPanelEntries.map(({ panel }) => html`
                             <div
                                 class="main-panel"
                                 @click=${() => panel && this.dispatch(ActionCatalog.PanelsSelectPanel, { panelId: panel.id })}
                             >
-                                ${(() => {
-                                    const instance = resolveViewInstance ? resolveViewInstance(viewId) : null;
-                                    const instances = instance ? [instance] : [];
-                                    return html`<view-host .instances=${instances}></view-host>`;
-                                })()}
+                                ${panel
+                                    ? html`
+                                        <view-host .panelId=${panel.id}></view-host>
+                                        <panel-overlay .panelId=${panel.id}></panel-overlay>
+                                    `
+                                    : nothing}
                             </div>
                         `)}
                     </div>
