@@ -7,15 +7,6 @@ import { coreContext } from '../../runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
 
 export class ViewHost extends LitElement {
-    private static readonly elementCache = new Map<string, HTMLElement>();
-
-    static getElement(instanceId: string): HTMLElement | undefined {
-        return ViewHost.elementCache.get(instanceId);
-    }
-
-    static setElement(instanceId: string, element: HTMLElement): void {
-        ViewHost.elementCache.set(instanceId, element);
-    }
     static styles = css`
         :host {
             display: block;

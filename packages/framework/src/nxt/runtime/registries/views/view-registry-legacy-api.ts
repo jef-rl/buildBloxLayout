@@ -1,6 +1,5 @@
 import type { View, ViewDefinition, ViewInstance } from '../../../../types/index';
 import type { ViewDefDto } from '../../../definitions/dto/view-def.dto';
-import { ViewHost } from '../../../views/host/view-host';
 import { CoreRegistries } from '../core-registries';
 import { logError, logInfo, logWarn } from '../../engine/logging/framework-logger';
 
@@ -167,14 +166,6 @@ class ViewRegistryLegacyApiImpl extends EventTarget {
         });
     }
 
-    getElement(instanceId: string): HTMLElement | undefined {
-        return ViewHost.getElement(instanceId);
-    }
-
-    setElement(instanceId: string, element: HTMLElement): void {
-        ViewHost.setElement(instanceId, element);
-    }
-
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void {
         const handler = listener as EventListener;
         this.addEventListener('registry-change', handler);
@@ -196,8 +187,6 @@ export interface ViewRegistryApi {
     createView(viewId: string, data?: unknown, instanceId?: string): View | undefined;
     createInstance(definitionId: string, overrides?: Partial<ViewInstance>): ViewInstance | undefined;
     getAllViews(): ViewDefinition[];
-    getElement(instanceId: string): HTMLElement | undefined;
-    setElement(instanceId: string, element: HTMLElement): void;
     onRegistryChange(listener: (event: CustomEvent<ViewRegistryChangeDetail>) => void): () => void;
 }
 
