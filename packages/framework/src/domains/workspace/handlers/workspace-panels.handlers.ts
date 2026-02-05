@@ -254,10 +254,14 @@ const assignViewToPanel = (
         nextPanels = nextPanels.filter(p => p.id !== panelIdToRemove);
     }
 
-    // Sync legacy views array
-    const viewInstanceObject = nextPanel.view!;
-    const otherViews = state.views.filter((v) => v.id !== instanceId);
-    const nextViews = [...otherViews, viewInstanceObject];
+    // Sync legacy views array and ensure each panel.view has a matching entry.
+    const activePanelViews = nextPanels
+        .map((nextPanelState) => nextPanelState.view)
+        .filter((panelView): panelView is View => Boolean(panelView));
+    const inactiveViews = state.views.filter(
+        (existingView) => !activePanelViews.some((panelView) => panelView.id === existingView.id),
+    );
+    const nextViews = uniqueViews([...activePanelViews, ...inactiveViews]);
 
     // NEW: Update region view order for side panels
     let nextLayout: LayoutState = {
@@ -322,7 +326,7 @@ const assignViewToPanel = (
     return {
         ...state,
         panels: nextPanels,
-        views: uniqueViews(nextViews),
+        views: nextViews,
         viewInstances: nextViewInstances,
         activeView: instanceId,
         layout: nextLayout,
