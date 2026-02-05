@@ -1,4 +1,4 @@
-import type { UIState, LayoutPreset, LayoutPresets, FrameworkMenuConfig, LayoutExpansion } from '../../../types/state';
+import type { UIState, LayoutPreset, LayoutPresets, MenuConfig, LayoutExpansion } from '../../../types/state';
 import type { HandlerAction } from '../../../core/registry/HandlerAction.type';
 import type { HandlerRegistry } from '../../../core/registry/HandlerRegistry.type';
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
@@ -6,7 +6,7 @@ import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layo
 import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
 import { dragHandlers } from '../../layout/handlers/drag.handlers';
 import { viewInstanceHandlers } from '../../layout/handlers/view-instances';
-import { frameworkMenuPersistence } from '../../../utils/framework-menu-persistence';
+import { menuPersistence } from '../../../utils/menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
 import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
@@ -695,7 +695,7 @@ const handlePresetHydrate: ReducerHandler<FrameworkContextState> = (context, act
 
 // === FRAMEWORK MENU HANDLERS ===
 
-const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (context, action) => {
+const handleMenuReorderItems: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload & { draggedId?: string; targetId?: string };
   const normalizedState = normalizeLayoutState(context.state);
   const { draggedId, targetId } = payload;
@@ -704,13 +704,13 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
     return { state: context, followUps: toFollowUps(payload) };
   }
 
-  const currentConfig = normalizedState.layout.frameworkMenu ?? frameworkMenuPersistence.getDefaultConfig();
-  const newItems = frameworkMenuPersistence.reorderItems(currentConfig.items, draggedId, targetId);
-  const newConfig: FrameworkMenuConfig = { ...currentConfig, items: newItems };
+  const currentConfig = normalizedState.layout.menu ?? menuPersistence.getDefaultConfig();
+  const newItems = menuPersistence.reorderItems(currentConfig.items, draggedId, targetId);
+  const newConfig: MenuConfig = { ...currentConfig, items: newItems };
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: ActionCatalog.EffectsFrameworkMenuSave,
+    type: ActionCatalog.EffectsMenuSave,
     payload: { config: newConfig },
   });
 
@@ -721,7 +721,7 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          frameworkMenu: newConfig,
+          menu: newConfig,
         },
       },
     },
@@ -729,8 +729,8 @@ const handleFrameworkMenuReorderItems: ReducerHandler<FrameworkContextState> = (
   };
 };
 
-const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (context, action) => {
-  const payload = (action.payload ?? {}) as StateActionPayload & { config?: FrameworkMenuConfig };
+const handleMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (context, action) => {
+  const payload = (action.payload ?? {}) as StateActionPayload & { config?: MenuConfig };
   const normalizedState = normalizeLayoutState(context.state);
   const { config } = payload;
 
@@ -740,7 +740,7 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
 
   const followUps = toFollowUps(payload);
   followUps.push({
-    type: ActionCatalog.EffectsFrameworkMenuSave,
+    type: ActionCatalog.EffectsMenuSave,
     payload: { config },
   });
 
@@ -751,7 +751,7 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          frameworkMenu: config,
+          menu: config,
         },
       },
     },
@@ -759,12 +759,12 @@ const handleFrameworkMenuUpdateConfig: ReducerHandler<FrameworkContextState> = (
   };
 };
 
-const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
+const handleMenuHydrate: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const normalizedState = normalizeLayoutState(context.state);
 
-  const providedConfig = payload.config as FrameworkMenuConfig | undefined;
-  const loadedConfig = providedConfig ?? frameworkMenuPersistence.getDefaultConfig();
+  const providedConfig = payload.config as MenuConfig | undefined;
+  const loadedConfig = providedConfig ?? menuPersistence.getDefaultConfig();
 
   // Inject auth menu items if auth is configured
   const authConfig = normalizedState.authConfig;
@@ -802,7 +802,7 @@ const handleFrameworkMenuHydrate: ReducerHandler<FrameworkContextState> = (conte
         ...normalizedState,
         layout: {
           ...normalizedState.layout,
-          frameworkMenu: finalConfig,
+          menu: finalConfig,
         },
       },
     },
@@ -859,7 +859,7 @@ export const registerWorkspaceHandlers = (
   registerHandler(registry, ActionCatalog.PresetsHydrate, handlePresetHydrate);
 
   // Framework menu handlers
-  registerHandler(registry, ActionCatalog.FrameworkMenuReorderItems, handleFrameworkMenuReorderItems);
-  registerHandler(registry, ActionCatalog.FrameworkMenuUpdateConfig, handleFrameworkMenuUpdateConfig);
-  registerHandler(registry, ActionCatalog.FrameworkMenuHydrate, handleFrameworkMenuHydrate);
+  registerHandler(registry, ActionCatalog.MenuReorderItems, handleMenuReorderItems);
+  registerHandler(registry, ActionCatalog.MenuUpdateConfig, handleMenuUpdateConfig);
+  registerHandler(registry, ActionCatalog.MenuHydrate, handleMenuHydrate);
 };

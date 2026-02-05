@@ -21,7 +21,7 @@ This ledger captures current references to legacy registry shims, dispatcher uti
 
 - `packages/framework/src/components/FrameworkRoot.ts`
 - `packages/framework/src/effects/auth.effects.ts`
-- `packages/framework/src/effects/framework-menu.effects.ts`
+- `packages/framework/src/effects/menu.effects.ts`
 - `packages/framework/src/effects/register.ts`
 - `packages/framework/src/effects/preset.effects.ts`
 
@@ -41,7 +41,7 @@ This ledger captures current references to legacy registry shims, dispatcher uti
 - `packages/framework/src/components/FrameworkRoot.ts`
 - `packages/framework/src/domains/auth/components/AuthView.ts`
 - `packages/framework/src/domains/layout/components/CustomToolbar.ts`
-- `packages/framework/src/domains/layout/components/FrameworkMenu.ts`
+- `packages/framework/src/domains/layout/components/Menu.ts`
 - `packages/framework/src/domains/layout/components/LoadPresetContent.ts`
 - `packages/framework/src/domains/layout/components/SavePresetContent.ts`
 - `packages/framework/src/domains/layout/components/ViewRegistryPanel.ts`

@@ -7,8 +7,8 @@ import { authLoginEffect, authLoginImplKey } from './auth/login.effect';
 import { authLogoutEffect, authLogoutImplKey } from './auth/logout.effect';
 import { authPasswordResetEffect, authPasswordResetImplKey } from './auth/password-reset.effect';
 import { authSignupEffect, authSignupImplKey } from './auth/signup.effect';
-import { frameworkMenuHydrateEffect, frameworkMenuHydrateImplKey } from './framework/menu/hydrate.effect';
-import { frameworkMenuSaveEffect, frameworkMenuSaveImplKey } from './framework/menu/save.effect';
+import { menuHydrateEffect, menuHydrateImplKey } from './framework/menu/hydrate.effect';
+import { menuSaveEffect, menuSaveImplKey } from './framework/menu/save.effect';
 import { presetsDeleteEffect, presetsDeleteImplKey } from './presets/delete.effect';
 import { presetsHydrateEffect, presetsHydrateImplKey } from './presets/hydrate.effect';
 import { presetsRenameEffect, presetsRenameImplKey } from './presets/rename.effect';
@@ -70,15 +70,15 @@ export const frameworkEffectDefs: EffectDefDto[] = [
     description: 'Hydrate presets from persistence.',
   },
   {
-    id: 'effect:framework-menu/save',
-    forAction: ActionCatalog.EffectsFrameworkMenuSave,
-    implKey: frameworkMenuSaveImplKey,
+    id: 'effect:menu/save',
+    forAction: ActionCatalog.EffectsMenuSave,
+    implKey: menuSaveImplKey,
     description: 'Persist framework menu configuration.',
   },
   {
-    id: 'effect:framework-menu/hydrate',
-    forAction: ActionCatalog.EffectsFrameworkMenuHydrate,
-    implKey: frameworkMenuHydrateImplKey,
+    id: 'effect:menu/hydrate',
+    forAction: ActionCatalog.EffectsMenuHydrate,
+    implKey: menuHydrateImplKey,
     description: 'Hydrate framework menu configuration.',
   },
 ];
@@ -93,8 +93,8 @@ export const registerFrameworkEffectImpls = (impls: EffectImplRegistry): void =>
   impls.register(presetsDeleteImplKey, presetsDeleteEffect);
   impls.register(presetsRenameImplKey, presetsRenameEffect);
   impls.register(presetsHydrateImplKey, presetsHydrateEffect);
-  impls.register(frameworkMenuSaveImplKey, frameworkMenuSaveEffect);
-  impls.register(frameworkMenuHydrateImplKey, frameworkMenuHydrateEffect);
+  impls.register(menuSaveImplKey, menuSaveEffect);
+  impls.register(menuHydrateImplKey, menuHydrateEffect);
 };
 
 export const applyFrameworkEffectDefs = (registry: EffectRegistry): void => {

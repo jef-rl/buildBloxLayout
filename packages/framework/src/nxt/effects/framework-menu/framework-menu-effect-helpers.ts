@@ -1,1 +1,1 @@
-export * from '../framework/menu/framework-menu-effect-helpers';
+export * from '../menu/menu-effect-helpers';

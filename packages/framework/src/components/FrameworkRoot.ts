@@ -208,7 +208,7 @@ export class FrameworkRoot extends LitElement {
 
     // Hydrate presets from localStorage on startup
     this.dispatchActions([{ type: ActionCatalog.EffectsPresetsHydrate, payload: {} }]);
-    this.dispatchActions([{ type: ActionCatalog.EffectsFrameworkMenuHydrate, payload: {} }]);
+    this.dispatchActions([{ type: ActionCatalog.EffectsMenuHydrate, payload: {} }]);
 
     this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
       this.syncViewRegistryToCore();
@@ -252,7 +252,7 @@ export class FrameworkRoot extends LitElement {
         },
         // Refresh menu to show/hide auth items based on login state
         {
-          type: ActionCatalog.EffectsFrameworkMenuHydrate,
+          type: ActionCatalog.EffectsMenuHydrate,
           payload: {}
         }
       ]);

@@ -40,35 +40,35 @@ export type LayoutPresets = Record<string, LayoutPreset>;
 
 // === Framework Menu Types ===
 
-export type FrameworkMenuItemType = 'parent' | 'preset' | 'action';
+export type MenuItemType = 'parent' | 'preset' | 'action';
 
-export interface FrameworkMenuItemBase {
+export interface MenuItemBase {
   id: string;
   label: string;
   icon?: string;
   order: number;
 }
 
-export interface FrameworkMenuParentItem extends FrameworkMenuItemBase {
+export interface MenuParentItem extends MenuItemBase {
   type: 'parent';
-  children: FrameworkMenuItem[];
+  children: MenuItem[];
 }
 
-export interface FrameworkMenuPresetItem extends FrameworkMenuItemBase {
+export interface MenuPresetItem extends MenuItemBase {
   type: 'preset';
   presetName: string;
 }
 
-export interface FrameworkMenuActionItem extends FrameworkMenuItemBase {
+export interface MenuActionItem extends MenuItemBase {
   type: 'action';
   actionType: string;
   payload?: Record<string, unknown>;
 }
 
-export type FrameworkMenuItem = FrameworkMenuParentItem | FrameworkMenuPresetItem | FrameworkMenuActionItem;
+export type MenuItem = MenuParentItem | MenuPresetItem | MenuActionItem;
 
-export interface FrameworkMenuConfig {
-  items: FrameworkMenuItem[];
+export interface MenuConfig {
+  items: MenuItem[];
   version: number;
 }
 
@@ -84,7 +84,7 @@ export type LayoutState = {
   bottomViewOrder: string[];
   presets?: LayoutPresets;
   activePreset?: string | null;
-  frameworkMenu?: FrameworkMenuConfig;
+  menu?: MenuConfig;
   draggedViewId?: string | null;
 };
 
