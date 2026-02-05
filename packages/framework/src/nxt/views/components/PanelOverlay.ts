@@ -72,18 +72,6 @@ export class PanelOverlay extends LitElement {
 
     @state() private isDropReady = false;
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener('dragstart', this.handleDragStart);
-        this.addEventListener('dragend', this.handleDragEnd);
-    }
-
-    disconnectedCallback() {
-        this.removeEventListener('dragstart', this.handleDragStart);
-        this.removeEventListener('dragend', this.handleDragEnd);
-        super.disconnectedCallback();
-    }
-
     private get isDesignActive(): boolean {
         const state = this.core?.getState();
         return Boolean(state?.layout?.inDesign && state?.auth?.isAdmin);
@@ -205,7 +193,6 @@ export class PanelOverlay extends LitElement {
         } else {
             this.removeAttribute('active');
         }
-        this.draggable = isActive && Boolean(viewId);
 
         const overlayClasses = [
             'design-overlay',
@@ -216,6 +203,9 @@ export class PanelOverlay extends LitElement {
         return html`
             <div
                 class=${overlayClasses}
+                ?draggable=${isActive && Boolean(viewId)}
+                @dragstart=${this.handleDragStart}
+                @dragend=${this.handleDragEnd}
                 @dragenter=${this.handleDragEnter}
                 @dragover=${this.handleDragOver}
                 @dragleave=${this.handleDragLeave}
