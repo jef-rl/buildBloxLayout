@@ -1,4 +1,4 @@
-import type { FrameworkMenuItem, AuthUser, FrameworkAuthConfig, AuthState } from '../types/state';
+import type { MenuItem, AuthUser, FrameworkAuthConfig, AuthState } from '../types/state';
 import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 
 /**
@@ -14,13 +14,13 @@ import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 export const generateAuthMenuItems = (
   authConfig: FrameworkAuthConfig,
   authState: AuthState
-): FrameworkMenuItem[] => {
+): MenuItem[] => {
   if (!authConfig.enabled) {
     return [];
   }
 
   const authViewId = authConfig.authViewId ?? 'firebase-auth';
-  const items: FrameworkMenuItem[] = [];
+  const items: MenuItem[] = [];
 
   if (!authState.isLoggedIn) {
     // Show login action when logged out

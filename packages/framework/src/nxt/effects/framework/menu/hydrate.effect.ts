@@ -1,19 +1,19 @@
 import type { EffectImpl } from '../../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../../runtime/actions/action-catalog';
-import { frameworkMenuPersistence } from '../../../../utils/framework-menu-persistence';
-import { dispatchActions, dispatchLog } from './framework-menu-effect-helpers';
+import { menuPersistence } from '../../../../utils/menu-persistence';
+import { dispatchActions, dispatchLog } from './menu-effect-helpers';
 
-export const frameworkMenuHydrateImplKey = 'effect:framework-menu/hydrate@1';
+export const menuHydrateImplKey = 'effect:menu/hydrate@1';
 
-export const frameworkMenuHydrateEffect: EffectImpl = (_action, dispatch) => {
-  const loadedConfig = frameworkMenuPersistence.load();
+export const menuHydrateEffect: EffectImpl = (_action, dispatch) => {
+  const loadedConfig = menuPersistence.load();
   if (!loadedConfig) {
     dispatchLog(dispatch, 'warn', 'No framework menu config loaded from localStorage.');
   }
   dispatchActions(dispatch, [
     {
-      action: ActionCatalog.FrameworkMenuHydrate,
-      payload: { config: loadedConfig ?? frameworkMenuPersistence.getDefaultConfig() },
+      action: ActionCatalog.MenuHydrate,
+      payload: { config: loadedConfig ?? menuPersistence.getDefaultConfig() },
     },
   ]);
 };

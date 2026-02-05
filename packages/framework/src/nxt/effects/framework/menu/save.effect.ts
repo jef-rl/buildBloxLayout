@@ -1,17 +1,17 @@
 import type { EffectImpl } from '../../../runtime/registries/effects/effect-impl-registry';
-import type { FrameworkMenuConfig } from '../../../../types/state';
-import { frameworkMenuPersistence } from '../../../../utils/framework-menu-persistence';
+import type { MenuConfig } from '../../../../types/state';
+import { menuPersistence } from '../../../../utils/menu-persistence';
 import { logWarn } from '../../../runtime/engine/logging/framework-logger';
 
-export const frameworkMenuSaveImplKey = 'effect:framework-menu/save@1';
+export const menuSaveImplKey = 'effect:menu/save@1';
 
-export const frameworkMenuSaveEffect: EffectImpl<{ config?: FrameworkMenuConfig }> = (action) => {
-  const payload = (action.payload ?? {}) as { config?: FrameworkMenuConfig };
+export const menuSaveEffect: EffectImpl<{ config?: MenuConfig }> = (action) => {
+  const payload = (action.payload ?? {}) as { config?: MenuConfig };
   if (!payload.config) {
     return;
   }
   try {
-    frameworkMenuPersistence.save(payload.config);
+    menuPersistence.save(payload.config);
   } catch (error) {
     logWarn('Framework menu save failed in effect.', { error });
   }

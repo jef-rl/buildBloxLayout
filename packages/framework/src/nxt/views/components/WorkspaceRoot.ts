@@ -6,7 +6,7 @@ import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog, type ActionName } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import { DockManager } from '../../../domains/dock/components/DockManager.js';
-import '../../../domains/layout/components/FrameworkMenu.js';
+import '../../../domains/layout/components/Menu.js';
 import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
 import './OverlayLayer.js';
@@ -432,7 +432,7 @@ export class WorkspaceRoot extends LitElement {
                 </div>
 
                 <dock-container .manager=${this.dockManager} toolbarId="burger" fallbackPosition="top-left" disablePositionPicker>
-                    <framework-menu></framework-menu>
+                    <menu-view></menu-view>
                 </dock-container>
 
                 <dock-container .manager=${this.dockManager} toolbarId="registry" fallbackPosition="bottom-right">

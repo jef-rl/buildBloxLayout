@@ -1,1 +1,1 @@
-export * from '../framework/menu/hydrate.effect';
+export * from '../menu/hydrate.effect';

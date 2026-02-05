@@ -1,1 +1,1 @@
-export * from '../framework/menu/save.effect';
+export * from '../menu/save.effect';
