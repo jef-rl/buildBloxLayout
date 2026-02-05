@@ -204,37 +204,8 @@ export class WorkspaceRoot extends LitElement {
 
     private dockManager = new DockManager();
 
-    private unsubscribe: (() => void) | null = null;
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
-
-    disconnectedCallback() {
-        if (this.unsubscribe) {
-            this.unsubscribe();
-            this.unsubscribe = null;
-        }
-        super.disconnectedCallback();
-    }
-
-    protected updated(changedProps: Map<PropertyKey, unknown>) {
-        if (changedProps.has('core')) {
-            this.attachCore(this.core ?? null);
-        }
-        super.updated(changedProps);
-    }
-
-    private attachCore(core: CoreContext<UIState> | null) {
-        if (this.unsubscribe) {
-            this.unsubscribe();
-            this.unsubscribe = null;
-        }
-        if (core) {
-            this.unsubscribe = core.store.subscribe(() => {
-                this.requestUpdate();
-            });
-        }
-        this.requestUpdate();
-    }
 
     private dispatch(action: ActionName, payload?: Record<string, unknown>) {
         this.core?.dispatch({ action, payload });
@@ -348,12 +319,8 @@ export class WorkspaceRoot extends LitElement {
     }
 
     render() {
-        const state = this.core?.getState();
         const workspaceLayout = this.core?.select<WorkspaceLayoutDerived>(workspaceLayoutSelectorKey);
         const resolveViewInstance = this.core?.select<ViewInstanceResolver>(viewInstanceResolverSelectorKey) ?? null;
-        if (!state) {
-            return html``;
-        }
         if (!workspaceLayout) {
             return html``;
         }

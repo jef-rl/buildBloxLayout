@@ -247,6 +247,39 @@ const handleMainAreaCount: ReducerHandler<FrameworkContextState> = (context, act
   };
 };
 
+const handleLayoutReset: ReducerHandler<FrameworkContextState> = (context) => {
+  const normalizedState = normalizeLayoutState(context.state);
+  const nextPanels = normalizedState.panels.map((panel) => ({
+    ...panel,
+    view: null,
+    viewId: undefined,
+    activeViewId: undefined,
+  }));
+
+  return {
+    state: {
+      ...context,
+      state: {
+        ...normalizedState,
+        panels: nextPanels,
+        layout: {
+          ...normalizedState.layout,
+          expansion: {
+            expanderLeft: 'Closed',
+            expanderRight: 'Closed',
+            expanderBottom: 'Closed',
+          },
+          mainViewOrder: deriveMainViewOrderFromPanels(nextPanels),
+          leftViewOrder: [],
+          rightViewOrder: [],
+          bottomViewOrder: [],
+        },
+      },
+    },
+    followUps: [],
+  };
+};
+
 const handleSelectPanel: ReducerHandler<FrameworkContextState> = (context, action) => {
   const payload = (action.payload ?? {}) as StateActionPayload;
   const panelId = payload.panelId as string | undefined;
@@ -796,6 +829,7 @@ export const registerWorkspaceHandlers = (
     ActionCatalog.LayoutSetViewportWidthMode,
   ].forEach((type) => registerHandler(registry, type, handleLayoutAction));
   registerHandler(registry, ActionCatalog.LayoutSetMainAreaCount, handleMainAreaCount);
+  registerHandler(registry, ActionCatalog.LayoutResetWorkspace, handleLayoutReset);
   registerHandler(registry, ActionCatalog.LayoutToggleInDesign, handleToggleInDesign);
   registerHandler(registry, ActionCatalog.PanelsSelectPanel, handleSelectPanel);
   

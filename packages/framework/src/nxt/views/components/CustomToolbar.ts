@@ -83,20 +83,7 @@ export class CustomToolbar extends LitElement {
     }
 
     private resetLayout() {
-        const state = this.core?.getState();
-        if (!state) {
-            return;
-        }
-
-        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'left', state: 'Closed' } });
-        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'right', state: 'Closed' } });
-        this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side: 'bottom', state: 'Closed' } });
-
-        state.panels.forEach((panel) => {
-            if (panel.id) {
-                this.core?.dispatch({ action: ActionCatalog.PanelsRemoveView, payload: { panelId: panel.id } });
-            }
-        });
+        this.core?.dispatch({ action: ActionCatalog.LayoutResetWorkspace, payload: {} });
     }
 
     private toggleInDesign() {
