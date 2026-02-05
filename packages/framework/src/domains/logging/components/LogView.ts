@@ -271,7 +271,7 @@ export class LogView extends LitElement {
         <div class="entries">
           ${this.entries.length === 0
         ? html`<div class="empty">Waiting for log activity...</div>`
-        : this.entries.map((entry: any) => {
+        : this.entries.reverse().map((entry: any) => {
           const data = this.formatData(entry.data);
           const eventType = this.getEventType(entry);
           return html`

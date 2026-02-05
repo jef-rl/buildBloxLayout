@@ -16,22 +16,20 @@ export class PanelOverlay extends LitElement {
             inset: 0;
             display: block;
             z-index: 10;
-            pointer-events: none;
         }
 
         :host([active]) {
-            pointer-events: auto;
+            pointer-events: all;
         }
 
         .design-overlay {
             position: absolute;
             inset: 0;
-            pointer-events: auto;
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
             border: 1px dashed rgba(148, 163, 184, 0.35);
-            background: transparent;
+            background: rgba(148, 163, 184, 0.35);
             opacity: 0;
             transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
         }
@@ -102,6 +100,7 @@ export class PanelOverlay extends LitElement {
     }
 
     private handleDragStart(event: DragEvent) {
+        console.log('dragstart');
         if (!this.isDesignActive) {
             return;
         }
@@ -207,7 +206,7 @@ export class PanelOverlay extends LitElement {
         return html`
             <div
                 class=${overlayClasses}
-                ?draggable=${isActive && Boolean(viewId)}
+                draggable=${isActive && Boolean(viewId)}
                 @dragstart=${this.handleDragStart}
                 @dragend=${this.handleDragEnd}
                 @dragenter=${this.handleDragEnter}
