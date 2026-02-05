@@ -10,7 +10,7 @@ import '../../../domains/layout/components/Menu.js';
 import '../../../domains/layout/components/ViewRegistryPanel.js';
 import '../../../domains/dock/components/DockContainer.js';
 import './OverlayLayer.js';
-import './PanelOverlay.js';
+import './ViewOverlay.js';
 import '../host/view-host.js';
 import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
 import {
@@ -116,7 +116,7 @@ export class WorkspaceRoot extends LitElement {
             z-index: 0;
         }
 
-        .panel-overlay {
+        .view-overlay {
             position: absolute;
             inset: 0;
             z-index: 2;
@@ -299,7 +299,7 @@ export class WorkspaceRoot extends LitElement {
                                         <view-host .instances=${[instance]}></view-host>
                                     </div>
                                     ${isDesignActive
-                                        ? html`<panel-overlay class="panel-overlay" .panelId=${panelId}></panel-overlay>`
+                                        ? html`<view-overlay class="view-overlay" .panelId=${panelId}></view-overlay>`
                                         : nothing}
                                 </div>
                             </div>
@@ -414,7 +414,7 @@ export class WorkspaceRoot extends LitElement {
                                                 <view-host .panelId=${panel.id}></view-host>
                                             </div>
                                             ${isDesignActive
-                                                ? html`<panel-overlay class="panel-overlay" .panelId=${panel.id}></panel-overlay>`
+                                                ? html`<view-overlay class="view-overlay" .panelId=${panel.id}></view-overlay>`
                                                 : nothing}
                                         </div>
                                     `
