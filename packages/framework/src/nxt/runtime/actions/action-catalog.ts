@@ -21,6 +21,7 @@ export const ActionCatalog = {
   LayoutSetMainAreaCount: 'layout/setMainAreaCount',
   LayoutSetOverlayView: 'layout/setOverlayView',
   LayoutSetViewportWidthMode: 'layout/setViewportWidthMode',
+  LayoutResetWorkspace: 'layout/resetWorkspace',
   LayoutToggleInDesign: 'layout/toggleInDesign',
   LogsAppend: 'logs/append',
   LogsClear: 'logs/clear',
