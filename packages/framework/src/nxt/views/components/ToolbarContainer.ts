@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
@@ -6,6 +6,7 @@ import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import '../../../domains/workspace/components/ToolbarView.js';
+import { toolbarContainerStyles } from './ToolbarContainer.styles';
 
 type ToolbarContext = {
     viewIds?: string[];
@@ -22,44 +23,7 @@ export class ToolbarContainer extends LitElement {
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
 
-    static styles = css`
-        :host {
-            display: block;
-            width: 100%;
-        }
-
-        .toolbar {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: var(--toolbar-gap, 8px);
-            width: 100%;
-            min-width: 0;
-            box-sizing: border-box;
-        }
-
-        .toolbar-item {
-            display: flex;
-            align-items: center;
-            min-width: 0;
-            flex: 0 0 auto;
-        }
-
-        .toolbar-item--stretch {
-            flex: 1 1 auto;
-            min-width: 0;
-        }
-
-        .toolbar-item embed-view {
-            width: 100%;
-        }
-
-        .toolbar.drag-over {
-            outline: 1px dashed rgba(59, 130, 246, 0.8);
-            outline-offset: 4px;
-            border-radius: 6px;
-        }
-    `;
+    static styles = [toolbarContainerStyles];
 
     private get viewIds(): string[] {
         const ids = this.context?.viewIds;

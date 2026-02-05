@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
@@ -6,68 +6,12 @@ import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import type { Panel } from '../../../domains/panels/types';
+import { viewOverlayStyles } from './ViewOverlay.styles';
 
 type LegacyPanelView = { component?: string; viewType?: string; id?: string } | null;
 
 export class ViewOverlay extends LitElement {
-    static styles = css`
-        :host {
-            position: absolute;
-            inset: 0;
-            display: block;
-            z-index: 10;
-        }
-
-        :host([active]) {
-            pointer-events: all;
-        }
-
-        .design-overlay {
-            position: absolute;
-            inset: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-            border: 1px solid  #3b82f6;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
-            background: rgba(148, 163, 184, 0.35);
-            opacity: 0;
-            transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-        }
-
-        .design-overlay.active {
-            opacity: 1;
-        }
-
-        .design-overlay.ready {
-            border-color: rgba(59, 130, 246, 0.9);
-            background: rgba(59, 130, 246, 0.08);
-        }
-
-        .remove-button {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            border: none;
-            border-radius: 999px;
-            background: rgb(50, 10, 10, 0.9);
-            color: #e2e8f0;
-            width: 26px;
-            height: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-        }
-
-        .remove-button:hover {
-            background: rgb(50, 10, 10);
-        }
-    `;
-
+    static styles = [viewOverlayStyles];
     @property({ type: String }) panelId: string | null = null;
 
     @consume({ context: coreContext, subscribe: true })

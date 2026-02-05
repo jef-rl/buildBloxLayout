@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
@@ -6,69 +6,14 @@ import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../../types/state';
 import type { ExpanderState } from '../../../utils/expansion-helpers.js';
+import { customToolbarStyles } from './CustomToolbar.styles';
 
 @customElement('custom-toolbar')
 export class CustomToolbar extends LitElement {
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
 
-    static styles = css`
-        :host {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .grid {
-            display: grid;
-            grid-auto-flow: column;
-            grid-auto-columns: auto;
-            gap: 0px;
-            align-items: center;
-            height: 100%;
-            padding: 0;
-        }
-
-        .icon-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            padding: 0px;
-            border-radius: 4px;
-            border: none;
-            background: transparent;
-            color: #94a3b8;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        .icon-button:hover {
-            color: #f8fafc;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .icon {
-            width: 32px;
-            height: 32px;
-        }
-
-        .icon-img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-        }
-
-        .separator {
-            width: 1px;
-            height: 48px;
-            background-color: #ffffff33;
-            margin: 0 6px;
-        }
-    `;
+    static styles = [customToolbarStyles];
 
     private setExpanderState(side: 'left' | 'right' | 'bottom', state: ExpanderState) {
         this.core?.dispatch({ action: ActionCatalog.LayoutSetExpansion, payload: { side, state } });
