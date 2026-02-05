@@ -5,6 +5,8 @@ import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
+import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
+import { viewInstanceResolverSelectorKey } from '../../selectors/view-instances/resolve-view-instance.selector';
 
 export class ViewHost extends LitElement {
     static styles = css`
@@ -21,6 +23,7 @@ export class ViewHost extends LitElement {
     `;
 
     @property({ attribute: false }) instances: ViewInstanceDto[] = [];
+    @property({ type: String }) panelId: string | null = null;
 
     @consume({ context: coreContext, subscribe: true })
     core?: CoreContext<UIState>;
@@ -37,7 +40,7 @@ export class ViewHost extends LitElement {
             return;
         }
 
-        const instances = Array.isArray(this.instances) ? this.instances : [];
+        const instances = this.resolveInstances();
         const activeIds = new Set(instances.map((instance) => instance.instanceId));
 
         Array.from(host.children).forEach((child) => {
@@ -52,6 +55,38 @@ export class ViewHost extends LitElement {
             const wrapper = this.ensureWrapper(host, instance.instanceId);
             await this.ensureViewElement(wrapper, instance);
         }
+    }
+
+    private resolveInstances(): ViewInstanceDto[] {
+        if (Array.isArray(this.instances) && this.instances.length > 0) {
+            return this.instances;
+        }
+
+        if (!this.panelId) {
+            return [];
+        }
+
+        const state = this.core?.getState();
+        const panel = state?.panels?.find((candidate) => candidate.id === this.panelId) ?? null;
+        if (!panel) {
+            return [];
+        }
+
+        const legacyView = panel.view as { component?: string; viewType?: string; id?: string } | null;
+        const viewId =
+            panel.activeViewId ??
+            panel.viewId ??
+            legacyView?.component ??
+            legacyView?.viewType ??
+            legacyView?.id ??
+            null;
+        if (!viewId) {
+            return [];
+        }
+
+        const resolver = this.core?.select<ViewInstanceResolver>(viewInstanceResolverSelectorKey);
+        const instance = resolver ? resolver(viewId) : null;
+        return instance ? [instance] : [];
     }
 
     private ensureWrapper(host: HTMLElement, instanceId: string): HTMLElement {
@@ -113,7 +148,8 @@ export class ViewHost extends LitElement {
     }
 
     render() {
-        if (!this.instances || this.instances.length === 0) {
+        const instances = this.resolveInstances();
+        if (!instances || instances.length === 0) {
             return html`<div class="host">${nothing}</div>`;
         }
         return html`<div class="host"></div>`;
