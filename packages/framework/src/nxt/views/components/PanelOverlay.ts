@@ -15,7 +15,7 @@ export class PanelOverlay extends LitElement {
             position: absolute;
             inset: 0;
             display: block;
-            z-index: 5;
+            z-index: 10;
             pointer-events: none;
         }
 
@@ -26,6 +26,10 @@ export class PanelOverlay extends LitElement {
         .design-overlay {
             position: absolute;
             inset: 0;
+            pointer-events: auto;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
             border: 1px dashed rgba(148, 163, 184, 0.35);
             background: transparent;
             opacity: 0;

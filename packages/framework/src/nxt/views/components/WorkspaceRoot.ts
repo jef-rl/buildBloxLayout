@@ -101,6 +101,33 @@ export class WorkspaceRoot extends LitElement {
             position: relative;
         }
 
+        .panel-shell {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .panel-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            min-width: 0;
+            z-index: 0;
+        }
+
+        .panel-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+
+        .panel-shell.design-active .panel-content {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         .main-panel:first-child {
             border-left: none;
         }
@@ -243,6 +270,7 @@ export class WorkspaceRoot extends LitElement {
         panelId: string,
         resolveViewInstance: ViewInstanceResolver | null,
         showDropZones: boolean,
+        isDesignActive: boolean,
     ) {
         const isEmpty = viewOrder.length === 0;
         if (!resolveViewInstance) {
@@ -266,7 +294,12 @@ export class WorkspaceRoot extends LitElement {
                     return instance
                         ? html`
                             <div class="stack-item">
-                                <view-host .instances=${[instance]}></view-host>
+                                <div class="panel-shell ${isDesignActive ? 'design-active' : ''}">
+                                    <div class="panel-content" ?inert=${isDesignActive}>
+                                        <view-host .instances=${[instance]}></view-host>
+                                    </div>
+                                    <panel-overlay class="panel-overlay" .panelId=${panelId}></panel-overlay>
+                                </div>
                             </div>
                         `
                         : nothing;
@@ -323,6 +356,8 @@ export class WorkspaceRoot extends LitElement {
     render() {
         const workspaceLayout = this.core?.select<WorkspaceLayoutDerived>(workspaceLayoutSelectorKey);
         const resolveViewInstance = this.core?.select<ViewInstanceResolver>(viewInstanceResolverSelectorKey) ?? null;
+        const state = this.core?.getState();
+        const isDesignActive = Boolean(state?.layout?.inDesign && state?.auth?.isAdmin);
         if (!workspaceLayout) {
             return html``;
         }
@@ -361,7 +396,7 @@ export class WorkspaceRoot extends LitElement {
                     <div class="expander expander-left ${leftOpen ? '' : 'collapsed'}">
                             ${this.renderSash(expansion, 'left')}
             
-                        ${leftPanel ? this.renderSidePanelStack('left', leftViewOrder, leftPanel.id, resolveViewInstance, showDropZones) : nothing}
+                        ${leftPanel ? this.renderSidePanelStack('left', leftViewOrder, leftPanel.id, resolveViewInstance, showDropZones, isDesignActive) : nothing}
                     </div>
 
                     <div class="main-area">
@@ -372,8 +407,12 @@ export class WorkspaceRoot extends LitElement {
                             >
                                 ${panel
                                     ? html`
-                                        <view-host .panelId=${panel.id}></view-host>
-                                        <panel-overlay .panelId=${panel.id}></panel-overlay>
+                                        <div class="panel-shell ${isDesignActive ? 'design-active' : ''}">
+                                            <div class="panel-content" ?inert=${isDesignActive}>
+                                                <view-host .panelId=${panel.id}></view-host>
+                                            </div>
+                                            <panel-overlay class="panel-overlay" .panelId=${panel.id}></panel-overlay>
+                                        </div>
                                     `
                                     : nothing}
                             </div>
@@ -382,12 +421,12 @@ export class WorkspaceRoot extends LitElement {
 
                     <div class="expander expander-right ${rightOpen ? '' : 'collapsed'}">
                     ${this.renderSash(expansion, 'right')}
-                        ${rightPanel ? this.renderSidePanelStack('right', rightViewOrder, rightPanel.id, resolveViewInstance, showDropZones) : nothing}
+                        ${rightPanel ? this.renderSidePanelStack('right', rightViewOrder, rightPanel.id, resolveViewInstance, showDropZones, isDesignActive) : nothing}
                     </div>
 
                     <div class="expander expander-bottom ${bottomOpen ? '' : 'collapsed'}">
                     ${this.renderSash(expansion, 'bottom')}
-                    ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id, resolveViewInstance, showDropZones) : nothing}
+                    ${bottomPanel ? this.renderSidePanelStack('bottom', bottomViewOrder, bottomPanel.id, resolveViewInstance, showDropZones, isDesignActive) : nothing}
                     </div>
 
                 </div>
