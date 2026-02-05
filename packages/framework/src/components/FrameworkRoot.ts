@@ -166,6 +166,21 @@ export class FrameworkRoot extends LitElement {
     });
   }
 
+  private hydrateViewDefinitions(): void {
+    const viewDefinitions = viewRegistry.getAllViews().map((view) => ({
+      id: view.id,
+      name: view.name,
+      title: view.title,
+      icon: view.icon,
+    }));
+    this.dispatchActions([
+      {
+        type: ActionCatalog.StateHydrate,
+        payload: { state: { viewDefinitions } },
+      },
+    ]);
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('ui-event', this.handleUiEvent as EventListener);
@@ -197,20 +212,10 @@ export class FrameworkRoot extends LitElement {
 
     this.viewRegistryUnsubscribe = viewRegistry.onRegistryChange(() => {
       this.syncViewRegistryToCore();
-      const viewDefinitions = viewRegistry.getAllViews().map((view) => ({
-        id: view.id,
-        name: view.name,
-        title: view.title,
-        icon: view.icon,
-      }));
-      this.dispatchActions([
-        {
-          type: ActionCatalog.StateHydrate,
-          payload: { state: { viewDefinitions } },
-        },
-      ]);
+      this.hydrateViewDefinitions();
     });
     this.syncViewRegistryToCore();
+    this.hydrateViewDefinitions();
 
     // Set up Firestore sync callback
     setFirestoreSyncCallback((presets) => {
