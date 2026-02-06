@@ -13,6 +13,7 @@ import {
   renderVisualBlockContent,
   resolveBackgroundImage,
 } from './visual-block-render-helpers';
+import './visual-block-grid-overlay/visual-block-grid-overlay';
 
 @customElement('visual-block-render')
 export class VisualBlockRenderView extends LitElement {
@@ -25,6 +26,21 @@ export class VisualBlockRenderView extends LitElement {
       position: relative;
       width: 100%;
       height: 100%;
+    }
+    .render-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .render-layer {
+      position: absolute;
+      inset: 0;
+    }
+    .render-layer.content-layer {
+      z-index: 1;
+    }
+    .render-layer.overlay-layer {
+      z-index: 2;
     }
     .render-container {
       width: 100%;
@@ -81,14 +97,17 @@ export class VisualBlockRenderView extends LitElement {
     };
 
     return html`
-      <div class="render-container" style=${styleMap(containerStyle)}>
-        ${model.rects.map((rect) => {
-          const content = model.contents[rect._contentID];
-          if (!content) {
-            return nothing;
-          }
-          return this.renderContent(rect, content);
-        })}
+      <div class="render-wrapper">
+        <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
+          ${model.rects.map((rect) => {
+            const content = model.contents[rect._contentID];
+            if (!content) {
+              return nothing;
+            }
+            return this.renderContent(rect, content);
+          })}
+        </div>
+        <visual-block-grid-overlay class="render-layer overlay-layer"></visual-block-grid-overlay>
       </div>
     `;
   }
