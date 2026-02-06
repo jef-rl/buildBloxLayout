@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { coreContext, type CoreContext } from '../../../../framework/src/nxt';
+import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockUiStateDto } from '../dto/visual-block-ui-state.dto';
 import { visualBlockUiSelectorKey } from '../selectors/visual-block-ui.selector';
@@ -88,7 +88,7 @@ export class VisualBlockToolbarView extends LitElement {
 
   private dispatchZoom(zoom: number): void {
     this.core?.dispatch({
-      action: VisualBlockActionCatalog.VisualBlockZoomChanged,
+      action: VisualBlockActionCatalog.VisualBlockZoomChanged as ActionName,
       payload: {
         ui: {
           zoom,
@@ -99,7 +99,7 @@ export class VisualBlockToolbarView extends LitElement {
 
   private dispatchMode(mode: string): void {
     this.core?.dispatch({
-      action: VisualBlockActionCatalog.VisualBlockModeChanged,
+      action: VisualBlockActionCatalog.VisualBlockModeChanged as ActionName,
       payload: {
         ui: {
           mode,

@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
-import { coreContext, type CoreContext } from '../../../../framework/src/nxt';
+import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import {
   type VisualBlockProjectionModel,
@@ -150,7 +150,7 @@ export class VisualBlockProjectionView extends LitElement {
 
   private dispatchRotation(rotationY: number): void {
     this.core?.dispatch({
-      action: VisualBlockActionCatalog.VisualBlockRotationChanged,
+      action: VisualBlockActionCatalog.VisualBlockRotationChanged as ActionName,
       payload: {
         ui: {
           rotationY,
