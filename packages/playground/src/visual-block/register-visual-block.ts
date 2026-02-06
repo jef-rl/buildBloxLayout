@@ -11,7 +11,14 @@ import {
   visualBlockUiSelectorImplKey,
 } from './visual-block-definition-pack';
 import { visualBlockDataSelectorImpl } from './selectors/visual-block-data.selector';
+import {
+  visualBlockRenderModelSelectorImpl,
+  visualBlockRenderModelSelectorKey,
+} from './selectors/visual-block-render-model.selector';
 import { visualBlockUiSelectorImpl } from './selectors/visual-block-ui.selector';
+
+import './visual-block-render-view';
+import './visual-block-preview-view';
 
 type CoreRegistriesContainer = {
   coreRegistries?: CoreRegistries<any>;
@@ -35,6 +42,10 @@ export const registerVisualBlockDefinitions = (root: CoreRegistriesContainer): v
   registries.selectorImpls.register(
     visualBlockDataSelectorImplKey,
     visualBlockDataSelectorImpl as any,
+  );
+  registries.selectorImpls.register(
+    visualBlockRenderModelSelectorKey,
+    visualBlockRenderModelSelectorImpl as any,
   );
   registries.selectorImpls.register(
     visualBlockUiSelectorImplKey,
