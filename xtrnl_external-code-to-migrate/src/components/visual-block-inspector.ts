@@ -1,0 +1,260 @@
+import { LitElement, html, css } from 'lit';
+import { ContextConsumer } from '@lit/context';
+import { editorContext, blockDataContext, uiStateContext } from '../contexts.js';
+import { DEFAULT_CONTEXT } from '../defaults.js';
+
+/**
+ * <visual-block-inspector>
+ */
+export class VisualBlockInspector extends LitElement {
+  
+  private _blockData: any = {};
+  private _uiState: any = {};
+  private _editorState: any = {};
+
+  private _blockDataConsumer = new ContextConsumer(this, {
+    context: blockDataContext,
+    subscribe: true,
+    callback: (value) => {
+      this._blockData = value || {};
+      this.requestUpdate();
+    },
+  });
+
+  private _uiStateConsumer = new ContextConsumer(this, {
+    context: uiStateContext,
+    subscribe: true,
+    callback: (value) => {
+      this._uiState = value || {};
+      this.requestUpdate();
+    },
+  });
+
+  private _editorConsumer = new ContextConsumer(this, {
+    context: editorContext,
+    subscribe: true,
+    callback: (value) => {
+      this._editorState = value || {};
+      this.requestUpdate();
+    },
+  });
+
+  static styles = css`
+    :host {
+      display: block;
+      width: 320px;
+      background: white;
+      border-left: 1px solid #e5e7eb;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: -4px 0 15px rgba(0,0,0,0.05);
+      position: fixed;
+      right: 0;
+      top: 60px;
+      bottom: 0;
+      z-index: 2000;
+      font-family: system-ui, -apple-system, sans-serif;
+      transition: transform 0.2s ease-in-out;
+      border: 2px solid blue; /* Debug border */
+    }
+    
+    :host([hidden]) {
+      display: none;
+    }
+
+    h3 { margin-top: 0; font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 20px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px; }
+    
+    pre { 
+      background: #f3f4f6; 
+      padding: 12px; 
+      border-radius: 6px; 
+      overflow-x: auto; 
+      font-size: 11px; 
+      color: #374151;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      border: 1px solid #e5e7eb;
+    }
+
+    .prop-group { margin-bottom: 16px; }
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #6b7280; margin-bottom: 6px; }
+    .value { font-size: 14px; color: #1f2937; word-break: break-word; }
+    
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 50%;
+        color: #9ca3af;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .stack-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 4px;
+        background: #f9fafb;
+    }
+
+    .stack-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #374151;
+    }
+    
+    .stack-item.active {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+        color: #4338ca;
+        font-weight: 500;
+    }
+
+    .stack-item .id {
+        font-family: monospace;
+    }
+
+    .stack-item .z-val {
+        color: #6b7280;
+        font-size: 11px;
+    }
+    .stack-item.active .z-val {
+        color: #6366f1;
+    }
+  `;
+
+  render() {
+    const selectedIds = this._uiState.selectedIds || [];
+    const blockData = this._blockData;
+    const rects = this._editorState.rects || {};
+
+    return html`
+        <div>
+            <h3>Inspector Debug</h3>
+            <div>Selected Count: ${selectedIds.length}</div>
+            <div>Rects Count: ${Object.keys(rects).length}</div>
+            <div>Data Keys: ${Object.keys(blockData).length}</div>
+        </div>
+        <hr>
+
+        ${this.renderContent(selectedIds, blockData, rects)}
+    `;
+  }
+
+  renderContent(selectedIds: any[], blockData: any, rects: any) {
+    if (!selectedIds || selectedIds.length === 0) {
+      return html`<div class="empty-state">Select a block to inspect details</div>`;
+    }
+
+    if (selectedIds.length > 1) {
+        return html`
+            <h3>Selection</h3>
+            <div class="prop-group">
+                <div class="label">Count</div>
+                <div class="value">${selectedIds.length} items selected</div>
+            </div>
+            <div class="prop-group">
+                <div class="label">Selected IDs</div>
+                <pre>${JSON.stringify(selectedIds, null, 2)}</pre>
+            </div>
+        `;
+    }
+
+    const id = selectedIds[0];
+    const rect = rects[id];
+    
+    if (!rect) {
+        return html`
+            <div class="empty-state">
+                Selected item ID <b>${id}</b> not found in layout.<br>
+            </div>`;
+    }
+
+    const contentID = rect.contentID;
+    
+    let originalData = blockData ? blockData[contentID] : undefined;
+    if (!originalData && blockData && blockData[id]) originalData = blockData[id];
+
+    const stylerData = originalData?.styler;
+
+    // Diagnostic information
+    const dataKeys = blockData ? Object.keys(blockData).length : 0;
+    const firstKey = blockData ? Object.keys(blockData)[0] : 'N/A';
+
+    // Calculate Overlapping Stack
+    const overlaps = Object.values(rects).filter((r: any) => {
+        return r.x < rect.x + rect.w &&
+               r.x + r.w > rect.x &&
+               r.y < rect.y + rect.h &&
+               r.y + r.h > rect.y;
+    }).sort((a: any, b: any) => (b.z || 0) - (a.z || 0)); // Descending Z
+
+    return html`
+      <h3>Inspector</h3>
+      
+      <div class="prop-group">
+        <div class="label">Position ID</div>
+        <div class="value" style="font-family: monospace;">${id}</div>
+      </div>
+
+      <div class="prop-group">
+        <div class="label">Content ID</div>
+        <div class="value" style="font-family: monospace;">${contentID || 'undefined'}</div>
+      </div>
+
+      <div class="prop-group">
+        <div class="label">Layout Geometry</div>
+        <div class="value">
+            X: ${rect.x} &nbsp; Y: ${rect.y}<br>
+            W: ${rect.w} &nbsp; H: ${rect.h}<br>
+            Z: ${rect.z}
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <div class="label">Z-Index Stack</div>
+        <div class="stack-list">
+          ${overlaps.map((r: any) => html`
+            <div class="stack-item ${r.id === id ? 'active' : ''}">
+                <span class="id">${r.id}</span>
+                <span class="z-val">Z: ${r.z || 0}</span>
+            </div>
+          `)}
+        </div>
+      </div>
+
+      ${stylerData ? html`
+        <div class="prop-group">
+            <div class="label">Styler Properties</div>
+            <pre>${JSON.stringify(stylerData, null, 2)}</pre>
+        </div>
+      ` : html`
+        <div class="prop-group">
+            <div class="label">Styler Data</div>
+            <div class="value" style="color: #9ca3af;">
+                ${originalData ? 'Object found but has no "styler" property.' : 'Data object not found.'}
+            </div>
+        </div>
+        <div class="prop-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #e5e7eb;">
+            <div class="label">Debug Context</div>
+            <div class="value" style="font-size: 11px; color: #6b7280;">
+                BlockData Count: ${dataKeys}<br>
+                First Key: ${firstKey}<br>
+                Looking for: ${contentID || id}
+            </div>
+        </div>
+      `}
+    `;
+  }
+}
+
+customElements.define('visual-block-inspector', VisualBlockInspector);
