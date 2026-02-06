@@ -1,7 +1,7 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { coreContext, type CoreContext } from '../../../../framework/src/nxt';
+import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import {
   type VisualBlockInspectorModel,
@@ -88,7 +88,7 @@ export class VisualBlockInspectorView extends LitElement {
 
   private handleSelect(id: string): void {
     this.core?.dispatch({
-      action: VisualBlockActionCatalog.VisualBlockUiPatch,
+      action: VisualBlockActionCatalog.VisualBlockUiPatch as ActionName,
       payload: {
         ui: {
           selectedIds: [id],
