@@ -14,6 +14,7 @@ import {
   resolveBackgroundImage,
 } from './visual-block-render-helpers';
 import './visual-block-grid-overlay/visual-block-grid-overlay';
+import './visual-block-toolbar/visual-block-toolbar.view';
 
 @customElement('visual-block-render')
 export class VisualBlockRenderView extends LitElement {
@@ -41,6 +42,12 @@ export class VisualBlockRenderView extends LitElement {
     }
     .render-layer.overlay-layer {
       z-index: 2;
+    }
+    .render-toolbar {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 3;
     }
     .render-container {
       width: 100%;
@@ -98,6 +105,7 @@ export class VisualBlockRenderView extends LitElement {
 
     return html`
       <div class="render-wrapper">
+        <visual-block-toolbar class="render-toolbar"></visual-block-toolbar>
         <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
           ${model.rects.map((rect) => {
             const content = model.contents[rect._contentID];
