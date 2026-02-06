@@ -1,6 +1,7 @@
 import type { DefinitionPackDto } from '../../../framework/src/nxt/definitions/dto/definition-pack.dto';
 import { VisualBlockActionCatalog } from './visual-block-action-catalog';
 import { visualBlockDataSelectorKey } from './selectors/visual-block-data.selector';
+import { visualBlockRenderModelSelectorKey } from './selectors/visual-block-render-model.selector';
 import { visualBlockUiSelectorKey } from './selectors/visual-block-ui.selector';
 
 export const visualBlockDataReducerKey = 'reducer:visual-block/data@1';
@@ -61,6 +62,11 @@ export const visualBlockDefinitionPack: DefinitionPackDto = {
       id: visualBlockDataSelectorKey,
       implKey: visualBlockDataSelectorImplKey,
       description: 'Select visual block data state.',
+    },
+    {
+      id: visualBlockRenderModelSelectorKey,
+      implKey: visualBlockRenderModelSelectorKey,
+      description: 'Select derived visual block render model.',
     },
     {
       id: visualBlockUiSelectorKey,
