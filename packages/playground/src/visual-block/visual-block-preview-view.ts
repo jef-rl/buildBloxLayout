@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
-import { coreContext, type CoreContext } from '@project/framework/nxt';
+import { coreContext, type CoreContext } from '../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockContentDto } from './dto/visual-block-content.dto';
 import type { VisualBlockRectDto } from './dto/visual-block-rect.dto';
@@ -126,7 +126,7 @@ export class VisualBlockPreviewView extends LitElement {
       <h4>2D Projection (Face On)</h4>
       <div class="preview-frame" style="width: ${width * PREVIEW_SCALE}px; height: ${height * PREVIEW_SCALE}px;">
         <div class="preview-content" style=${styleMap(containerStyle)}>
-          ${model.rects.map((rect) => {
+          ${model.rects.map((rect: VisualBlockRectDto) => {
             const content = model.contents[rect._contentID];
             if (!content) {
               return nothing;

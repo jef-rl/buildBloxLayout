@@ -24,7 +24,6 @@ const assert = {
 const sampleData: VisualBlockDataState = {
   layouts: {
     layout1: {
-      id: 'layout1',
       columns: 12,
       maxWidth: 640,
       positions: [
