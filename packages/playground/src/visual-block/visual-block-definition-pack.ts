@@ -30,6 +30,14 @@ export const visualBlockDefinitionPack: DefinitionPackDto = {
       id: VisualBlockActionCatalog.VisualBlockUiPatch,
       description: 'Patch visual block UI state.',
     },
+    {
+      id: VisualBlockActionCatalog.VisualBlockZoomChanged,
+      description: 'Patch visual block UI zoom.',
+    },
+    {
+      id: VisualBlockActionCatalog.VisualBlockModeChanged,
+      description: 'Patch visual block UI mode.',
+    },
   ],
   handlers: [
     {
@@ -53,6 +61,18 @@ export const visualBlockDefinitionPack: DefinitionPackDto = {
     {
       id: `handler:${VisualBlockActionCatalog.VisualBlockUiPatch}`,
       action: VisualBlockActionCatalog.VisualBlockUiPatch,
+      implKey: visualBlockUiReducerKey,
+      config: { mode: 'patch' },
+    },
+    {
+      id: `handler:${VisualBlockActionCatalog.VisualBlockZoomChanged}`,
+      action: VisualBlockActionCatalog.VisualBlockZoomChanged,
+      implKey: visualBlockUiReducerKey,
+      config: { mode: 'patch' },
+    },
+    {
+      id: `handler:${VisualBlockActionCatalog.VisualBlockModeChanged}`,
+      action: VisualBlockActionCatalog.VisualBlockModeChanged,
       implKey: visualBlockUiReducerKey,
       config: { mode: 'patch' },
     },
