@@ -13,6 +13,8 @@ import {
   renderVisualBlockContent,
   resolveBackgroundImage,
 } from './visual-block-render-helpers';
+import './inspector-view/visual-block-inspector.view';
+import './projection-view/visual-block-projection.view';
 import './visual-block-grid-overlay/visual-block-grid-overlay';
 import './visual-block-toolbar/visual-block-toolbar.view';
 
@@ -27,6 +29,18 @@ export class VisualBlockRenderView extends LitElement {
       position: relative;
       width: 100%;
       height: 100%;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 16px;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+    .main-stage {
+      position: relative;
+      min-height: 0;
     }
     .render-wrapper {
       position: relative;
@@ -59,6 +73,13 @@ export class VisualBlockRenderView extends LitElement {
       font-family: inherit;
       min-width: 0;
       min-height: 0;
+    }
+    .debug-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 8px 12px 8px 0;
+      overflow: auto;
     }
   `;
 
@@ -104,18 +125,26 @@ export class VisualBlockRenderView extends LitElement {
     };
 
     return html`
-      <div class="render-wrapper">
-        <visual-block-toolbar class="render-toolbar"></visual-block-toolbar>
-        <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
-          ${model.rects.map((rect) => {
-            const content = model.contents[rect._contentID];
-            if (!content) {
-              return nothing;
-            }
-            return this.renderContent(rect, content);
-          })}
+      <div class="layout">
+        <div class="main-stage">
+          <div class="render-wrapper">
+            <visual-block-toolbar class="render-toolbar"></visual-block-toolbar>
+            <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
+              ${model.rects.map((rect) => {
+                const content = model.contents[rect._contentID];
+                if (!content) {
+                  return nothing;
+                }
+                return this.renderContent(rect, content);
+              })}
+            </div>
+            <visual-block-grid-overlay class="render-layer overlay-layer"></visual-block-grid-overlay>
+          </div>
         </div>
-        <visual-block-grid-overlay class="render-layer overlay-layer"></visual-block-grid-overlay>
+        <aside class="debug-panel">
+          <visual-block-projection-view></visual-block-projection-view>
+          <visual-block-inspector-view></visual-block-inspector-view>
+        </aside>
       </div>
     `;
   }

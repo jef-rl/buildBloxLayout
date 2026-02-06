@@ -5,6 +5,7 @@ export const VisualBlockActionCatalog = {
   VisualBlockUiPatch: 'visual-block/uiPatch',
   VisualBlockZoomChanged: 'visual-block/zoomChanged',
   VisualBlockModeChanged: 'visual-block/modeChanged',
+  VisualBlockRotationChanged: 'visual-block/rotationChanged',
 } as const;
 
 export type VisualBlockActionName =

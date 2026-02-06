@@ -9,7 +9,11 @@ import {
   visualBlockUiReducerKey,
   visualBlockDataSelectorImplKey,
   visualBlockUiSelectorImplKey,
+  visualBlockProjectionModelSelectorImplKey,
+  visualBlockInspectorModelSelectorImplKey,
 } from './visual-block-definition-pack';
+import { visualBlockInspectorModelSelectorImpl } from './inspector-view/visual-block-inspector.selectors';
+import { visualBlockProjectionModelSelectorImpl } from './projection-view/visual-block-projection.selectors';
 import { visualBlockDataSelectorImpl } from './selectors/visual-block-data.selector';
 import {
   visualBlockRenderModelSelectorImpl,
@@ -17,6 +21,8 @@ import {
 } from './selectors/visual-block-render-model.selector';
 import { visualBlockUiSelectorImpl } from './selectors/visual-block-ui.selector';
 
+import './inspector-view/visual-block-inspector.view';
+import './projection-view/visual-block-projection.view';
 import './visual-block-render-view';
 import './visual-block-preview-view';
 
@@ -50,6 +56,14 @@ export const registerVisualBlockDefinitions = (root: CoreRegistriesContainer): v
   registries.selectorImpls.register(
     visualBlockUiSelectorImplKey,
     visualBlockUiSelectorImpl as any,
+  );
+  registries.selectorImpls.register(
+    visualBlockProjectionModelSelectorImplKey,
+    visualBlockProjectionModelSelectorImpl as any,
+  );
+  registries.selectorImpls.register(
+    visualBlockInspectorModelSelectorImplKey,
+    visualBlockInspectorModelSelectorImpl as any,
   );
 
   loadDefinitionPack(visualBlockDefinitionPack, registries);
