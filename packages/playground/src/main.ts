@@ -10,6 +10,7 @@
 import { Framework, type SimpleViewConfig } from '@project/framework';
 import { IMPROVED_DEMO_LAYOUT } from './data/demo-layout';
 import { firebaseApp, firebaseAuth } from './firebase';
+import { registerVisualBlockDefinitions } from './visual-block/register-visual-block';
 
 // Import custom view components
 import { CounterView } from './components/counter-view';
@@ -101,6 +102,8 @@ const root = Framework.configure({
 })
   .registerViews(CUSTOM_VIEWS)
   .init();
+
+registerVisualBlockDefinitions(root as any);
 
 // ====================
 // FIREBASE INITIALIZATION
