@@ -1,10 +1,18 @@
 # XTRNL Visual Block Editor Migration Plan
 
+## Migration status (completed)
+
+- **Runtime source of truth:** `packages/playground/src/visual-block/**` with registration in `packages/playground/src/visual-block/register-visual-block.ts`.
+- **Integration surface:** update `visual-block-definition-pack.ts` and `register-visual-block.ts` to extend reducers/selectors/views within the playground scope.
+- **Legacy reference only:** `xtrnl_external-code-to-migrate/**` remains read-only and is not imported at runtime.
+- **AI removed:** No AI services, prompts, or UI controls are part of the migrated visual block runtime.
+- **No migration toggles:** Legacy adapters and feature flags have been removed; the migrated visual block implementation is the sole runtime path.
+
 ## 0. Scope, constraints, and objectives
 
 - **External source (read-only):** `xtrnl_external-code-to-migrate/**` (Lit-based visual block editor, preview/projection, AI modal). 
 - **Target architecture:** NXT/CoreContext/registry-based framework in this repo, using definition-driven DTOs, ActionCatalog, pure reducers, isolated effects, selectors, and view registries. 
-- **This task:** produce a comprehensive migration blueprint **only**; no code changes outside this plan. 
+- **Document status:** this plan is historical reference; the visual block migration is complete and the runtime path now lives in `packages/playground/src/visual-block/**` only. 
 
 ---
 
@@ -13,27 +21,27 @@
 ### 1.1 Module map by responsibility
 
 **UI components / views (Lit custom elements)**
-- `src/components/visual-block-data.ts`: Data provider and UI state owner (fetch, UI state, AI modal coordination, event handling). 
+- `src/components/visual-block-data.ts`: Data provider and UI state owner (fetch, UI state, event handling; AI modal coordination is legacy-only). 
 - `src/components/visual-block-editor.ts`: Main editor shell; derives editor context from data + UI state and renders children. 
-- `src/components/visual-block-toolbar.ts`: Toolbar controls for zoom, mode, and AI actions. 
+- `src/components/visual-block-toolbar.ts`: Toolbar controls for zoom and mode (AI actions are legacy-only). 
 - `src/components/visual-block-grid.ts`: Interactive overlay for selection, drag, resize, Z-order manipulation. 
 - `src/components/visual-block-render.ts`: Render-only grid-based content renderer. 
 - `src/components/visual-block-preview.ts`: Small 2D preview projection. 
 - `src/components/visual-block-projection.ts`: 3D-ish projection with rotation control. 
 - `src/components/visual-block-inspector.ts`: Inspector/debug sidebar for selection metadata and stacked z-order. 
-- `src/components/visual-block-ai-modal.ts`: AI modal UI for architect/polish/summarize flows. 
+- `src/components/visual-block-ai-modal.ts`: AI modal UI for architect/polish/summarize flows (legacy-only). 
 
 **State management / contexts**
 - `src/contexts.ts`: Three Lit contexts (`blockDataContext`, `uiStateContext`, `editorContext`). The provider + editor split is used to avoid recomputations and to keep components decoupled. 
 - `src/defaults.ts`: `DEFAULT_CONTEXT` and `UiEventDetail` for event payloads. 
 
-**Side-effects / services**
-- `src/services/ai.ts`: AI client abstractions (`noopAiClient`, `liveAiClient`, `createGeminiClient`) and `createSystemPrompt` helper for prompt assembly. 
+**Side-effects / services (legacy-only)**
+- `src/services/ai.ts`: AI client abstractions (`noopAiClient`, `liveAiClient`, `createGeminiClient`) and `createSystemPrompt` helper for prompt assembly. **Not migrated.** 
 
 **Routing / layout / packaging**
 - `src/index.ts`: Barrel to import/register components. 
-- `src/register.ts`: Registers custom elements and exports AI clients for IIFE usage. 
-- `demo/index.html`: Demo HTML that wires the editor with IIFE bundle and a sample AI client. 
+- `src/register.ts`: Registers custom elements and exports AI clients for IIFE usage (legacy-only). 
+- `demo/index.html`: Demo HTML that wires the editor with IIFE bundle and a sample AI client (legacy-only). 
 
 **Utilities**
 - `src/utils/grid.ts`: `clampGrid` helper for constraining size/position in grid bounds. 
@@ -60,10 +68,10 @@
 
 ### FBK-data-provider
 - **Feature name:** Data Provider + UI State Owner
-- **User-facing description:** Loads a visual block layout from a URL, keeps editor UI state (zoom, mode, selection, modal), and exposes it to child views. 
+- **User-facing description:** Loads a visual block layout from a URL, keeps editor UI state (zoom, mode, selection), and exposes it to child views. 
 - **Technical description:** `visual-block-data` fetches JSON, manages local state, listens to `ui-event` for selection/zoom/mode/AI actions, and updates Lit contexts. 
 - **Key source files:** `src/components/visual-block-data.ts`, `src/contexts.ts`, `src/defaults.ts`. 
-- **Classification:** **Shared but host-configurable** (data loading + UI state slices should be framework-level; data source wiring/AI client injection is host-specific). 
+- **Classification:** **Shared but host-configurable** (data loading + UI state slices should be framework-level; data source wiring is host-specific; AI is intentionally not part of the migrated runtime). 
 
 ### FBK-editor-context
 - **Feature name:** Editor Context Derivation
@@ -109,29 +117,29 @@
 
 ### FBK-toolbar
 - **Feature name:** Toolbar Controls
-- **User-facing description:** Provides zoom controls, mode toggle (design/render), and AI action buttons. 
-- **Technical description:** `visual-block-toolbar` reads UI context and dispatches `ui-event` actions. 
+- **User-facing description:** Provides zoom controls and mode toggle (design/render). 
+- **Technical description:** `visual-block-toolbar` reads UI context and dispatches `ui-event` actions. AI controls are legacy-only and not migrated. 
 - **Key source files:** `src/components/visual-block-toolbar.ts`, `src/icons.ts`. 
 - **Classification:** **Shared but host-configurable** (framework can ship base toolbar; host can override). 
 
 ### FBK-ai-modal
 - **Feature name:** AI Modal UI
-- **User-facing description:** Prompt user for AI instructions and show AI results (architect/polish/summary). 
-- **Technical description:** `visual-block-ai-modal` reads `modalState` and dispatches `modal-close`/`modal-submit`. 
+- **User-facing description:** Legacy AI modal from the external reference. 
+- **Technical description:** `visual-block-ai-modal` reads `modalState` and dispatches `modal-close`/`modal-submit`. **Not migrated.** 
 - **Key source files:** `src/components/visual-block-ai-modal.ts`. 
-- **Classification:** **Shared but host-configurable** (UI component can be framework-level, but AI effects live in host). 
+- **Classification:** **Removed from migrated runtime** (intentionally excluded). 
 
 ### FBK-ai-service
 - **Feature name:** AI Client + Prompting
-- **User-facing description:** Lets editor call AI for summaries and adjustments. 
-- **Technical description:** `services/ai.ts` provides a client interface and helpers for Gemini or proxy endpoints. 
+- **User-facing description:** Legacy AI client and prompting utilities. 
+- **Technical description:** `services/ai.ts` provides a client interface and helpers for Gemini or proxy endpoints. **Not migrated.** 
 - **Key source files:** `src/services/ai.ts`. 
-- **Classification:** **Playground-only** for live clients; **Framework-worthy** only for the client interface types and system prompt helper. 
+- **Classification:** **Removed from migrated runtime** (legacy reference only). 
 
 ### FBK-registration-demo
 - **Feature name:** Registration & Demo
 - **User-facing description:** Simple page and auto-registration entry for demo usage. 
-- **Technical description:** `register.ts` auto-registers custom elements and exports AI clients; demo HTML instantiates the editor with a sample AI client. 
+- **Technical description:** `register.ts` auto-registers custom elements; demo HTML instantiates the editor (legacy-only). 
 - **Key source files:** `src/register.ts`, `demo/index.html`, `src/index.ts`. 
 - **Classification:** **Playground-only**. 
 
@@ -153,52 +161,39 @@
 - **Reuse/extend:** If a generic `DataSourceDefinitionDTO` exists, extend it for `VisualBlockSourceDTO`.
 
 **3.2 Actions**
-- **Framework-level actions (ActionCatalog):**
-  - `visualBlock/dataRequested` (payload: `{ src, baseUrl? }`)
-  - `visualBlock/dataLoaded` (payload: `{ data }`)
-  - `visualBlock/dataFailed` (payload: `{ error }`)
-  - `visualBlock/uiZoomChanged` (payload: `{ zoom }`)
-  - `visualBlock/uiModeChanged` (payload: `{ mode }`)
-  - `visualBlock/selectionChanged` (payload: `{ selectedIds }`)
-  - `visualBlock/rotationChanged` (payload: `{ rotationY }`)
-  - `visualBlock/modalOpened` (payload: `{ mode, title, contextId? }`)
-  - `visualBlock/modalClosed` (payload: `{}`)
-  - `visualBlock/modalSubmitted` (payload: `{ mode, input, contextId? }`)
-  - `visualBlock/rectsUpdated` (payload: `{ updates: Array<{ id, rect }> }`)
-- **Playground-only actions:**
-  - `visualBlock/aiSummaryRequested` (payload: `{ data }`)
-  - `visualBlock/aiSummaryReceived` (payload: `{ text, raw }`)
-  - `visualBlock/aiActionRequested` (payload: `{ mode, input, contextId, data }`)
+- **Playground data-loading actions:**
+  - `VisualBlockDataRequested` (payload: `{ sourceId, params? }`)
+  - `VisualBlockDataLoaded` (payload: `{ sourceId, definition }`)
+  - `VisualBlockDataLoadFailed` (payload: `{ sourceId, error }`)
+- **Visual block ActionCatalog entries (migrated runtime):**
+  - `visual-block/dataSet`, `visual-block/dataPatch`
+  - `visual-block/uiSet`, `visual-block/uiPatch`
+  - `visual-block/zoomChanged`, `visual-block/modeChanged`, `visual-block/rotationChanged`
+- **AI actions:** none (intentionally excluded from the migrated runtime).
 
 **3.3 State & Reducers**
-- **Framework slices:**
-  - `visualBlock.data`: `{ rawData, loading, error }` (hydrated by data actions).
-  - `visualBlock.ui`: `{ zoom, mode, selectedIds, rotationY, modalState }` (pure UI state).
-  - `visualBlock.rects`: `{ [id]: Rect }` (derived updates applied on rect update action if data is authoritative).
-- **Playground slices:**
-  - `visualBlock.ai`: `{ status, lastSummary, error }`.
-- **Reducer behavior (sketch):**
-  - `dataRequested` → set loading; `dataLoaded` → store `rawData`, reset error.
-  - `rectsUpdated` → apply immutable patch to `visualBlock.data.rawData.layout.positions` or maintain a parallel rects slice (decision in Phase 0).
-  - `modalOpened/Closed/Submitted` → update `modalState`.
+- **Migrated slices:**
+  - `visualBlockData`: `{ layouts, rects, contents, activeLayoutId }`.
+  - `visualBlockUi`: `{ zoom, mode, selectedIds, blockId, rotationY, modalState }`.
+- **Reducer behavior (current):**
+  - Data reducer supports replace/patch updates via `dataSet`/`dataPatch`.
+  - UI reducer supports replace/patch updates via `uiSet`/`uiPatch` plus zoom/mode/rotation actions.
 
 **3.4 Effects (IO)**
-- **Framework effects:**
-  - `visualBlockFetchEffect`: triggered by `dataRequested`, performs fetch, dispatches `dataLoaded`/`dataFailed`.
 - **Playground effects:**
-  - `visualBlockAiEffect`: triggered by `aiSummaryRequested` or `aiActionRequested`, uses injected AI client to fetch results and dispatches `aiSummaryReceived` or `modalOpened` with result.
+  - `createVisualBlockDataRequestedEffect`: triggered by `VisualBlockDataRequested`, performs fetch + mapping, dispatches `VisualBlockDataLoaded`/`VisualBlockDataLoadFailed`.
+- **AI effects:** none (intentionally excluded from the migrated runtime).
 
 **3.5 Selectors**
-- `selectVisualBlockData`, `selectVisualBlockUi`, `selectVisualBlockRects`, `selectVisualBlockLoading`.
-- `selectModalState`, `selectSelectedIds`.
+- `visualBlockDataSelector`, `visualBlockUiSelector`, `visualBlockRenderModelSelector`.
+- `visualBlockProjectionModelSelector`, `visualBlockInspectorModelSelector`.
 
 **3.6 Views & Registries**
 - **Views:**
-  - Framework: `visual-block-data-provider` (headless data provider) → *could be a view host that wires effects + state to children rather than a Lit component*. 
-  - Playground: data-provider wrapper that injects AI client and data source props. 
+  - Playground: visual block render, projection, preview, inspector, grid overlay, and toolbar views registered under `packages/playground/src/visual-block/**`. 
 - **Registries:**
   - Selector registry entries for selectors above. 
-  - Effect registry for `visualBlockFetchEffect` (framework), and AI effect (playground). 
+  - Reducer registry entries for visual block data/ui reducers and the data-loading effect entry. 
 
 ---
 
@@ -346,67 +341,66 @@
 ### FBK-toolbar
 
 **3.1 Definitions/DTOs**
-- `VisualBlockToolbarConfigDTO`: enable/disable AI buttons and design/render toggle. 
+- `VisualBlockToolbarConfigDTO`: design/render toggle and zoom controls only (AI options removed). 
 
 **3.2 Actions**
-- `visualBlock/uiZoomChanged`, `visualBlock/uiModeChanged`, `visualBlock/aiSummaryRequested`, `visualBlock/modalOpened`. 
+- `visual-block/zoomChanged`, `visual-block/modeChanged`. 
 
 **3.3 State & Reducers**
-- UI reducer updates zoom/mode/modal state. 
+- UI reducer updates zoom/mode state. 
 
 **3.4 Effects (IO)**
-- AI effect triggered by summary request. 
+- None. 
 
 **3.5 Selectors**
-- `selectZoom`, `selectMode`, `selectIsPrompting`. 
+- `visualBlockUiSelector` (zoom/mode selection). 
 
 **3.6 Views & Registries**
-- Framework view `visual-block-toolbar` (or playground-specific variant). 
+- Playground view `visual-block-toolbar` registered via visual block definitions. 
 
 ---
 
 ### FBK-ai-modal
 
 **3.1 Definitions/DTOs**
-- `VisualBlockModalStateDTO`: `{ open, mode, title, content, contextId? }`. 
+- `VisualBlockModalStateDTO`: legacy-only reference (modal UI not migrated). 
 
 **3.2 Actions**
-- `visualBlock/modalOpened`, `visualBlock/modalClosed`, `visualBlock/modalSubmitted`. 
+- None (AI modal is intentionally excluded). 
 
 **3.3 State & Reducers**
-- UI reducer updates modal state. 
+- None (AI modal is intentionally excluded). 
 
 **3.4 Effects (IO)**
-- Playground AI effect reacts to modal submission and dispatches results. 
+- None (AI modal is intentionally excluded). 
 
 **3.5 Selectors**
-- `selectModalState`, `selectIsModalOpen`. 
+- None (AI modal is intentionally excluded). 
 
 **3.6 Views & Registries**
-- Framework view `visual-block-ai-modal` (optional). 
+- None (AI modal is intentionally excluded). 
 
 ---
 
 ### FBK-ai-service
 
 **3.1 Definitions/DTOs**
-- `AiClientDefinitionDTO`: definition of AI client injection options (type, endpoint). 
-- `AiPromptConfigDTO`: template/config for system prompt. 
+- None (legacy-only; AI services not migrated). 
 
 **3.2 Actions**
-- `visualBlock/aiSummaryRequested`, `visualBlock/aiSummaryReceived`, `visualBlock/aiActionRequested`. 
+- None (legacy-only; AI services not migrated). 
 
 **3.3 State & Reducers**
-- Playground AI slice stores results and errors. 
+- None (legacy-only; AI services not migrated). 
 
 **3.4 Effects (IO)**
-- AI effect calls injected client (proxy or Gemini). 
+- None (legacy-only; AI services not migrated). 
 
 **3.5 Selectors**
-- `selectAiSummary`, `selectAiStatus`. 
+- None (legacy-only; AI services not migrated). 
 
 **3.6 Views & Registries**
-- Playground registers AI effect and host-specific AI client adapter. 
+- None (legacy-only; AI services not migrated). 
 
 ---
 
@@ -450,9 +444,9 @@
 
 - **Framework-worthy utilities:**
   - `clampGrid` from `src/utils/grid.ts` → framework-level math/util module. 
-  - `createSystemPrompt` from `src/services/ai.ts` could be generalized for AI integration and kept in playground or shared utils. 
+  - `createSystemPrompt` from `src/services/ai.ts` is legacy-only and not part of the migrated runtime. 
 - **Playground-specific utilities:**
-  - Demo-specific AI client wiring, Gemini key usage (keep in playground). 
+  - Demo-specific AI client wiring, Gemini key usage (legacy-only; not migrated). 
 - **Mixed concerns to split:**
   - `visual-block-data` currently mixes IO, state, and view. Split into: effects for IO, reducers for state, and view for dispatching actions. 
 
@@ -469,8 +463,8 @@
   - Add reducers for `visualBlock.data` and `visualBlock.ui`. 
 - **Playground tasks:**
   - Add demo wiring with minimal registry entries. 
-- **Risk:** Low; should be additive and behind a feature flag. 
-- **Branching strategy:** Feature flag `visualBlockEnabled` in playground registry. 
+- **Risk:** Low; completed with the migrated implementation as the only runtime path. 
+- **Branching strategy:** Feature flag `visualBlockEnabled` was removed after migration completion. 
 
 ### Phase 1: Data provider + core state
 - **Target features:** FBK-data-provider, FBK-editor-context (partial). 
@@ -502,16 +496,16 @@
   - Provide configuration for edit mode toggles. 
 - **Risk:** High (complex interactions and state synchronization). 
 - **Dependencies:** Phases 1–2. 
-- **Branching strategy:** Feature flag `visualBlockEditingEnabled` to allow render-only mode. 
+- **Branching strategy:** Feature flag `visualBlockEditingEnabled` was removed after migration completion. 
 
 ### Phase 4: Toolbar + modal
 - **Target features:** FBK-toolbar, FBK-ai-modal. 
 - **Framework changes:**
   - Add toolbar view (or allow host override). 
-  - Add modal view with CoreContext selectors/actions. 
+  - AI modal was intentionally excluded from the migrated runtime (no CoreContext selectors/actions added for AI). 
 - **Playground changes:**
-  - Provide host AI effect that consumes modal submit actions and produces results. 
-- **Risk:** Medium (AI integration + UI flow). 
+  - None for AI; migrated toolbar focuses on zoom and mode only. 
+- **Risk:** Low (AI integration removed). 
 - **Dependencies:** Phase 1 (UI state). 
 
 ### Phase 5: Projection + inspector (optional)
@@ -519,14 +513,15 @@
 - **Framework changes:**
   - Likely none (keep in playground). 
 - **Playground changes:**
-  - Add optional views in registry; keep behind feature flags. 
+  - Optional views are wired directly without feature flags. 
 - **Risk:** Low (optional). 
 
 ### Final Phase: Cleanup
 - **Goal:** remove legacy external references from production build. 
 - **Tasks:**
-  - Remove temporary adapters and feature flags when migration completes. 
+  - Removed temporary adapters and feature flags after migration completion. 
   - Ensure no references remain to `xtrnl_external-code-to-migrate` outside migration docs. 
+  - **Completed:** runtime path now depends solely on `packages/playground/src/visual-block/**`. 
 
 ---
 
@@ -539,8 +534,8 @@
    - *Mitigation:* Decide a single source of truth (either raw data or a normalized rects slice) early. 
 3. **Complex pointer interactions**: Drag/resize/marquee/z-order logic is large and event-driven. 
    - *Mitigation:* Move interaction logic into view-only code and keep reducers minimal; add focused tests around reducer outputs. 
-4. **AI integration security**: Demo uses client-side Gemini API key; unsafe in production. 
-   - *Mitigation:* Keep AI clients playground-only and require host-provided proxy client. 
+4. **AI integration security**: Legacy demo used client-side Gemini API key; unsafe in production. 
+   - *Mitigation:* AI features are intentionally excluded from the migrated runtime. 
 5. **Unsafe HTML rendering**: Renderer uses `unsafeHTML` for text content. 
    - *Mitigation:* Document sanitization requirements and potentially add sanitizer in playground host. 
 
@@ -548,7 +543,7 @@
 - **Schema ownership:** Should the canonical layout schema live in framework DTOs or be host-provided? 
 - **Normalization strategy:** Do we normalize `layout_lg.positions` into a rect map in state, or keep raw data and derive in selectors? 
 - **Selection semantics:** Should selection live in framework UI state or be host-specific? 
-- **AI workflow:** Are AI actions expected to mutate layout automatically or just return suggestions? 
+- **AI workflow:** Intentionally out of scope for the migrated visual block runtime. 
 - **Mode toggle:** Should “design/render” mode be a framework concept or a host-only mode? 
 
 ---
@@ -564,4 +559,3 @@
 - **Framework views:** `packages/framework/src/nxt/views/components/visual-block/*` 
 - **Framework registries:** `packages/framework/src/nxt/runtime/registries/*` 
 - **Playground views/effects:** `playground/src/nxt/visual-block/*` 
-
