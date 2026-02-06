@@ -3,6 +3,8 @@ export const VisualBlockActionCatalog = {
   VisualBlockDataPatch: 'visual-block/dataPatch',
   VisualBlockUiSet: 'visual-block/uiSet',
   VisualBlockUiPatch: 'visual-block/uiPatch',
+  VisualBlockZoomChanged: 'visual-block/zoomChanged',
+  VisualBlockModeChanged: 'visual-block/modeChanged',
 } as const;
 
 export type VisualBlockActionName =
