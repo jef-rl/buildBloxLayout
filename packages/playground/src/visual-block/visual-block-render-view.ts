@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
-import { coreContext, type CoreContext } from '@project/framework/nxt';
+import { coreContext, type CoreContext } from '../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockContentDto } from './dto/visual-block-content.dto';
 import type { VisualBlockRectDto } from './dto/visual-block-rect.dto';
@@ -130,7 +130,7 @@ export class VisualBlockRenderView extends LitElement {
           <div class="render-wrapper">
             <visual-block-toolbar class="render-toolbar"></visual-block-toolbar>
             <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
-              ${model.rects.map((rect) => {
+              ${model.rects.map((rect: VisualBlockRectDto) => {
                 const content = model.contents[rect._contentID];
                 if (!content) {
                   return nothing;

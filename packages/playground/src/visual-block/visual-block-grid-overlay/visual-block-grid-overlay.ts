@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing, type TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
-import { coreContext, type CoreContext } from '@project/framework/nxt';
+import { coreContext, type CoreContext } from '../../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockUiStateDto } from '../dto/visual-block-ui-state.dto';
 import type { VisualBlockRectDto } from '../dto/visual-block-rect.dto';
