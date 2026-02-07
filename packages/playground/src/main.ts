@@ -17,6 +17,11 @@ import { CounterView } from './components/counter-view';
 import { DataFeedView } from './components/data-feed-view';
 import { ConfiguratorView } from './components/configurator-view';
 import { ImprovedDemoView } from './components/demo-view';
+import { VisualBlockInspectorView } from './visual-block/inspector-view/visual-block-inspector.view';
+import { VisualBlockProjectionView } from './visual-block/projection-view/visual-block-projection.view';
+import { VisualBlockPreviewView } from './visual-block/visual-block-preview-view';
+import { VisualBlockRenderView } from './visual-block/visual-block-render-view';
+import { VisualBlockToolbarView } from './visual-block/visual-block-toolbar/visual-block-toolbar.view';
 
 // ====================
 // VIEW REGISTRATIONS (Simplified!)
@@ -58,6 +63,23 @@ const CUSTOM_VIEWS: SimpleViewConfig[] = [
   { id: 'console-output', component: ImprovedDemoView, tag: 'demo-view', icon: 'terminal' },
   { id: 'timeline-view', component: ImprovedDemoView, tag: 'demo-view', icon: 'schedule' },
   { id: 'preview-panel', component: ImprovedDemoView, tag: 'demo-view', icon: 'device_hub' },
+
+  // Visual block demo views
+  { id: 'visual-block-render', component: VisualBlockRenderView, tag: 'visual-block-render', icon: 'view_compact' },
+  { id: 'visual-block-preview', component: VisualBlockPreviewView, tag: 'visual-block-preview', icon: 'view_in_ar' },
+  {
+    id: 'visual-block-projection-view',
+    component: VisualBlockProjectionView,
+    tag: 'visual-block-projection-view',
+    icon: '3d_rotation',
+  },
+  {
+    id: 'visual-block-inspector-view',
+    component: VisualBlockInspectorView,
+    tag: 'visual-block-inspector-view',
+    icon: 'fact_check',
+  },
+  { id: 'visual-block-toolbar', component: VisualBlockToolbarView, tag: 'visual-block-toolbar', icon: 'build' },
 
   // Overlay views
   { id: 'ai-assistant', component: ImprovedDemoView, tag: 'demo-view', icon: 'psychology' },

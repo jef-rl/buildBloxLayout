@@ -48,6 +48,13 @@ const INTERACTIVE_VIEWS: View[] = [
   }
 ];
 
+const VISUAL_BLOCK_RENDER_VIEW: View = {
+  id: 'visual-block-render',
+  name: 'Visual Block Canvas',
+  component: 'visual-block-render',
+  data: {}
+};
+
 /**
  * Main area views - Primary workspace views
  */
@@ -78,7 +85,8 @@ const MAIN_VIEWS: View[] = [
     name: 'Layouts List',
     component: 'layouts-list',
     data: {}
-  }
+  },
+  VISUAL_BLOCK_RENDER_VIEW
 ];
 
 /**
@@ -127,6 +135,18 @@ const RIGHT_PANEL_VIEWS: View[] = [
       color: PLACEHOLDER_COLOR,
       description: 'CSS and styling controls'
     }
+  },
+  {
+    id: 'visual-block-projection-view',
+    name: 'Visual Block Projection',
+    component: 'visual-block-projection-view',
+    data: {}
+  },
+  {
+    id: 'visual-block-inspector-view',
+    name: 'Visual Block Inspector',
+    component: 'visual-block-inspector-view',
+    data: {}
   }
 ];
 
@@ -160,6 +180,18 @@ const BOTTOM_PANEL_VIEWS: View[] = [
       color: PLACEHOLDER_COLOR,
       description: 'AI-powered help and generation'
     }
+  },
+  {
+    id: 'visual-block-toolbar',
+    name: 'Visual Block Toolbar',
+    component: 'visual-block-toolbar',
+    data: {}
+  },
+  {
+    id: 'visual-block-preview',
+    name: 'Visual Block Preview',
+    component: 'visual-block-preview',
+    data: {}
   }
 ];
 
@@ -241,24 +273,27 @@ const MAIN_PANELS: Panel[] = [
   },
   {
     id: 'panel-main-3',
-    name: 'Config',
+    name: 'Visual Block',
     region: 'main',
-    viewId: 'config-panel-1', // Points to Instance
-    view: INTERACTIVE_VIEWS[3]
+    viewId: VISUAL_BLOCK_RENDER_VIEW.id,
+    view: VISUAL_BLOCK_RENDER_VIEW
   }
 ];
 
 /**
  * Expansion panels - docked secondary areas
  */
-const EXPANSION_PANELS: Panel[] = [
+const LEFT_PANELS: Panel[] = [
   {
     id: 'panel-left',
     name: 'Left Panel',
     region: 'left',
     viewId: LEFT_PANEL_VIEWS[0].id,
     view: LEFT_PANEL_VIEWS[0]
-  },
+  }
+];
+
+const RIGHT_PANELS: Panel[] = [
   {
     id: 'panel-right',
     name: 'Right Panel',
@@ -267,11 +302,42 @@ const EXPANSION_PANELS: Panel[] = [
     view: RIGHT_PANEL_VIEWS[0]
   },
   {
+    id: 'panel-right-projection',
+    name: 'Projection',
+    region: 'right',
+    viewId: RIGHT_PANEL_VIEWS[2].id,
+    view: RIGHT_PANEL_VIEWS[2]
+  },
+  {
+    id: 'panel-right-inspector',
+    name: 'Inspector',
+    region: 'right',
+    viewId: RIGHT_PANEL_VIEWS[3].id,
+    view: RIGHT_PANEL_VIEWS[3]
+  }
+];
+
+const BOTTOM_PANELS: Panel[] = [
+  {
     id: 'panel-bottom',
     name: 'Bottom Panel',
     region: 'bottom',
     viewId: 'system-logs-1', // Points to Instance
     view: INTERACTIVE_VIEWS[2]
+  },
+  {
+    id: 'panel-bottom-toolbar',
+    name: 'Toolbar',
+    region: 'bottom',
+    viewId: BOTTOM_PANEL_VIEWS[3].id,
+    view: BOTTOM_PANEL_VIEWS[3]
+  },
+  {
+    id: 'panel-bottom-preview',
+    name: 'Preview',
+    region: 'bottom',
+    viewId: BOTTOM_PANEL_VIEWS[4].id,
+    view: BOTTOM_PANEL_VIEWS[4]
   }
 ];
 
@@ -304,24 +370,24 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
       id: 'container-left',
       name: 'Left Sidebar',
       direction: 'column',
-      panels: [EXPANSION_PANELS[0]]
+      panels: LEFT_PANELS
     },
     {
       id: 'container-right',
       name: 'Right Sidebar',
       direction: 'column',
-      panels: [EXPANSION_PANELS[1]]
+      panels: RIGHT_PANELS
     },
     {
       id: 'container-bottom',
       name: 'Bottom Panel',
       direction: 'row',
-      panels: [EXPANSION_PANELS[2]]
+      panels: BOTTOM_PANELS
     }
   ],
 
   // All panels (main + expansion)
-  panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
+  panels: [...MAIN_PANELS, ...LEFT_PANELS, ...RIGHT_PANELS, ...BOTTOM_PANELS],
 
   // All available views
   views: ALL_VIEWS,
@@ -392,7 +458,7 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   layout: {
     expansion: {
       expanderLeft: 'Closed',   // Start closed
-      expanderRight: 'Closed',  // Start closed
+      expanderRight: 'Opened',  // Start opened
       expanderBottom: 'Opened'  // Start Opened to show logs
     },
     overlayView: null,  // No overlay initially
@@ -400,10 +466,14 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     viewportWidthMode: '3x',  // Show 3 main panels by default
     mainAreaCount: 3 as MainAreaPanelCount,
     // Use INSTANCE IDs for the initial state order
-    mainViewOrder: ['counter-demo-1', 'stock-ticker-1', 'config-panel-1'],
+    mainViewOrder: ['counter-demo-1', 'stock-ticker-1', VISUAL_BLOCK_RENDER_VIEW.id],
     leftViewOrder: [],
-    rightViewOrder: [],
-    bottomViewOrder: ['system-logs-1'],
+    rightViewOrder: [
+      RIGHT_PANEL_VIEWS[0].id,
+      RIGHT_PANEL_VIEWS[2].id,
+      RIGHT_PANEL_VIEWS[3].id
+    ],
+    bottomViewOrder: ['system-logs-1', BOTTOM_PANEL_VIEWS[3].id, BOTTOM_PANEL_VIEWS[4].id],
   },
 
   // Toolbar positioning
@@ -500,7 +570,12 @@ function getIconForView(viewId: string): string {
     'export-dialog': 'file_download',
     'generic-toolbar': 'view_compact',
     'custom-toolbar': 'apps',
-    'layouts-list': 'view_list'
+    'layouts-list': 'view_list',
+    'visual-block-render': 'view_compact',
+    'visual-block-preview': 'view_in_ar',
+    'visual-block-projection-view': '3d_rotation',
+    'visual-block-inspector-view': 'fact_check',
+    'visual-block-toolbar': 'build'
   };
   return iconMap[viewId] || 'apps';
 }
@@ -543,6 +618,22 @@ function getComponentLoader(viewId: string): () => Promise<any> {
     return () => import('@project/framework').then(m => m.CustomToolbar);
   }
 
+  if (viewId === 'visual-block-render') {
+    return () => import('../visual-block/visual-block-render-view');
+  }
+  if (viewId === 'visual-block-preview') {
+    return () => import('../visual-block/visual-block-preview-view');
+  }
+  if (viewId === 'visual-block-projection-view') {
+    return () => import('../visual-block/projection-view/visual-block-projection.view');
+  }
+  if (viewId === 'visual-block-inspector-view') {
+    return () => import('../visual-block/inspector-view/visual-block-inspector.view');
+  }
+  if (viewId === 'visual-block-toolbar') {
+    return () => import('../visual-block/visual-block-toolbar/visual-block-toolbar.view');
+  }
+
   // if (viewId === 'layouts-list') {
   //   return () => import('@project/framework').then(m => m.LayoutsList);
   // }
@@ -568,6 +659,22 @@ function getTagForView(viewId: string): string {
   }
   if (viewId === 'custom-toolbar') {
     return 'custom-toolbar';
+  }
+
+  if (viewId === 'visual-block-render') {
+    return 'visual-block-render';
+  }
+  if (viewId === 'visual-block-preview') {
+    return 'visual-block-preview';
+  }
+  if (viewId === 'visual-block-projection-view') {
+    return 'visual-block-projection-view';
+  }
+  if (viewId === 'visual-block-inspector-view') {
+    return 'visual-block-inspector-view';
+  }
+  if (viewId === 'visual-block-toolbar') {
+    return 'visual-block-toolbar';
   }
 
   if (viewId === 'layouts-list') {
