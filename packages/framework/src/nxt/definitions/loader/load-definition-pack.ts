@@ -5,8 +5,9 @@ import { applyHandlerDefs } from './apply-handler-defs';
 import { applyEffectDefs } from './apply-effect-defs';
 import { applyViewDefs } from './apply-view-defs';
 import { applySelectorDefs } from './apply-selector-defs';
+import type { UIState } from '../../../types/state';
 
-export function loadDefinitionPack<S>(
+export function loadDefinitionPack<S extends UIState>(
   pack: DefinitionPackDto,
   registries: CoreRegistries<S>,
 ): void {

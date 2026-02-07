@@ -90,8 +90,9 @@ export class ViewHost extends LitElement {
     }
 
     private ensureWrapper(host: HTMLElement, instanceId: string): HTMLElement {
-        const escapedId = this.escapeForAttributeSelector(instanceId);
-        const existing = host.querySelector<HTMLElement>(`[data-instance-id="${escapedId}"]`);
+        const existing = Array.from(host.children).find((child) => {
+            return (child as HTMLElement).dataset.instanceId === instanceId;
+        }) as HTMLElement | undefined;
         if (existing) {
             return existing;
         }
@@ -101,18 +102,6 @@ export class ViewHost extends LitElement {
         wrapper.style.width = '100%';
         host.appendChild(wrapper);
         return wrapper;
-    }
-
-    private escapeForAttributeSelector(value: string): string {
-        if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-            return CSS.escape(value);
-        }
-        return value
-            .replace(/\\/g, '\\\\')
-            .replace(/"/g, '\\"')
-            .replace(/\n/g, '\\A ')
-            .replace(/\r/g, '\\D ')
-            .replace(/\f/g, '\\C ');
     }
 
     private async ensureViewElement(wrapper: HTMLElement, instance: ViewInstanceDto): Promise<void> {

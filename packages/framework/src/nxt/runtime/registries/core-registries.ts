@@ -9,8 +9,9 @@ import { SelectorImplRegistry } from './selectors/selector-impl-registry';
 import { applyFrameworkEffectDefs, registerFrameworkEffectImpls } from '../../effects/register-framework-effects';
 import { registerFrameworkSelectorImpls } from '../../selectors/register-framework-selectors';
 import { registerCoreHandlers } from '../../reducers/core/register-core-handlers';
+import type { UIState } from '../../../types/state';
 
-export class CoreRegistries<S = any> {
+export class CoreRegistries<S extends UIState = UIState> {
   readonly actions = new ActionRegistry();
   readonly handlerImpls = new HandlerImplRegistry<S>();
   readonly handlers = new HandlerRegistry<S>(this.handlerImpls);
