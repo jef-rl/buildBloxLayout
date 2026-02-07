@@ -1,14 +1,14 @@
 import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, property, state } from 'lit/decorators.js';
-import { uiStateContext, dispatchUiEvent, type UiStateContextValue } from '@project/framework';
+import { coreContext, type CoreContext, type UIState } from '@project/framework';
 
 /**
  * Improved Demo View Component
  * 
  * This component demonstrates:
  * 1. Proper context consumption without mutation
- * 2. Event-driven state updates via dispatchUiEvent
+ * 2. Event-driven state updates via CoreContext dispatch
  * 3. Reactive UI based on context changes
  * 4. Clean separation of concerns
  */
@@ -42,16 +42,14 @@ export class ImprovedDemoView extends LitElement {
   @state() private isHovered = false;
 
   /** Context consumer - READ ONLY */
-  private uiState: UiStateContextValue['state'] | null = null;
-  private uiDispatch: UiStateContextValue['dispatch'] | null = null;
+  private core: CoreContext<UIState> | null = null;
 
   private uiStateConsumer = new ContextConsumer(this, {
-    context: uiStateContext,
+    context: coreContext,
     subscribe: true,
-    callback: (value: UiStateContextValue | undefined) => {
-      // Store state reference but NEVER mutate it
-      this.uiState = value?.state ?? null;
-      this.uiDispatch = value?.dispatch ?? null;
+    callback: (value: CoreContext<UIState> | undefined) => {
+      // Store core context reference but NEVER mutate state
+      this.core = value ?? null;
       this.requestUpdate();
     },
   });
@@ -272,7 +270,7 @@ export class ImprovedDemoView extends LitElement {
   }
 
   private get authStatus() {
-    const auth = this.uiState?.auth;
+    const auth = this.core?.state.auth;
     return {
       isLoggedIn: auth?.isLoggedIn ?? false,
       userEmail: auth?.user?.email ?? 'Guest'
@@ -280,7 +278,7 @@ export class ImprovedDemoView extends LitElement {
   }
 
   private get userInfo() {
-    const auth = this.uiState?.auth;
+    const auth = this.core?.state.auth;
     const user = auth?.user;
     const email = user?.email ?? 'unknown';
     const name = user?.email ? user.email.split('@')[0] : (user?.uid ?? 'unknown');
@@ -295,7 +293,7 @@ export class ImprovedDemoView extends LitElement {
   }
 
   private get layoutState() {
-    const layout = this.uiState?.layout;
+    const layout = this.core?.state.layout;
     return {
       viewportMode: layout?.viewportWidthMode ?? 'auto',
       mainAreaCount: layout?.mainAreaCount ?? 1,
@@ -309,7 +307,7 @@ export class ImprovedDemoView extends LitElement {
   }
 
   private get panelInfo() {
-    const panels: UiStateContextValue['state']['panels'] = this.uiState?.panels ?? [];
+    const panels = this.core?.state.panels ?? [];
     const mainPanels = panels.filter((panel) => panel.region === 'main');
     const activePanels = mainPanels.filter((panel) => panel.view !== null);
 
@@ -333,9 +331,12 @@ export class ImprovedDemoView extends LitElement {
     const currentState = this.layoutState.expansion[side];
 
     // Dispatch event through the framework's event system
-    dispatchUiEvent(this, 'layout/setExpansion', {
-      side,
-      expanded: !currentState
+    this.core?.dispatch({
+      type: 'layout/setExpansion',
+      payload: {
+        side,
+        expanded: !currentState,
+      },
     });
   }
 
@@ -344,8 +345,11 @@ export class ImprovedDemoView extends LitElement {
    * Demonstrates proper action dispatch pattern
    */
   private changeViewportMode(mode: string) {
-    dispatchUiEvent(this, 'layout/setViewportWidthMode', {
-      mode
+    this.core?.dispatch({
+      type: 'layout/setViewportWidthMode',
+      payload: {
+        mode,
+      },
     });
   }
 
@@ -354,8 +358,11 @@ export class ImprovedDemoView extends LitElement {
    * Shows how to trigger overlay views
    */
   private openSettings() {
-    dispatchUiEvent(this, 'layout/setOverlayView', {
-      viewId: 'project-settings'
+    this.core?.dispatch({
+      type: 'layout/setOverlayView',
+      payload: {
+        viewId: 'project-settings',
+      },
     });
   }
 
@@ -364,8 +371,11 @@ export class ImprovedDemoView extends LitElement {
    * Demonstrates auth state updates
    */
   private simulateLogin() {
-    dispatchUiEvent(this, 'layout/setOverlayView', {
-      viewId: 'firebase-auth'
+    this.core?.dispatch({
+      type: 'layout/setOverlayView',
+      payload: {
+        viewId: 'firebase-auth',
+      },
     });
   }
 
@@ -373,7 +383,7 @@ export class ImprovedDemoView extends LitElement {
    * Simulate logout
    */
   private simulateLogout() {
-    dispatchUiEvent(this, 'auth/logoutRequested', {});
+    this.core?.dispatch({ type: 'auth/logoutRequested', payload: {} });
   }
 
   // ===================//
@@ -461,7 +471,7 @@ export class ImprovedDemoView extends LitElement {
 
           <!-- Interactive Actions -->
           <div class="info-card">
-            <div class="info-label">Actions (via dispatchUiEvent)</div>
+            <div class="info-label">Actions (via CoreContext dispatch)</div>
             <div class="actions">
               <button class="btn btn-primary" @click=${() => this.toggleExpansion('left')}>
                 Toggle Left
@@ -494,7 +504,7 @@ export class ImprovedDemoView extends LitElement {
             <div class="demo-text">
               • Context consumption via <code>ContextConsumer</code><br>
               • Read-only context access (no mutations)<br>
-              • State updates via <code>dispatchUiEvent</code><br>
+              • State updates via <code>coreContext.dispatch</code><br>
               • Reactive UI from context changes<br>
               • Clean separation of concerns
             </div>

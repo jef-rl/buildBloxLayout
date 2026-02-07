@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, property } from 'lit/decorators.js';
-import { uiStateContext, type UiStateContextValue } from '@project/framework';
+import { coreContext, type CoreContext, type UIState } from '@project/framework';
 
 @customElement('simple-view')
 export class SimpleView extends LitElement {
@@ -9,13 +9,13 @@ export class SimpleView extends LitElement {
   @property() color = '#eee';
   @property({ type: Object }) data: { label?: string; color?: string } | null = null;
 
-  private uiState: UiStateContextValue['state'] | null = null;
+  private core: CoreContext<UIState> | null = null;
 
   private uiStateConsumer = new ContextConsumer(this, {
-    context: uiStateContext,
+    context: coreContext,
     subscribe: true,
-    callback: (value: UiStateContextValue | undefined) => {
-      this.uiState = value?.state ?? null;
+    callback: (value: CoreContext<UIState> | undefined) => {
+      this.core = value ?? null;
       this.requestUpdate();
     },
   });
@@ -50,7 +50,7 @@ export class SimpleView extends LitElement {
   render() {
     const label = this.data?.label ?? this.label;
     const color = this.data?.color ?? this.color;
-    const auth = this.uiState?.auth;
+    const auth = this.core?.state.auth;
     const status = auth?.isLoggedIn ? 'Logged in' : 'Logged out';
 
     return html`
