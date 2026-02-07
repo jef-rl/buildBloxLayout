@@ -1,15 +1,16 @@
 import type { Action } from '../../actions/action';
 import type { CoreRegistries } from '../../registries/core-registries';
 import type { ReducerResult } from '../../registries/handlers/handler-impl-registry';
+import type { UIState } from '../../../types/state';
 import { logAction, summarizeState } from '../logging/framework-logger';
 
-export interface DispatchEnv<S> {
+export interface DispatchEnv<S extends UIState> {
   registries: CoreRegistries<S>;
   getState(): S;
   setState(next: S): void;
 }
 
-export function dispatchAction<S>(env: DispatchEnv<S>, action: Action<any>): void {
+export function dispatchAction<S extends UIState>(env: DispatchEnv<S>, action: Action<any>): void {
   const { registries, getState, setState } = env;
   const handlers = registries.handlers.getForAction(action.action);
   const prevState = getState();

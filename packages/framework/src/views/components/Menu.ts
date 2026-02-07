@@ -3,9 +3,42 @@ import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
+import { ActionCatalog, type ActionName } from '../../runtime/actions/action-catalog';
 import { menuItemsSelectorKey } from '../../selectors/layout/menu-items.selector';
 import type { UIState, MenuItem, MenuParentItem, MenuPresetItem } from '../../types/state';
-import { createMenuHandlers } from '../../domains/layout/handlers/menu.handlers';
+
+type MenuHandlers = {
+    loadPreset: (item: MenuPresetItem) => void;
+    executeAction: (item: MenuItem) => void;
+    reorderItems: (draggedId: string, targetId: string) => void;
+    stopClickPropagation: (event: Event) => void;
+};
+
+const isActionName = (value: string): value is ActionName =>
+    Object.values(ActionCatalog).includes(value as ActionName);
+
+const createMenuHandlers = (getCore: () => CoreContext<UIState> | null): MenuHandlers => {
+    const dispatch = (action: { action: ActionName; payload?: Record<string, unknown> }) => {
+        getCore()?.dispatch(action);
+    };
+
+    return {
+        loadPreset: (item) => {
+            dispatch({ action: ActionCatalog.PresetsLoad, payload: { name: item.id } });
+        },
+        executeAction: (item) => {
+            if (isActionName(item.id)) {
+                dispatch({ action: item.id });
+            }
+        },
+        reorderItems: (draggedId, targetId) => {
+            dispatch({ action: ActionCatalog.MenuReorderItems, payload: { draggedId, targetId } });
+        },
+        stopClickPropagation: (event) => {
+            event.stopPropagation();
+        },
+    };
+};
 
 export class Menu extends LitElement {
     @property({ type: String }) orientation: 'row' | 'column' = 'column';
@@ -26,7 +59,7 @@ export class Menu extends LitElement {
     });
 
     private core: CoreContext<UIState> | null = null;
-    private handlers = createMenuHandlers(this, () => this.core);
+    private handlers = createMenuHandlers(() => this.core);
     private boundClickOutside = this.handleClickOutside.bind(this);
 
     static styles = css`
@@ -219,7 +252,7 @@ export class Menu extends LitElement {
             this.requestUpdate();
             return;
         }
-        this.menuItems = this.core.select(menuItemsSelectorKey);
+        this.menuItems = this.core.select<MenuItem[]>(menuItemsSelectorKey);
         this.requestUpdate();
     }
 

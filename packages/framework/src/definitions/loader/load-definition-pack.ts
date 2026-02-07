@@ -1,12 +1,13 @@
 import type { DefinitionPackDto } from '../dto/definition-pack.dto';
 import type { CoreRegistries } from '../../runtime/registries/core-registries';
+import type { UIState } from '../../types/state';
 import { applyActionDefs } from './apply-action-defs';
 import { applyHandlerDefs } from './apply-handler-defs';
 import { applyEffectDefs } from './apply-effect-defs';
 import { applyViewDefs } from './apply-view-defs';
 import { applySelectorDefs } from './apply-selector-defs';
 
-export function loadDefinitionPack<S>(
+export function loadDefinitionPack<S extends UIState>(
   pack: DefinitionPackDto,
   registries: CoreRegistries<S>,
 ): void {
