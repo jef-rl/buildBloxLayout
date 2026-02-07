@@ -58,7 +58,7 @@ export class ViewRegistryPanel extends LitElement {
         }
 
         this.core.dispatch({
-            action: ActionCatalog.ViewsToggleView,
+            action: ActionCatalog.ViewsToggleViewRequested,
             payload: { viewId },
         });
     }

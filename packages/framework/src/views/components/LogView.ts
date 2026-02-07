@@ -197,7 +197,7 @@ export class LogView extends LitElement {
   }
 
   private clearLogs() {
-    this.core?.dispatch({ action: ActionCatalog.LoggingClearLogs });
+    this.core?.dispatch({ action: ActionCatalog.LogsClear });
   }
 
   private formatLogMessage(log: LogsViewData) {

@@ -3,6 +3,7 @@ export const ActionCatalog = {
   AuthSignupRequested: 'auth/signupRequested',
   AuthGoogleLoginRequested: 'auth/googleLoginRequested',
   AuthPasswordResetRequested: 'auth/passwordResetRequested',
+  AuthConfigureRequested: 'auth/configureRequested',
   AuthLogoutRequested: 'auth/logoutRequested',
   AuthSetUser: 'auth/setUser',
   AuthSetUi: 'auth/setUi',
@@ -36,6 +37,7 @@ export const ActionCatalog = {
   PresetsSave: 'presets/save',
   StateHydrate: 'state/hydrate',
   ViewUpdateLocalContext: 'view/updateLocalContext',
+  ViewsToggleViewRequested: 'views/toggleViewRequested',
 } as const;
 
 export type ActionName = (typeof ActionCatalog)[keyof typeof ActionCatalog];
