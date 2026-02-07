@@ -19,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@project/framework': path.resolve(__dirname, '../framework/src'),
+      '@project/framework': path.resolve(__dirname, '../framework/nxt'),
     },
   },
   build: {
