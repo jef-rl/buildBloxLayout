@@ -1,5 +1,10 @@
 import type { DefinitionPackDto } from '../../../framework/src/nxt/definitions/dto/definition-pack.dto';
 import { VisualBlockActionCatalog } from './visual-block-action-catalog';
+import {
+  VISUAL_BLOCK_DATA_LOAD_FAILED,
+  VISUAL_BLOCK_DATA_LOADED,
+  VISUAL_BLOCK_DATA_REQUESTED,
+} from './data-loading/visual-block-data-actions';
 import { visualBlockInspectorModelSelectorKey } from './inspector-view/visual-block-inspector.selectors';
 import { visualBlockProjectionModelSelectorKey } from './projection-view/visual-block-projection.selectors';
 import { visualBlockDataSelectorKey } from './selectors/visual-block-data.selector';
@@ -8,6 +13,7 @@ import { visualBlockUiSelectorKey } from './selectors/visual-block-ui.selector';
 
 export const visualBlockDataReducerKey = 'reducer:visual-block/data@1';
 export const visualBlockUiReducerKey = 'reducer:visual-block/ui@1';
+export const visualBlockDataRequestedEffectImplKey = 'effect:visual-block/dataRequested@1';
 
 export const visualBlockDataSelectorImplKey = visualBlockDataSelectorKey;
 export const visualBlockUiSelectorImplKey = visualBlockUiSelectorKey;
@@ -45,6 +51,18 @@ export const visualBlockDefinitionPack: DefinitionPackDto = {
     {
       id: VisualBlockActionCatalog.VisualBlockRotationChanged,
       description: 'Patch visual block UI rotation.',
+    },
+    {
+      id: VISUAL_BLOCK_DATA_REQUESTED,
+      description: 'Request visual block data by source.',
+    },
+    {
+      id: VISUAL_BLOCK_DATA_LOADED,
+      description: 'Load visual block data for a source.',
+    },
+    {
+      id: VISUAL_BLOCK_DATA_LOAD_FAILED,
+      description: 'Handle visual block data load failure.',
     },
   ],
   handlers: [
@@ -89,6 +107,23 @@ export const visualBlockDefinitionPack: DefinitionPackDto = {
       action: VisualBlockActionCatalog.VisualBlockRotationChanged,
       implKey: visualBlockUiReducerKey,
       config: { mode: 'patch' },
+    },
+  ],
+  effects: [
+    {
+      id: `effect:${VISUAL_BLOCK_DATA_REQUESTED}`,
+      forAction: VISUAL_BLOCK_DATA_REQUESTED,
+      implKey: visualBlockDataRequestedEffectImplKey,
+      description: 'Fetch visual block data by source for the playground demo.',
+      config: {
+        sources: [
+          {
+            sourceId: 'demo-default',
+            url: '/data/visual-blocks/demo-definition.json',
+            label: 'Demo visual block data',
+          },
+        ],
+      },
     },
   ],
   selectors: [

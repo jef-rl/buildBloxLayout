@@ -1,11 +1,18 @@
 import type { CoreRegistries } from '../../../framework/src/nxt/runtime/registries/core-registries';
+import type { EffectImpl } from '../../../framework/src/nxt/runtime/registries/effects/effect-impl-registry';
 import type { ReducerImpl } from '../../../framework/src/nxt/runtime/registries/handlers/handler-impl-registry';
 import { loadDefinitionPack } from '../../../framework/src/nxt/definitions/loader/load-definition-pack';
 import { visualBlockDataReducer } from './reducers/visual-block-data.reducer';
 import { visualBlockUiReducer } from './reducers/visual-block-ui.reducer';
+import { createVisualBlockDataRequestedEffect } from './data-loading/visual-block-data-effects';
+import {
+  createVisualBlockDataEffectDepsForPlayground,
+  type VisualBlockDataSourceConfig,
+} from './data-loading/visual-block-data-playground-helpers';
 import {
   visualBlockDefinitionPack,
   visualBlockDataReducerKey,
+  visualBlockDataRequestedEffectImplKey,
   visualBlockUiReducerKey,
   visualBlockDataSelectorImplKey,
   visualBlockUiSelectorImplKey,
@@ -30,6 +37,13 @@ type CoreRegistriesContainer = {
   coreRegistries?: CoreRegistries<any>;
 };
 
+const resolveVisualBlockDataSources = (
+  runtime?: { config?: Record<string, unknown> },
+): VisualBlockDataSourceConfig[] => {
+  const sources = runtime?.config?.sources;
+  return Array.isArray(sources) ? (sources as VisualBlockDataSourceConfig[]) : [];
+};
+
 export const registerVisualBlockDefinitions = (root: CoreRegistriesContainer): void => {
   const registries = root.coreRegistries;
   if (!registries) {
@@ -43,6 +57,23 @@ export const registerVisualBlockDefinitions = (root: CoreRegistriesContainer): v
   registries.handlerImpls.register(
     visualBlockUiReducerKey,
     visualBlockUiReducer as ReducerImpl<any, any>,
+  );
+
+  registries.effectImpls.register(
+    visualBlockDataRequestedEffectImplKey,
+    ((action, dispatch, runtime) => {
+      const deps = createVisualBlockDataEffectDepsForPlayground(
+        resolveVisualBlockDataSources(runtime),
+        {
+          dispatch,
+          logError: (message, error) => {
+            console.error(message, error);
+          },
+        },
+      );
+      const effect = createVisualBlockDataRequestedEffect(deps);
+      return effect(action as any);
+    }) as EffectImpl<any, any>,
   );
 
   registries.selectorImpls.register(
