@@ -1,1 +1,1 @@
-export { PanelView } from '../../../nxt/views/components/PanelView.js';
+export { PanelView } from '../../../../nxt/views/components/PanelView.js';

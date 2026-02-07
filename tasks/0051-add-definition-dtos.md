@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Create serializable DTOs.
 
 ## Scope
-- src/nxt/definitions/dto/*
+- packages/framework/nxt/definitions/dto/*
 
 ## Steps
 1. Add ActionDef, HandlerDef, EffectDef, ViewDef.

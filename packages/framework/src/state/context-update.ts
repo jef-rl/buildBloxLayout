@@ -1,4 +1,4 @@
-import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 const NAMESPACE_ALLOWLIST = new Set([
   'framework',

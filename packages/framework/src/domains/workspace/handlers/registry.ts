@@ -9,7 +9,7 @@ import { viewInstanceHandlers } from '../../layout/handlers/view-instances';
 import { menuPersistence } from '../../../utils/menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 export const FRAMEWORK_ADMIN_EMAILS: string[] = ['jef@@gourmetguide.co.uk']
 

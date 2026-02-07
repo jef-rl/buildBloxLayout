@@ -4,7 +4,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import type { ViewDefinitionSummary } from '../../../types/state';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 // import { Icons } from '../../../components/Icons';
 
 /**

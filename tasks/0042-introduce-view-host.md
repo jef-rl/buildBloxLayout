@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Centralize DOM lifecycle for views.
 
 ## Scope
-- src/nxt/views/host/view-host.ts (new)
+- packages/framework/nxt/views/host/view-host.ts (new)
 
 ## Steps
 1. Create view host.

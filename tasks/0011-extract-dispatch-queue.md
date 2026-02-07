@@ -18,7 +18,7 @@ Isolate dispatch queue mechanics.
 
 ## Scope
 - src/components/FrameworkRoot.ts
-- src/nxt/runtime/engine/dispatch/dispatch-queue.ts (new)
+- packages/framework/nxt/runtime/engine/dispatch/dispatch-queue.ts (new)
 
 ## Steps
 1. Extract queue logic into new file.

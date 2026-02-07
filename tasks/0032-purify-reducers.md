@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Remove impurity from reducers.
 
 ## Scope
-- src/nxt/reducers/**
+- packages/framework/nxt/reducers/**
 
 ## Steps
 1. Remove Date/random usage.

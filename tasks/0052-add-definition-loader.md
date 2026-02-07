@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Load definition packs at runtime.
 
 ## Scope
-- src/nxt/definitions/loader/*
+- packages/framework/nxt/definitions/loader/*
 
 ## Steps
 1. Implement loader per DTO.

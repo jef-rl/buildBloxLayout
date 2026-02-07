@@ -4,7 +4,7 @@
  */
 
 import type { ViewDefinition } from '../types/index';
-import type { ViewRegistryApi } from '../nxt/runtime/registries/views/view-registry-legacy-api';
+import type { ViewRegistryApi } from '../../nxt/runtime/registries/views/view-registry-legacy-api';
 
 // Lazy imports for built-in components to avoid circular dependencies
 const loadAuthView = () =>

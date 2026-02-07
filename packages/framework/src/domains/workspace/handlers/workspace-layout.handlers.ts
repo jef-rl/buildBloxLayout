@@ -1,7 +1,7 @@
 import type { LayoutExpansion, LayoutState, MainAreaPanelCount } from '../../../types/state';
 import type { ViewportWidthMode } from '../../../types/core';
 import { toggleExpanderState, type ExpanderState } from '../../../utils/expansion-helpers.js';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 const VIEWPORT_WIDTH_MODES: ViewportWidthMode[] = ['1x', '2x', '3x', '4x', '5x'];
 

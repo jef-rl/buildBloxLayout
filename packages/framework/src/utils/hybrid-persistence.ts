@@ -2,7 +2,7 @@ import type { Firestore } from 'firebase/firestore';
 import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { presetPersistence } from './persistence';
 import { firestorePersistence } from './firestore-persistence';
-import { logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logInfo, logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 export interface HybridPersistenceConfig {
   firestore: Firestore;

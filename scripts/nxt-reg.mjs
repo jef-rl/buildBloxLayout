@@ -8,7 +8,7 @@ import path from 'path';
 const cwd = process.cwd();
 const frameworkRoot = path.join(cwd, 'packages', 'framework');
 const srcRoot = path.join(frameworkRoot, 'src');
-const nxtRoot = path.join(srcRoot, 'nxt');
+const nxtRoot = path.join(frameworkRoot, 'nxt');
 
 async function ensureDir(p) {
   await fs.mkdir(p, { recursive: true });
@@ -28,17 +28,17 @@ async function upsertFrameworkIndex() {
     existing = await fs.readFile(indexPath, 'utf8');
   } catch {
     // create minimal index if missing
-    await fs.writeFile(indexPath, "export * from './nxt';\n", 'utf8');
+    await fs.writeFile(indexPath, "export * from '../nxt';\n", 'utf8');
     console.log('Created src/index.ts with NXT export');
     return;
   }
 
-  if (!existing.includes("export * from './nxt'")) {
-    const updated = existing.replace(/\s*$/, '\n') + "export * from './nxt';\n";
+  if (!existing.includes("export * from '../nxt'")) {
+    const updated = existing.replace(/\s*$/, '\n') + "export * from '../nxt';\n";
     await fs.writeFile(indexPath, updated, 'utf8');
-    console.log('Updated src/index.ts to export from ./nxt');
+    console.log('Updated src/index.ts to export from ../nxt');
   } else {
-    console.log('src/index.ts already exports from ./nxt');
+    console.log('src/index.ts already exports from ../nxt');
   }
 }
 
@@ -68,7 +68,7 @@ async function main() {
   `);
 
   // NXT index
-  await writeFile('src/nxt/index.ts', `
+  await writeFile('nxt/index.ts', `
     // NXT framework scaffold entrypoint
     // Expose core types and registries for progressive migration.
 
@@ -78,7 +78,7 @@ async function main() {
   `);
 
   // DTOs
-  await writeFile('src/nxt/definitions/dto/action-def.dto.ts', `
+  await writeFile('nxt/definitions/dto/action-def.dto.ts', `
     export interface ActionDefDto {
       /** Unique id and canonical action name, e.g. "layout/setExpansion" */
       id: string;
@@ -89,7 +89,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/handler-def.dto.ts', `
+  await writeFile('nxt/definitions/dto/handler-def.dto.ts', `
     export interface HandlerDefDto {
       id: string;                  // e.g. "handler:layout/setExpansion"
       action: string;              // e.g. "layout/setExpansion"
@@ -99,7 +99,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/effect-def.dto.ts', `
+  await writeFile('nxt/definitions/dto/effect-def.dto.ts', `
     export interface EffectDefDto {
       id: string;                  // e.g. "effect:presets/hydrate"
       forAction: string;           // e.g. "presets/hydrate"
@@ -109,7 +109,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/view-def.dto.ts', `
+  await writeFile('nxt/definitions/dto/view-def.dto.ts', `
     export interface SelectorRefDto {
       kind: 'path' | 'fnRef';
       path?: string;
@@ -126,7 +126,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/view-instance.dto.ts', `
+  await writeFile('nxt/definitions/dto/view-instance.dto.ts', `
     import type { SelectorRefDto } from './view-def.dto';
 
     export interface ViewInstanceDto {
@@ -138,7 +138,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/selector-def.dto.ts', `
+  await writeFile('nxt/definitions/dto/selector-def.dto.ts', `
     export interface SelectorDefDto {
       id: string;                  // "selector:panel/activeView"
       implKey: string;             // "selector:panel/activeView@1"
@@ -146,7 +146,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/dto/definition-pack.dto.ts', `
+  await writeFile('nxt/definitions/dto/definition-pack.dto.ts', `
     import type { ActionDefDto } from './action-def.dto';
     import type { HandlerDefDto } from './handler-def.dto';
     import type { EffectDefDto } from './effect-def.dto';
@@ -165,7 +165,7 @@ async function main() {
   `);
 
   // Loaders
-  await writeFile('src/nxt/definitions/loader/apply-action-defs.ts', `
+  await writeFile('nxt/definitions/loader/apply-action-defs.ts', `
     import type { ActionDefDto } from '../dto/action-def.dto';
     import type { ActionRegistry } from '../../runtime/registries/actions/action-registry';
 
@@ -174,7 +174,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/loader/apply-handler-defs.ts', `
+  await writeFile('nxt/definitions/loader/apply-handler-defs.ts', `
     import type { HandlerDefDto } from '../dto/handler-def.dto';
     import type { HandlerRegistry } from '../../runtime/registries/handlers/handler-registry';
 
@@ -186,7 +186,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/loader/apply-effect-defs.ts', `
+  await writeFile('nxt/definitions/loader/apply-effect-defs.ts', `
     import type { EffectDefDto } from '../dto/effect-def.dto';
     import type { EffectRegistry } from '../../runtime/registries/effects/effect-registry';
 
@@ -198,7 +198,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/loader/apply-view-defs.ts', `
+  await writeFile('nxt/definitions/loader/apply-view-defs.ts', `
     import type { ViewDefDto } from '../dto/view-def.dto';
     import type { ViewDefinitionRegistry } from '../../runtime/registries/views/view-definition-registry';
 
@@ -210,7 +210,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/definitions/loader/apply-selector-defs.ts', `
+  await writeFile('nxt/definitions/loader/apply-selector-defs.ts', `
     import type { SelectorDefDto } from '../dto/selector-def.dto';
     import type { SelectorImplRegistry } from '../../runtime/registries/selectors/selector-impl-registry';
 
@@ -224,7 +224,7 @@ async function main() {
   `);
 
   // Runtime action
-  await writeFile('src/nxt/runtime/actions/action.ts', `
+  await writeFile('nxt/runtime/actions/action.ts', `
     export type ActionName = string;
 
     export interface Action<P = any> {
@@ -235,7 +235,7 @@ async function main() {
   `);
 
   // Registries: actions
-  await writeFile('src/nxt/runtime/registries/actions/action-registry.ts', `
+  await writeFile('nxt/runtime/registries/actions/action-registry.ts', `
     import type { ActionDefDto } from '../../../definitions/dto/action-def.dto';
 
     export interface ActionRuntimeDef extends ActionDefDto {}
@@ -264,7 +264,7 @@ async function main() {
   `);
 
   // Registries: handlers
-  await writeFile('src/nxt/runtime/registries/handlers/handler-impl-registry.ts', `
+  await writeFile('nxt/runtime/registries/handlers/handler-impl-registry.ts', `
     import type { Action } from '../../actions/action';
 
     export type ReducerImpl<S = any, P = any> =
@@ -291,7 +291,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/runtime/registries/handlers/handler-registry.ts', `
+  await writeFile('nxt/runtime/registries/handlers/handler-registry.ts', `
     import type { Action } from '../../actions/action';
     import type { HandlerDefDto } from '../../../definitions/dto/handler-def.dto';
     import type { ReducerImpl } from './handler-impl-registry';
@@ -331,7 +331,7 @@ async function main() {
   `);
 
   // Registries: effects
-  await writeFile('src/nxt/runtime/registries/effects/effect-impl-registry.ts', `
+  await writeFile('nxt/runtime/registries/effects/effect-impl-registry.ts', `
     import type { Action } from '../../actions/action';
 
     export type EffectImpl<P = any> =
@@ -355,7 +355,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/runtime/registries/effects/effect-registry.ts', `
+  await writeFile('nxt/runtime/registries/effects/effect-registry.ts', `
     import type { Action } from '../../actions/action';
     import type { EffectDefDto } from '../../../definitions/dto/effect-def.dto';
     import { EffectImplRegistry, type EffectImpl } from './effect-impl-registry';
@@ -401,7 +401,7 @@ async function main() {
   `);
 
   // Registries: views
-  await writeFile('src/nxt/runtime/registries/views/view-definition-registry.ts', `
+  await writeFile('nxt/runtime/registries/views/view-definition-registry.ts', `
     import type { ViewDefDto } from '../../../definitions/dto/view-def.dto';
 
     export interface ViewRuntimeDef extends ViewDefDto {}
@@ -431,7 +431,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/runtime/registries/views/view-impl-registry.ts', `
+  await writeFile('nxt/runtime/registries/views/view-impl-registry.ts', `
     export interface ViewImpl {
       tagName: string;
       preload?: () => Promise<void>;
@@ -455,7 +455,7 @@ async function main() {
   `);
 
   // Registries: selectors
-  await writeFile('src/nxt/runtime/registries/selectors/selector-impl-registry.ts', `
+  await writeFile('nxt/runtime/registries/selectors/selector-impl-registry.ts', `
     export type SelectorImpl<S = any, R = any> = (state: S) => R;
 
     export class SelectorImplRegistry<S = any> {
@@ -476,7 +476,7 @@ async function main() {
   `);
 
   // CoreRegistries
-  await writeFile('src/nxt/runtime/registries/core-registries.ts', `
+  await writeFile('nxt/runtime/registries/core-registries.ts', `
     import { ActionRegistry } from './actions/action-registry';
     import { HandlerImplRegistry } from './handlers/handler-impl-registry';
     import { HandlerRegistry } from './handlers/handler-registry';
@@ -499,7 +499,7 @@ async function main() {
   `);
 
   // Engine dispatch
-  await writeFile('src/nxt/runtime/engine/dispatch/dispatch-action.ts', `
+  await writeFile('nxt/runtime/engine/dispatch/dispatch-action.ts', `
     import type { Action } from '../../actions/action';
     import type { CoreRegistries } from '../../registries/core-registries';
 
@@ -525,7 +525,7 @@ async function main() {
   `);
 
   // State store + validation
-  await writeFile('src/nxt/runtime/state/store/ui-state-store.ts', `
+  await writeFile('nxt/runtime/state/store/ui-state-store.ts', `
     export type Subscriber<S> = (state: S) => void;
 
     export class UiStateStore<S> {
@@ -553,7 +553,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/runtime/state/validation/validate-state.ts', `
+  await writeFile('nxt/runtime/state/validation/validate-state.ts', `
     // Placeholder for state validation.
     // In dev builds this can assert shape invariants for the framework state.
     export function validateState<S>(_state: S): void {
@@ -562,7 +562,7 @@ async function main() {
   `);
 
   // CoreContext + context key
-  await writeFile('src/nxt/runtime/context/core-context.ts', `
+  await writeFile('nxt/runtime/context/core-context.ts', `
     import type { Action } from '../actions/action';
     import { dispatchAction } from '../engine/dispatch/dispatch-action';
     import { CoreRegistries } from '../registries/core-registries';
@@ -596,7 +596,7 @@ async function main() {
     }
   `);
 
-  await writeFile('src/nxt/runtime/context/core-context-key.ts', `
+  await writeFile('nxt/runtime/context/core-context-key.ts', `
     import { createContext } from '@lit/context';
     import type { CoreContext } from './core-context';
 
@@ -604,7 +604,7 @@ async function main() {
   `);
 
   // Simple runtime index (optional aggregator)
-  await writeFile('src/nxt/runtime/index.ts', `
+  await writeFile('nxt/runtime/index.ts', `
     export * from './actions/action';
     export * from './registries/core-registries';
     export * from './context/core-context';

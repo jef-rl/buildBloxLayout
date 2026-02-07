@@ -10,7 +10,7 @@ This ledger captures current references to legacy registry shims, dispatcher uti
 - `packages/framework/src/domains/workspace/handlers/registry.ts`
 - `packages/framework/src/domains/workspace/components/ToolbarView.ts`
 - `packages/framework/src/domains/workspace/components/PanelView.ts`
-- `packages/framework/src/nxt/views/components/WorkspaceRoot.ts`
+- `packages/framework/packages/framework/nxt/views/components/WorkspaceRoot.ts`
 - `packages/framework/src/index.ts`
 
 ## core/registry/handler-registry

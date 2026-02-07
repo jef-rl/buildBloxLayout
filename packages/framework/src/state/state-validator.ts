@@ -1,6 +1,6 @@
 import type { UIState, View, Panel } from '../types';
 import { ExpanderState } from '../utils/expansion-helpers';
-import { logError } from '../nxt/runtime/engine/logging/framework-logger';
+import { logError } from '../../nxt/runtime/engine/logging/framework-logger';
 
 /**
  * A collection of validation functions to verify the integrity of the UI state.

@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Prevent invalid selectors when view instance IDs contain special characters.
 
 ## Scope
-- packages/framework/src/nxt/views/host/view-host.ts
+- packages/framework/packages/framework/nxt/views/host/view-host.ts
 - tasks/0054-fix-view-host-selector.md
 
 ## Steps

@@ -1,6 +1,6 @@
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import type { FrameworkContextState } from '../../workspace/handlers/registry';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 export const updateLocalContext: ReducerHandler<FrameworkContextState> = (context, action) => {
     const { instanceId, context: newContext } = action.payload as { instanceId: string, context: Record<string, any> };

@@ -1,1 +1,1 @@
-export { WorkspaceRoot } from '../../../nxt/views/components/WorkspaceRoot.js';
+export { WorkspaceRoot } from '../../../../nxt/views/components/WorkspaceRoot.js';

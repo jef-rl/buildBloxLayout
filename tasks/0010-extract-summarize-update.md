@@ -20,7 +20,7 @@ Isolate summarizeUpdate helper.
 - src/components/summarizeUpdate.helper.ts
 
 ## Steps
-1. Move to `src/nxt/runtime/engine/logging/summarize-update.ts`
+1. Move to `packages/framework/nxt/runtime/engine/logging/summarize-update.ts`
 2. Leave shim.
 
 ## DoD

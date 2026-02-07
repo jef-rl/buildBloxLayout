@@ -3,7 +3,7 @@ import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 /**
  * Content component for saving a new preset.

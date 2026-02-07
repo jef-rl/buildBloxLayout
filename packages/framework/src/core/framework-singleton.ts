@@ -21,9 +21,9 @@ import type { UIState, FrameworkAuthConfig } from '../types/index';
 import type { ViewDefinition } from '../domains/panels/types';
 import type { FrameworkLogger } from '../utils/logger';
 import type { FrameworkRoot } from '../components/FrameworkRoot';
-import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
+import { viewRegistry } from '../../nxt/runtime/registries/views/view-registry-legacy-api';
 import { dispatchUiEvent } from '../legacy/dispatcher';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 import { setFrameworkLogger } from '../utils/logger';
 import {
   type SimpleViewConfig,
@@ -31,7 +31,7 @@ import {
 } from './simple-view-config';
 import { registerBuiltInViews, BUILT_IN_VIEWS } from './built-in-views';
 import { DEFAULT_DEV_LOGGER, NOOP_LOGGER } from './defaults';
-import { logInfo } from '../nxt/runtime/engine/logging/framework-logger';
+import { logInfo } from '../../nxt/runtime/engine/logging/framework-logger';
 
 // Import FrameworkRoot component to ensure it's registered
 import '../components/FrameworkRoot';

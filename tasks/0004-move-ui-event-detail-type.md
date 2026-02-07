@@ -20,7 +20,7 @@ Isolate legacy UI event detail type.
 - src/components/UiEventDetail.type.ts
 
 ## Steps
-1. Move to `src/nxt/compat/legacy-events/ui-event-detail.ts`
+1. Move to `packages/framework/nxt/compat/legacy-events/ui-event-detail.ts`
 2. Leave shim at original path.
 
 ## DoD

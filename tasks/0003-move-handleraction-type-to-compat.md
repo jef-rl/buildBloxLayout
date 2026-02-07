@@ -20,7 +20,7 @@ Isolate legacy HandlerAction type.
 - src/core/registry/HandlerAction.type.ts
 
 ## Steps
-1. Move file to `src/nxt/compat/legacy-actions/handler-action.ts`
+1. Move file to `packages/framework/nxt/compat/legacy-actions/handler-action.ts`
 2. Leave shim at original path.
 
 ## DoD
