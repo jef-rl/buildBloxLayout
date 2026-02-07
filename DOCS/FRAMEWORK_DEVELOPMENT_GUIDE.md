@@ -133,6 +133,11 @@ packages/framework/nxt/
 └── index.ts            # Public API exports
 ```
 
+### Import Guidance
+
+- Import framework APIs from `@project/framework` or directly from `packages/framework/nxt`.
+- Avoid `packages/framework/src` or any `framework/src` deep imports; those paths are blocked by lint checks.
+
 ---
 
 ## Architecture Philosophy
@@ -334,7 +339,7 @@ The framework is organized into five distinct layers, each with specific respons
 - NOT part of the framework itself
 
 **Framework API Layer**
-- Public exports (`/src/index.ts`)
+- Public exports (`/packages/framework/nxt/index.ts`)
 - Type definitions for framework users
 - Documented interfaces and functions
 - Stability guarantees
@@ -481,8 +486,6 @@ describe('todos/add', () => {
   });
 });
 ```
-
----
 
 ## State Management
 
