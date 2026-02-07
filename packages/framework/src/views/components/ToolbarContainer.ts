@@ -5,7 +5,6 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import type { UIState } from '../../types/state';
-import '../../domains/workspace/components/ToolbarView.js';
 import { toolbarContainerStyles } from './ToolbarContainer.styles';
 
 type ToolbarContext = {
