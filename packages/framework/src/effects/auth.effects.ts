@@ -1,7 +1,7 @@
 import type { EffectRegistry } from '../legacy/registry/effect-registry';
 import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 import {
   loginWithEmail,
   signupWithEmail,

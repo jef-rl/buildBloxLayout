@@ -1,5 +1,5 @@
 import type { MenuConfig, MenuItem } from '../types/state';
-import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 const STORAGE_KEY = 'buildblox-menu-config';
 const LEGACY_STORAGE_KEY = 'buildblox-framework-menu-config'; // Temporary compatibility key for pre-rename persisted menu data.

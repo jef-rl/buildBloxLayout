@@ -1,5 +1,5 @@
 import type { UiStateContextValue } from '../../../state/ui-state';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 type UiDispatch = UiStateContextValue['dispatch'];
 

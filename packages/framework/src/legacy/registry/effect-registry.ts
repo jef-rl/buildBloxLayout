@@ -1,13 +1,13 @@
 import type { HandlerAction } from '../../core/registry/HandlerAction.type';
-import type { EffectImpl } from '../../nxt/runtime/registries/effects/effect-impl-registry';
-import { EffectImplRegistry } from '../../nxt/runtime/registries/effects/effect-impl-registry';
-import { EffectRegistry as NxtEffectRegistry } from '../../nxt/runtime/registries/effects/effect-registry';
-import type { ActionName } from '../../nxt/runtime/actions/action-catalog';
+import type { EffectImpl } from '../../../nxt/runtime/registries/effects/effect-impl-registry';
+import { EffectImplRegistry } from '../../../nxt/runtime/registries/effects/effect-impl-registry';
+import { EffectRegistry as NxtEffectRegistry } from '../../../nxt/runtime/registries/effects/effect-registry';
+import type { ActionName } from '../../../nxt/runtime/actions/action-catalog';
 import {
   applyFrameworkEffectDefs,
   frameworkEffectDefs,
   registerFrameworkEffectImpls,
-} from '../../nxt/effects/register-framework-effects';
+} from '../../../nxt/effects/register-framework-effects';
 
 export type EffectHandler<TState> = (
   context: TState,

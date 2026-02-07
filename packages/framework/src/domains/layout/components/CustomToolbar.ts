@@ -1,1 +1,1 @@
-export { CustomToolbar } from '../../../nxt/views/components/CustomToolbar.js';
+export { CustomToolbar } from '../../../../nxt/views/components/CustomToolbar.js';

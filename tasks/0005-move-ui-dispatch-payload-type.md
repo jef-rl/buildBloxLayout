@@ -20,7 +20,7 @@ Isolate legacy UI dispatch payload type.
 - src/components/UiDispatchPayload.type.ts
 
 ## Steps
-1. Move to `src/nxt/compat/legacy-actions/ui-dispatch-payload.ts`
+1. Move to `packages/framework/nxt/compat/legacy-actions/ui-dispatch-payload.ts`
 2. Leave shim at original path.
 
 ## DoD

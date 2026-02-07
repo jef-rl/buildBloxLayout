@@ -14,22 +14,22 @@ Each new file must have exactly one responsibility.
 This task is complete only if `npm run build` passes.
 
 ## Goal
-Create the `src/nxt` folder skeleton without changing behavior.
+Create the `packages/framework/nxt` folder skeleton without changing behavior.
 
 ## Scope
 - src/index.ts
-- src/nxt/** (new files only)
+- packages/framework/nxt/** (new files only)
 
 ## Steps
-1. Create `src/nxt/index.ts`
+1. Create `packages/framework/nxt/index.ts`
 2. Create empty index files under:
-   - src/nxt/runtime
-   - src/nxt/compat
-   - src/nxt/reducers
-   - src/nxt/effects
-   - src/nxt/views
-   - src/nxt/definitions
-3. Export `src/nxt/index.ts` from `src/index.ts`
+   - packages/framework/nxt/runtime
+   - packages/framework/nxt/compat
+   - packages/framework/nxt/reducers
+   - packages/framework/nxt/effects
+   - packages/framework/nxt/views
+   - packages/framework/nxt/definitions
+3. Export `packages/framework/nxt/index.ts` from `src/index.ts`
 
 ## DoD
 - Build passes

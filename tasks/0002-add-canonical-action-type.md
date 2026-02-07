@@ -17,9 +17,9 @@ This task is complete only if `npm run build` passes.
 Introduce the canonical `{ action, payload }` contract.
 
 ## Scope
-- src/nxt/runtime/actions/action.ts (new)
-- src/nxt/runtime/index.ts
-- src/nxt/index.ts
+- packages/framework/nxt/runtime/actions/action.ts (new)
+- packages/framework/nxt/runtime/index.ts
+- packages/framework/nxt/index.ts
 
 ## Steps
 1. Create `ActionName` and `Action` interface.

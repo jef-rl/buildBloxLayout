@@ -17,7 +17,7 @@ This task is complete only if `npm run build` passes.
 Provide adapters from legacy payloads to canonical Action.
 
 ## Scope
-- src/nxt/runtime/actions/adapters/* (new)
+- packages/framework/nxt/runtime/actions/adapters/* (new)
 
 ## Steps
 1. Add adapter from UiEventDetail -> Action

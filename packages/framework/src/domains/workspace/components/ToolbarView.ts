@@ -1,11 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import type { ViewInstanceDto } from '../../../nxt/definitions/dto/view-instance.dto';
-import type { CoreContext } from '../../../nxt/runtime/context/core-context';
-import { coreContext } from '../../../nxt/runtime/context/core-context-key';
+import type { ViewInstanceDto } from '../../../../nxt/definitions/dto/view-instance.dto';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
 import type { UIState } from '../../../types/state';
-import '../../../nxt/views/host/view-host.js';
+import '../../../../nxt/views/host/view-host.js';
 import { toolbarViewStyles } from './ToolbarView.styles';
 
 export class ToolbarView extends LitElement {

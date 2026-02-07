@@ -1,8 +1,8 @@
 
 import type { Panel, PanelContainer, PanelState, UIState, View, LayoutState } from '../../../types/index';
-import { viewRegistry } from '../../../nxt/runtime/registries/views/view-registry-legacy-api';
+import { viewRegistry } from '../../../../nxt/runtime/registries/views/view-registry-legacy-api';
 import { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 const MIN_MAIN_PANELS = 1;
 const MAX_MAIN_PANELS = 5;

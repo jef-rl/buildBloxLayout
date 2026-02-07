@@ -5,7 +5,7 @@
 
 import type { ViewDefinition, ViewComponent } from '../types/index';
 import { inferIcon, deriveNameFromId, deriveTagFromId } from './defaults';
-import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 /**
  * Simplified view configuration that users provide.

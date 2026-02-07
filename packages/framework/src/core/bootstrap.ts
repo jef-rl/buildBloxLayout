@@ -1,8 +1,8 @@
 import type { UIState, ViewDefinition, FrameworkAuthConfig } from '../types/index';
-import { viewRegistry } from '../nxt/runtime/registries/views/view-registry-legacy-api';
+import { viewRegistry } from '../../nxt/runtime/registries/views/view-registry-legacy-api';
 import { dispatchUiEvent } from '../legacy/dispatcher';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
-import { logInfo } from '../nxt/runtime/engine/logging/framework-logger';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
+import { logInfo } from '../../nxt/runtime/engine/logging/framework-logger';
 import '../components/FrameworkRoot';
 
 export type BootstrapFrameworkOptions = {

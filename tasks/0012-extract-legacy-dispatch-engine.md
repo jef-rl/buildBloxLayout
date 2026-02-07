@@ -18,7 +18,7 @@ Move dispatch loop into engine module.
 
 ## Scope
 - src/components/FrameworkRoot.ts
-- src/nxt/runtime/engine/dispatch/legacy-dispatch-engine.ts (new)
+- packages/framework/nxt/runtime/engine/dispatch/legacy-dispatch-engine.ts (new)
 
 ## Steps
 1. Move dispatch loop logic.

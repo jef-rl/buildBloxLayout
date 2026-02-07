@@ -4,7 +4,7 @@ import { ContextConsumer } from '@lit/context';
 import { uiStateContext } from '../../../state/context';
 import type { UiStateContextValue } from '../../../state/ui-state';
 import { dispatchUiEvent } from '../../../legacy/dispatcher';
-import { ActionCatalog } from '../../../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 @customElement('log-view')
 export class LogView extends LitElement {

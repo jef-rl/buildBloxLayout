@@ -1,6 +1,6 @@
 import type { LayoutPreset, LayoutPresets } from '../types/state';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from './expansion-helpers.js';
-import { logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logInfo, logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 const STORAGE_KEY = 'buildblox-layout-presets';
 const STORAGE_VERSION = 2;

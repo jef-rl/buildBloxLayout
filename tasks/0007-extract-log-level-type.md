@@ -20,7 +20,7 @@ Move LogLevel enum into engine logging module.
 - src/components/LogLevel.type.ts
 
 ## Steps
-1. Move to `src/nxt/runtime/engine/logging/log-level.ts`
+1. Move to `packages/framework/nxt/runtime/engine/logging/log-level.ts`
 2. Leave shim at original path.
 
 ## DoD

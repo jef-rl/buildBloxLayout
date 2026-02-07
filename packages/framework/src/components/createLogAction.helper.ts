@@ -1,6 +1,6 @@
 import { HandlerAction } from '../core/registry/HandlerAction.type';
 import { LogLevel } from './LogLevel.type';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 
 export const createLogAction = (
   level: LogLevel,

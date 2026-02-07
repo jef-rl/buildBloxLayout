@@ -2,10 +2,10 @@ import type { EffectRegistry } from '../legacy/registry/effect-registry';
 import type { HandlerAction } from '../core/registry/HandlerAction.type';
 import type { FrameworkContextState } from '../domains/workspace/handlers/registry';
 import type { LayoutPreset, LayoutPresets } from '../types/state';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 import { presetPersistence } from '../utils/persistence';
 import { hybridPersistence } from '../utils/hybrid-persistence';
-import { logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { logWarn } from '../../nxt/runtime/engine/logging/framework-logger';
 
 const dispatchLog = (
   dispatch: (actions: HandlerAction[]) => void,

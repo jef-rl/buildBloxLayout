@@ -1,1 +1,1 @@
-export { ToolbarContainer } from '../../../nxt/views/components/ToolbarContainer.js';
+export { ToolbarContainer } from '../../../../nxt/views/components/ToolbarContainer.js';

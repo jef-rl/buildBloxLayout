@@ -1,9 +1,9 @@
-import { logInfo } from '../../nxt/runtime/engine/logging/framework-logger';
+import { logInfo } from '../../../nxt/runtime/engine/logging/framework-logger';
 import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
-import type { Action } from '../../nxt/runtime/actions/action';
-import type { ActionName } from '../../nxt/runtime/actions/action-catalog';
-import { HandlerImplRegistry } from '../../nxt/runtime/registries/handlers/handler-impl-registry';
-import { HandlerRegistry as NxtHandlerRegistry } from '../../nxt/runtime/registries/handlers/handler-registry';
+import type { Action } from '../../../nxt/runtime/actions/action';
+import type { ActionName } from '../../../nxt/runtime/actions/action-catalog';
+import { HandlerImplRegistry } from '../../../nxt/runtime/registries/handlers/handler-impl-registry';
+import { HandlerRegistry as NxtHandlerRegistry } from '../../../nxt/runtime/registries/handlers/handler-registry';
 import { ReducerHandler } from '../../core/registry/ReducerHandler.type';
 import { HandlerRegistry } from '../../core/registry/HandlerRegistry.type';
 import { HandlerAction } from '../../core/registry/HandlerAction.type';

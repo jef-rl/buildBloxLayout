@@ -1,5 +1,5 @@
 import type { MenuItem, AuthUser, FrameworkAuthConfig, AuthState } from '../types/state';
-import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
+import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 
 /**
  * Generate authentication-related menu items based on auth state

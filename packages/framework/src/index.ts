@@ -2,7 +2,7 @@
 // PUBLIC API - Framework Entry Point
 // ============================================
 // This file defines the supported, stable surface for framework consumers.
-// Everything else in src/nxt and internal folders is implementation detail
+// Everything else in nxt and internal folders is implementation detail
 // and may change without notice.
 
 // Framework bootstrap/configuration

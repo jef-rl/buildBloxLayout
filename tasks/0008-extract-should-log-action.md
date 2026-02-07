@@ -20,7 +20,7 @@ Isolate shouldLogAction helper.
 - src/components/shouldLogAction.helper.ts
 
 ## Steps
-1. Move to `src/nxt/runtime/engine/logging/should-log-action.ts`
+1. Move to `packages/framework/nxt/runtime/engine/logging/should-log-action.ts`
 2. Leave shim.
 
 ## DoD
