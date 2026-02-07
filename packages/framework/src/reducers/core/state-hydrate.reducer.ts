@@ -1,4 +1,4 @@
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import type { Action } from '../../runtime/actions/action';
 
 export const stateHydrateReducer = (

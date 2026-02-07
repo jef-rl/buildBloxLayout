@@ -1,3 +1,3 @@
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 
 export type FrameworkState = Omit<UIState, 'viewTokens'>;

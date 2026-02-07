@@ -3,7 +3,7 @@ import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import type { OverlayViewState } from '../../selectors/overlay/overlay-view.selector';
 import { overlayViewSelectorKey } from '../../selectors/overlay/overlay-view.selector';
 import '../host/view-host.js';

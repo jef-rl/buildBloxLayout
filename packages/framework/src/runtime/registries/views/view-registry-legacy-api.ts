@@ -1,4 +1,4 @@
-import type { View, ViewDefinition, ViewInstance } from '../../../../src/types/index';
+import type { View, ViewDefinition, ViewInstance } from '../../../types/index';
 import type { ViewDefDto } from '../../../definitions/dto/view-def.dto';
 import { CoreRegistries } from '../core-registries';
 import { logError, logInfo, logWarn } from '../../engine/logging/framework-logger';

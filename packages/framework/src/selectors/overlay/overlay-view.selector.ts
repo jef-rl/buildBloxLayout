@@ -1,6 +1,6 @@
 import type { SelectorImpl } from '../../runtime/registries/selectors/selector-impl-registry';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import { resolveViewInstance } from '../view-instances/resolve-view-instance.selector';
 
 export const overlayViewSelectorKey = 'selector:overlay/view';

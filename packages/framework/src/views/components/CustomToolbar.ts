@@ -4,7 +4,7 @@ import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import type { ExpanderState } from '../../../src/utils/expansion-helpers.js';
 import { customToolbarStyles } from './CustomToolbar.styles';
 

@@ -4,7 +4,7 @@ import { ContextConsumer } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { activePresetSelectorKey } from '../../selectors/layout/active-preset.selector';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 /**

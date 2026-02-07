@@ -1,5 +1,5 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
-import type { LayoutPresets } from '../../../src/types/state';
+import type { LayoutPresets } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { presetPersistence } from '../../../src/utils/persistence';
 import { dispatchActions, dispatchLog } from './preset-effect-helpers';
