@@ -2,13 +2,7 @@ import { LitElement, css, html } from 'lit';
 import { ContextProvider } from '@lit/context';
 import type { Firestore } from 'firebase/firestore';
 import type { Auth } from 'firebase/auth';
-import {
-  coreHandlers,
-  createHandlerRegistry,
-} from '../legacy/registry/handler-registry';
 import { type HandlerAction } from '../core/registry/HandlerAction.type';
-import { type ReducerHandler } from '../core/registry/ReducerHandler.type';
-import { createEffectRegistry } from '../legacy/registry/effect-registry';
 import type { UIState } from '../types/state';
 import { uiState, type UiStateContextState } from '../state/ui-state';
 import { uiStateContext } from '../state/context';
@@ -24,7 +18,6 @@ import {
   registerWorkspaceHandlers,
   type FrameworkContextState,
 } from '../domains/workspace/handlers/registry';
-import { registerFrameworkEffects } from '../effects/register';
 import { hybridPersistence } from '../utils/hybrid-persistence';
 import { setFirestoreSyncCallback } from '../utils/persistence';
 import { firestorePersistence } from '../utils/firestore-persistence';
@@ -45,29 +38,20 @@ type UiEventDetail = {
   payload?: Record<string, unknown>;
 };
 
-const wrapCoreHandler = (
-  handler: ReducerHandler<UIState>,
-): ReducerHandler<FrameworkContextState> => {
-  return (context, action) => {
-    const result = handler(context.state, action);
-    return {
-      state: {
-        ...context,
-        state: result.state,
-      },
-      followUps: result.followUps,
-    };
-  };
-};
-
-export const frameworkHandlers = createHandlerRegistry<FrameworkContextState>();
-Object.entries(coreHandlers).forEach(([type, handler]) => {
-  frameworkHandlers.register(type, wrapCoreHandler(handler));
+const toCoreAction = (action: HandlerAction): Action => ({
+  action: action.type,
+  payload: action.payload ?? {},
 });
-registerWorkspaceHandlers(frameworkHandlers);
 
-export const frameworkEffects = createEffectRegistry<FrameworkContextState>();
-registerFrameworkEffects(frameworkEffects);
+const toHandlerAction = (action: Action): HandlerAction => ({
+  type: action.action,
+  payload: action.payload as Record<string, unknown> | undefined,
+});
+
+const isReducerResult = (
+  result: UIState | { state: UIState; followUps?: Action[] },
+): result is { state: UIState; followUps?: Action[] } =>
+  typeof result === 'object' && result !== null && 'state' in result;
 
 export class FrameworkRoot extends LitElement {
   static styles = css`
@@ -103,6 +87,11 @@ export class FrameworkRoot extends LitElement {
     autoShowOnStartup?: boolean;
     requireAuthForActions?: string[];
   } | null = null;
+
+  constructor() {
+    super();
+    registerWorkspaceHandlers(this.coreRegistries);
+  }
 
   private dispatchUiAction = (payload: UiDispatchPayload) => {
     if (!payload?.type) {
@@ -406,9 +395,24 @@ export class FrameworkRoot extends LitElement {
       const context: FrameworkContextState = {
         state: previousState,
       };
-      let result: ReturnType<typeof frameworkHandlers.handle> | null = null;
+      let followUps: HandlerAction[] = [];
+      let nextState = previousState;
+      const coreAction = toCoreAction(action);
       try {
-        result = frameworkHandlers.handle(context, action);
+        const handlers = this.coreRegistries.handlers.getForAction(coreAction.action);
+        if (handlers.length) {
+          for (const entry of handlers) {
+            const result = entry.reduce(nextState, coreAction, entry.config);
+            if (isReducerResult(result)) {
+              nextState = result.state;
+              if (Array.isArray(result.followUps)) {
+                followUps = followUps.concat(result.followUps.map(toHandlerAction));
+              }
+            } else {
+              nextState = result;
+            }
+          }
+        }
       } catch (error) {
         logError(error, {
           message: 'FrameworkRoot handler error.',
@@ -422,9 +426,8 @@ export class FrameworkRoot extends LitElement {
         }
         continue;
       }
-      const nextContext = result.state;
-      const nextState = nextContext.state;
-      const actionFollowUps = result.followUps;
+      const nextContext: FrameworkContextState = { state: nextState };
+      const actionFollowUps = followUps;
 
       if (nextState !== previousState) {
         if (isDev) {
@@ -452,21 +455,11 @@ export class FrameworkRoot extends LitElement {
         queue.push(...actionFollowUps);
       }
 
-      const effectHandler = frameworkEffects.get(action.type);
-      if (effectHandler) {
-        try {
-          effectHandler(nextContext, action, (followUpActions) => {
-            if (followUpActions.length > 0) {
-              this.dispatchActions(followUpActions);
-            }
-          });
-        } catch (error) {
-          logWarn('FrameworkRoot effect error.', {
-            actionType: action.type,
-            error,
-          });
-        }
-      }
+      void this.coreRegistries.effects.runForAction(
+        coreAction,
+        (nextAction) => this.dispatchActions([toHandlerAction(nextAction)]),
+        () => nextContext.state,
+      );
     }
 
     logInfo('FrameworkRoot dispatch end.');
