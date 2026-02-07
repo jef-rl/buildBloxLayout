@@ -1,11 +1,14 @@
 import { LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockUiStateDto } from '../dto/visual-block-ui-state.dto';
+import type { VisualBlockRenderModel } from '../selectors/visual-block-render-model.selector';
+import { visualBlockRenderModelSelectorKey } from '../selectors/visual-block-render-model.selector';
 import { visualBlockUiSelectorKey } from '../selectors/visual-block-ui.selector';
 import { VisualBlockActionCatalog } from '../visual-block-action-catalog';
+import { visualBlockDataRequested } from '../data-loading/visual-block-data-actions';
 
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.5;
@@ -16,6 +19,9 @@ const ZOOM_STEP = 0.1;
 export class VisualBlockToolbarView extends LitElement {
   @consume({ context: coreContext, subscribe: true })
   core?: CoreContext<UIState>;
+
+  @state()
+  private sourceId = 'demo-default';
 
   static styles = css`
     :host {
@@ -80,10 +86,29 @@ export class VisualBlockToolbarView extends LitElement {
       width: 140px;
       accent-color: #2563eb;
     }
+    input[type='text'],
+    select {
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    select:disabled,
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   `;
 
   private getUiState(): VisualBlockUiStateDto | null {
     return this.core?.select<VisualBlockUiStateDto>(visualBlockUiSelectorKey) ?? null;
+  }
+
+  private getRenderModel(): VisualBlockRenderModel | null {
+    return this.core?.select<VisualBlockRenderModel>(visualBlockRenderModelSelectorKey) ?? null;
   }
 
   private dispatchZoom(zoom: number): void {
@@ -108,6 +133,27 @@ export class VisualBlockToolbarView extends LitElement {
     });
   }
 
+  private dispatchSelection(blockId: string | null): void {
+    this.core?.dispatch({
+      action: VisualBlockActionCatalog.VisualBlockUiPatch as ActionName,
+      payload: {
+        ui: {
+          selectedIds: blockId ? [blockId] : [],
+          blockId: blockId ?? '',
+        },
+      },
+    });
+  }
+
+  private handleBlockChange(event: Event): void {
+    const target = event.target as HTMLSelectElement | null;
+    if (!target) {
+      return;
+    }
+    const next = target.value || null;
+    this.dispatchSelection(next);
+  }
+
   private handleZoomInput(event: Event): void {
     const target = event.target as HTMLInputElement | null;
     if (!target) {
@@ -120,11 +166,29 @@ export class VisualBlockToolbarView extends LitElement {
     this.dispatchZoom(next);
   }
 
+  private handleSourceInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    if (!target) {
+      return;
+    }
+    this.sourceId = target.value;
+  }
+
+  private requestData(): void {
+    if (!this.sourceId.trim()) {
+      return;
+    }
+    this.core?.dispatch(visualBlockDataRequested(this.sourceId.trim()));
+  }
+
   render() {
     const uiState = this.getUiState();
+    const renderModel = this.getRenderModel();
     const zoom = uiState?.zoom ?? DEFAULT_ZOOM;
     const mode = uiState?.mode ?? 'design';
     const zoomLabel = `${Math.round(zoom * 100)}%`;
+    const blockOptions = renderModel?.rects ?? [];
+    const selectedBlock = uiState?.blockId ?? '';
 
     return html`
       <div class="toolbar" role="toolbar" aria-label="Visual block controls">
@@ -160,6 +224,33 @@ export class VisualBlockToolbarView extends LitElement {
           />
           <span class="zoom-value">${zoomLabel}</span>
           <button type="button" @click=${() => this.dispatchZoom(DEFAULT_ZOOM)}>Reset</button>
+        </div>
+        <div class="group">
+          <span class="label">Block</span>
+          <select
+            .value=${selectedBlock}
+            @change=${this.handleBlockChange}
+            ?disabled=${blockOptions.length === 0}
+            aria-label="Select block"
+          >
+            <option value="">All</option>
+            ${blockOptions.map(
+              (rect) =>
+                html`<option value=${rect._positionID}>
+                  ${rect._positionID} · ${rect._contentID}
+                </option>`,
+            )}
+          </select>
+        </div>
+        <div class="group">
+          <span class="label">Data</span>
+          <input
+            type="text"
+            .value=${this.sourceId}
+            @input=${this.handleSourceInput}
+            aria-label="Data source"
+          />
+          <button type="button" @click=${this.requestData}>Load</button>
         </div>
       </div>
     `;

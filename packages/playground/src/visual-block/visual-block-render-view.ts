@@ -13,8 +13,10 @@ import {
   renderVisualBlockContent,
   resolveBackgroundImage,
 } from './visual-block-render-helpers';
+import { visualBlockDataRequested } from './data-loading/visual-block-data-actions';
 import './inspector-view/visual-block-inspector.view';
 import './projection-view/visual-block-projection.view';
+import './debug/visual-block-state-debug.view';
 import './visual-block-grid-overlay/visual-block-grid-overlay';
 import './visual-block-toolbar/visual-block-toolbar.view';
 
@@ -68,6 +70,51 @@ export class VisualBlockRenderView extends LitElement {
       height: 100%;
       display: grid;
     }
+    .render-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: #e2e8f0;
+    }
+    .render-empty-card {
+      max-width: 360px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 40px -30px rgba(15, 23, 42, 0.8);
+      display: grid;
+      gap: 12px;
+    }
+    .render-empty-card h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #f8fafc;
+    }
+    .render-empty-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #cbd5f5;
+      line-height: 1.5;
+    }
+    .render-empty-card button {
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      justify-self: center;
+    }
+    .render-empty-card button:hover {
+      background: #e2e8f0;
+    }
     .content-item {
       display: grid;
       font-family: inherit;
@@ -109,19 +156,32 @@ export class VisualBlockRenderView extends LitElement {
     `;
   }
 
+  private requestDemoData(): void {
+    this.core?.dispatch(visualBlockDataRequested('demo-default'));
+  }
+
   render() {
-    const model = this.core?.select<VisualBlockRenderModel>(visualBlockRenderModelSelectorKey);
-    if (!model || model.rects.length === 0) {
-      return html`${nothing}`;
-    }
+    const model =
+      this.core?.select<VisualBlockRenderModel>(visualBlockRenderModelSelectorKey) ?? null;
+    const hasRects = Boolean(model?.rects && model.rects.length > 0);
+    const resolvedModel: VisualBlockRenderModel = model ?? {
+      layoutId: null,
+      layout: null,
+      rects: [],
+      contents: {},
+      columns: 24,
+      rowHeight: 16,
+      padding: 40,
+      rowCount: 6,
+    };
 
     const containerStyle = {
-      ...normalizeStyleMap(model.layout?.styler as Record<string, unknown> | undefined),
-      gridTemplateColumns: `repeat(${model.columns}, 1fr)`,
-      gridTemplateRows: `repeat(${model.rowCount}, ${model.rowHeight}px)`,
-      padding: `${model.padding}px`,
+      ...normalizeStyleMap(resolvedModel.layout?.styler as Record<string, unknown> | undefined),
+      gridTemplateColumns: `repeat(${resolvedModel.columns}, 1fr)`,
+      gridTemplateRows: `repeat(${resolvedModel.rowCount}, ${resolvedModel.rowHeight}px)`,
+      padding: `${resolvedModel.padding}px`,
       boxSizing: 'border-box',
-      maxWidth: model.maxWidth ?? undefined,
+      maxWidth: resolvedModel.maxWidth ?? undefined,
     };
 
     return html`
@@ -130,8 +190,8 @@ export class VisualBlockRenderView extends LitElement {
           <div class="render-wrapper">
             <visual-block-toolbar class="render-toolbar"></visual-block-toolbar>
             <div class="render-layer content-layer render-container" style=${styleMap(containerStyle)}>
-              ${model.rects.map((rect: VisualBlockRectDto) => {
-                const content = model.contents[rect._contentID];
+              ${resolvedModel.rects.map((rect: VisualBlockRectDto) => {
+                const content = resolvedModel.contents[rect._contentID];
                 if (!content) {
                   return nothing;
                 }
@@ -139,11 +199,26 @@ export class VisualBlockRenderView extends LitElement {
               })}
             </div>
             <visual-block-grid-overlay class="render-layer overlay-layer"></visual-block-grid-overlay>
+            ${!hasRects
+              ? html`
+                  <div class="render-layer render-empty">
+                    <div class="render-empty-card">
+                      <h3>No visual blocks loaded</h3>
+                      <p>
+                        Load the demo data to populate the canvas, then use the toolbar to pick a
+                        block for inspection.
+                      </p>
+                      <button type="button" @click=${this.requestDemoData}>Load demo data</button>
+                    </div>
+                  </div>
+                `
+              : nothing}
           </div>
         </div>
         <aside class="debug-panel">
           <visual-block-projection-view></visual-block-projection-view>
           <visual-block-inspector-view></visual-block-inspector-view>
+          <visual-block-state-debug></visual-block-state-debug>
         </aside>
       </div>
     `;
