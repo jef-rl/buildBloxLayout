@@ -65,7 +65,9 @@ export const registerVisualBlockDefinitions = (root: CoreRegistriesContainer): v
       const deps = createVisualBlockDataEffectDepsForPlayground(
         resolveVisualBlockDataSources(runtime),
         {
-          dispatch,
+          dispatch: (action) => {
+            dispatch(action as any);
+          },
           logError: (message, error) => {
             console.error(message, error);
           },
