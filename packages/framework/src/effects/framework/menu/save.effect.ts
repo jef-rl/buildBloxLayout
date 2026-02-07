@@ -1,5 +1,5 @@
 import type { EffectImpl } from '../../../runtime/registries/effects/effect-impl-registry';
-import type { MenuConfig } from '../../../../src/types/state';
+import type { MenuConfig } from '../../../types/state';
 import { menuPersistence } from '../../../../src/utils/menu-persistence';
 import { logWarn } from '../../../runtime/engine/logging/framework-logger';
 

@@ -4,7 +4,7 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { canDragViewsSelectorKey } from '../../selectors/layout/can-drag-views.selector';
 import { viewDefinitionsSelectorKey } from '../../selectors/views/view-definitions.selector';
-import type { ViewDefinitionSummary, UIState } from '../../../src/types/state';
+import type { ViewDefinitionSummary, UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 // import { Icons } from '../../../components/Icons';
 

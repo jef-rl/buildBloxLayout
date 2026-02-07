@@ -1,6 +1,6 @@
 import type { SelectorImpl } from '../../runtime/registries/selectors/selector-impl-registry';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 
 export const viewInstanceResolverSelectorKey = 'selector:view/instanceResolver';
 

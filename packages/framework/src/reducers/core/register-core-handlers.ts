@@ -1,7 +1,7 @@
 import type { HandlerDefDto } from '../../definitions/dto/handler-def.dto';
 import type { ReducerImpl } from '../../runtime/registries/handlers/handler-impl-registry';
 import type { CoreRegistries } from '../../runtime/registries/core-registries';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { logsAppendReducer, logsClearReducer } from './logs.reducer';
 import { stateHydrateReducer } from './state-hydrate.reducer';

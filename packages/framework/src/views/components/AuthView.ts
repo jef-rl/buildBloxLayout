@@ -10,8 +10,8 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { authStateSelectorKey } from '../../selectors/auth/auth-state.selector';
 import { authUiSelectorKey } from '../../selectors/auth/auth-ui.selector';
-import type { AuthMode, AuthConfig } from '../../../src/types/auth';
-import type { UIState } from '../../../src/types/state';
+import type { AuthMode, AuthConfig } from '../../types/auth';
+import type { UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 import { logInfo } from '../../runtime/engine/logging/framework-logger';
 

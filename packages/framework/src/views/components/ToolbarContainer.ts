@@ -4,8 +4,8 @@ import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import type { UIState } from '../../../src/types/state';
-import '../../../src/domains/workspace/components/ToolbarView.js';
+import type { UIState } from '../../types/state';
+import '../../domains/workspace/components/ToolbarView.js';
 import { toolbarContainerStyles } from './ToolbarContainer.styles';
 
 type ToolbarContext = {

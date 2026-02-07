@@ -1,5 +1,5 @@
 import type { SelectorImpl } from '../../runtime/registries/selectors/selector-impl-registry';
-import type { LayoutPreset, UIState } from '../../../src/types/state';
+import type { LayoutPreset, UIState } from '../../types/state';
 
 export const layoutPresetsSelectorKey = 'selector:layout/presets';
 

@@ -5,7 +5,7 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import type { LogsViewData } from '../../selectors/logs/logs-view.selector';
 import { logsViewSelectorKey } from '../../selectors/logs/logs-view.selector';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 @customElement('log-view')

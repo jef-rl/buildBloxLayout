@@ -4,7 +4,7 @@ import { consume } from '@lit/context';
 import type { ViewInstanceDto } from '../../definitions/dto/view-instance.dto';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
-import type { UIState } from '../../../src/types/state';
+import type { UIState } from '../../types/state';
 import type { ViewInstanceResolver } from '../../selectors/view-instances/resolve-view-instance.selector';
 import { viewInstanceResolverSelectorKey } from '../../selectors/view-instances/resolve-view-instance.selector';
 import '../host/view-host.js';

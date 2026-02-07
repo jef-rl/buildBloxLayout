@@ -4,8 +4,8 @@ import { ContextConsumer } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { menuItemsSelectorKey } from '../../selectors/layout/menu-items.selector';
-import type { UIState, MenuItem, MenuParentItem, MenuPresetItem } from '../../../src/types/state';
-import { createMenuHandlers } from '../../../src/domains/layout/handlers/menu.handlers';
+import type { UIState, MenuItem, MenuParentItem, MenuPresetItem } from '../../types/state';
+import { createMenuHandlers } from '../../domains/layout/handlers/menu.handlers';
 
 export class Menu extends LitElement {
     @property({ type: String }) orientation: 'row' | 'column' = 'column';

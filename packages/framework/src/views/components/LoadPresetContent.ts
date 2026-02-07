@@ -4,7 +4,7 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { layoutPresetsSelectorKey } from '../../selectors/layout/presets.selector';
 import { activePresetSelectorKey } from '../../selectors/layout/active-preset.selector';
-import type { LayoutPreset, UIState } from '../../../src/types/state';
+import type { LayoutPreset, UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 /**

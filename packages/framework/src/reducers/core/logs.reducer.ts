@@ -1,4 +1,4 @@
-import type { LogEntry, LogLevel, LogState, UIState } from '../../../src/types/state';
+import type { LogEntry, LogLevel, LogState, UIState } from '../../types/state';
 import type { Action } from '../../runtime/actions/action';
 
 const LOG_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];

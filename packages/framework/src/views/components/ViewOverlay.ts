@@ -4,8 +4,8 @@ import { consume } from '@lit/context';
 import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import type { UIState } from '../../../src/types/state';
-import type { Panel } from '../../../src/domains/panels/types';
+import type { UIState } from '../../types/state';
+import type { Panel } from '../../domains/panels/types';
 import { viewOverlayStyles } from './ViewOverlay.styles';
 
 type LegacyPanelView = { component?: string; viewType?: string; id?: string } | null;

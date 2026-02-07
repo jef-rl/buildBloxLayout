@@ -1,5 +1,5 @@
 import type { SelectorImpl } from '../../runtime/registries/selectors/selector-impl-registry';
-import type { UIState, ViewDefinitionSummary } from '../../../src/types/state';
+import type { UIState, ViewDefinitionSummary } from '../../types/state';
 
 export const viewDefinitionsSelectorKey = 'selector:view/definitions';
 
