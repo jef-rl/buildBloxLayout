@@ -76,6 +76,8 @@ This guide is for developers who want to **extend or modify the BuildBlox Framew
 
 ## Quick Reference
 
+> **Path note:** All file paths in this guide are relative to `packages/framework/nxt`. Do not import from `packages/framework/src` or `framework/src`. Use `@project/framework` or `packages/framework/nxt` instead.
+
 ### Common Tasks
 
 ```typescript

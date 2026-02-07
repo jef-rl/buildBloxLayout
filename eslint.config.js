@@ -18,7 +18,12 @@ export default [
         {
           patterns: [
             {
-              group: ['**/framework/src/**', '**/packages/framework/src/**'],
+              group: [
+                '**/framework/src',
+                '**/framework/src/**',
+                '**/packages/framework/src',
+                '**/packages/framework/src/**',
+              ],
               message:
                 'Import from the NXT entrypoint (packages/framework/nxt or @project/framework).',
             },
