@@ -1,11 +1,22 @@
 import { LitElement, html, css } from 'lit';
+import { ContextConsumer } from '@lit/context';
 import { customElement, property } from 'lit/decorators.js';
-import { dispatchUiEvent } from '@project/framework';
+import { coreContext, type CoreContext, type UIState } from '@project/framework';
 
 @customElement('configurator-view')
 export class ConfiguratorView extends LitElement {
   @property({ type: String }) instanceId = '';
   @property({ type: Object }) context: Record<string, any> = {};
+
+  private core: CoreContext<UIState> | null = null;
+
+  private coreConsumer = new ContextConsumer(this, {
+    context: coreContext,
+    subscribe: true,
+    callback: (value: CoreContext<UIState> | undefined) => {
+      this.core = value ?? null;
+    },
+  });
 
   static styles = css`
     :host {
@@ -53,9 +64,12 @@ export class ConfiguratorView extends LitElement {
   `;
 
   private updateSetting(key: string, value: string) {
-    dispatchUiEvent(this, 'view/updateLocalContext', {
-      instanceId: this.instanceId,
-      context: { [key]: value }
+    this.core?.dispatch({
+      type: 'view/updateLocalContext',
+      payload: {
+        instanceId: this.instanceId,
+        context: { [key]: value },
+      },
     });
   }
 

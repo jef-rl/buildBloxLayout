@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
+import { ContextConsumer } from '@lit/context';
 import { customElement, state } from 'lit/decorators.js';
-import { dispatchUiEvent } from '@project/framework';
-import { firebaseAuth, signInWithEmailAndPassword } from '../firebase';
+import { coreContext, type CoreContext, type UIState } from '@project/framework';
 
 @customElement('login-overlay')
 export class LoginOverlay extends LitElement {
@@ -9,6 +9,38 @@ export class LoginOverlay extends LitElement {
   @state() private email = '';
   @state() private password = '';
   @state() private errorMessage = '';
+  @state() private isLoading = false;
+
+  private core: CoreContext<UIState> | null = null;
+  private hasClosedOverlay = false;
+
+  private coreConsumer = new ContextConsumer(this, {
+    context: coreContext,
+    subscribe: true,
+    callback: (value: CoreContext<UIState> | undefined) => {
+      this.core = value ?? null;
+      const auth = this.core?.state.auth;
+      const authUi = this.core?.state.authUi;
+      const isLoggedIn = auth?.isLoggedIn ?? false;
+      this.isOpen = !isLoggedIn;
+      this.isLoading = authUi?.loading ?? false;
+      this.errorMessage = authUi?.error ?? '';
+
+      if (isLoggedIn && !this.hasClosedOverlay) {
+        this.core?.dispatch({
+          type: 'layout/setOverlayView',
+          payload: { viewId: null },
+        });
+        this.hasClosedOverlay = true;
+      }
+
+      if (!isLoggedIn) {
+        this.hasClosedOverlay = false;
+      }
+
+      this.requestUpdate();
+    },
+  });
 
   static styles = css`
     :host {
@@ -65,36 +97,18 @@ export class LoginOverlay extends LitElement {
     }
   `;
 
-  private async handleSubmit(event: Event) {
+  private handleSubmit(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
-
-    try {
-      if (!firebaseAuth) {
-        this.errorMessage = 'Firebase authentication is not available';
-        return;
-      }
-
-      const credentials = await signInWithEmailAndPassword(
-        firebaseAuth,
-        this.email,
-        this.password
-      );
-      const { uid, email } = credentials.user;
-      dispatchUiEvent(window, 'auth/setUser', { user: { uid, email } });
-      dispatchUiEvent(window, 'layout/setOverlayView', { viewId: null });
-      this.isOpen = false;
-    } catch (error: any) {
-      console.error('Login failed', error);
-      if (error.code === 'auth/wrong-password') {
-        this.errorMessage = 'Incorrect password. Please try again.';
-      } else if (error.code === 'auth/user-not-found') {
-        this.errorMessage = 'User with this email does not exist.';
-      } else {
-        this.errorMessage = 'Unable to sign in. Please check your details and try again.';
-      }
-      this.isOpen = true;
+    if (!this.core) {
+      this.errorMessage = 'Framework context not ready.';
+      return;
     }
+
+    this.core.dispatch({
+      type: 'auth/loginRequested',
+      payload: { email: this.email, password: this.password },
+    });
   }
 
   render() {
@@ -121,7 +135,9 @@ export class LoginOverlay extends LitElement {
               this.password = (event.target as HTMLInputElement).value;
             }}
           />
-          <button type="submit">Log in</button>
+          <button type="submit" ?disabled=${this.isLoading}>
+            ${this.isLoading ? 'Signing in...' : 'Log in'}
+          </button>
           ${this.errorMessage ? html`<div class="error">${this.errorMessage}</div>` : ''}
         </form>
       </div>
