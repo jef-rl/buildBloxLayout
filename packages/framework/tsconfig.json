@@ -9,6 +9,5 @@
     "sourceMap": true,
     "emitDeclarationOnly": false
   },
-  "include": ["nxt"],
-  "exclude": ["src"]
+  "include": ["src", "src/views", "src/selectors", "src/runtime", "src/reducers", "src/effects", "src/definitions"],
 }
