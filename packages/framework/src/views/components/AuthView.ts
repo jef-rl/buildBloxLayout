@@ -248,7 +248,7 @@ export class AuthView extends LitElement {
     this.clearMessages();
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthLogin,
+      action: ActionCatalog.AuthLoginRequested,
       payload: { email: this.email, password: this.password },
     });
   }
@@ -268,7 +268,7 @@ export class AuthView extends LitElement {
     this.clearMessages();
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthSignup,
+      action: ActionCatalog.AuthSignupRequested,
       payload: { email: this.email, password: this.password, displayName: this.displayName },
     });
   }
@@ -283,7 +283,7 @@ export class AuthView extends LitElement {
     this.clearMessages();
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthResetPassword,
+      action: ActionCatalog.AuthPasswordResetRequested,
       payload: { email: this.email },
     });
 
@@ -295,7 +295,7 @@ export class AuthView extends LitElement {
     this.clearMessages();
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthSignInWithPopup,
+      action: ActionCatalog.AuthGoogleLoginRequested,
       payload: { provider: 'google' },
     });
   }
@@ -305,7 +305,7 @@ export class AuthView extends LitElement {
     this.clearMessages();
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthLogout,
+      action: ActionCatalog.AuthLogoutRequested,
       payload: {},
     });
   }
@@ -326,7 +326,7 @@ export class AuthView extends LitElement {
     };
 
     this.core?.dispatch({
-      action: ActionCatalog.AuthConfigure,
+      action: ActionCatalog.AuthConfigureRequested,
       payload: { config },
     });
   }
