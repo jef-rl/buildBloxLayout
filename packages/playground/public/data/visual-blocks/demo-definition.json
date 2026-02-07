@@ -1,0 +1,82 @@
+{
+  "activeLayoutId": "layout_demo",
+  "layout_demo": {
+    "columns": 24,
+    "maxWidth": 1200,
+    "styler": {
+      "background": "#0b1120",
+      "gap": "12px",
+      "borderRadius": "16px"
+    },
+    "positions": [
+      { "_positionID": "hero", "_contentID": "content-hero", "x": 0, "y": 0, "w": 24, "h": 6, "z": 2 },
+      { "_positionID": "left", "_contentID": "content-left", "x": 0, "y": 6, "w": 12, "h": 8, "z": 1 },
+      { "_positionID": "right", "_contentID": "content-right", "x": 12, "y": 6, "w": 12, "h": 8, "z": 1 },
+      { "_positionID": "footer", "_contentID": "content-footer", "x": 0, "y": 14, "w": 24, "h": 4, "z": 1 }
+    ]
+  },
+  "content-hero": {
+    "_contentID": "content-hero",
+    "type": "text",
+    "ui": {
+      "content": "Visual Block Demo\nClick a block to inspect it"
+    },
+    "styler": {
+      "backgroundColor": "#1e293b",
+      "color": "#f8fafc",
+      "padding": "18px",
+      "borderRadius": "14px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontSize": "20px",
+      "fontWeight": "600",
+      "textAlign": "center"
+    }
+  },
+  "content-left": {
+    "_contentID": "content-left",
+    "type": "text",
+    "ui": {
+      "content": "Left panel\nDesign details"
+    },
+    "styler": {
+      "backgroundColor": "#f8fafc",
+      "color": "#0f172a",
+      "padding": "16px",
+      "borderRadius": "12px",
+      "boxShadow": "0 10px 20px -15px rgba(15, 23, 42, 0.4)"
+    }
+  },
+  "content-right": {
+    "_contentID": "content-right",
+    "type": "text",
+    "ui": {
+      "content": "Right panel\nPreview and controls"
+    },
+    "styler": {
+      "backgroundColor": "#e2e8f0",
+      "color": "#0f172a",
+      "padding": "16px",
+      "borderRadius": "12px",
+      "boxShadow": "0 10px 20px -15px rgba(15, 23, 42, 0.4)"
+    }
+  },
+  "content-footer": {
+    "_contentID": "content-footer",
+    "type": "text",
+    "ui": {
+      "content": "Footer status: ready"
+    },
+    "styler": {
+      "backgroundColor": "#0f172a",
+      "color": "#f8fafc",
+      "padding": "14px",
+      "borderRadius": "12px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "space-between",
+      "fontSize": "14px"
+    }
+  }
+}
