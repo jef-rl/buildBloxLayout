@@ -17,7 +17,8 @@ This task is complete only if `npm run build` passes.
 Ensure CoreContext consumers re-render when UI state updates.
 
 ## Scope
-- packages/framework/src/components/FrameworkRoot.ts
+- packages/framework/nxt/runtime/context/core-context.ts
+- packages/framework/nxt/runtime/context/core-context-key.ts
 - tasks/0053-fix-core-context-refresh.md
 
 ## Steps

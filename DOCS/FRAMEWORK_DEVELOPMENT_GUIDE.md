@@ -122,33 +122,15 @@ bootstrapFramework({
 ### File Structure
 
 ```
-packages/framework/src/
-├── components/          # UI components
-│   ├── layout/         # Layout components (Root, Panels, etc.)
-│   ├── controls/       # Control components (Buttons, etc.)
-│   └── ui/             # UI primitives (Icons, etc.)
-├── handlers/           # State handlers
-│   ├── layout/         # Layout-related handlers
-│   ├── workspace/      # Workspace handlers
-│   └── handler-registry.ts
-├── registry/           # View registry
-│   ├── ViewRegistry.ts
-│   └── ViewRegistryInstance.ts
-├── state/              # State management
-│   ├── ui-state.ts
-│   ├── context.ts
-│   └── selectors.ts
-├── types/              # TypeScript types
-│   ├── core.ts
-│   ├── events.ts
-│   ├── panel.ts
-│   └── ui-state.ts
-├── utils/              # Utilities
-│   ├── dispatcher.ts
-│   ├── logger.ts
-│   └── helpers.ts
-├── bootstrap.ts        # Framework initialization
-└── index.ts            # Public exports
+packages/framework/nxt/
+├── compat/             # Compatibility shims + adapters
+├── definitions/        # Serializable definitions + DTOs
+├── reducers/           # Pure state reducers
+├── effects/            # Side-effect handlers (IO, async, dispatch)
+├── runtime/            # Core runtime + context wiring
+├── selectors/          # State selectors
+├── views/              # View components + view host
+└── index.ts            # Public API exports
 ```
 
 ---
@@ -3830,18 +3812,17 @@ Use this checklist when reviewing framework changes:
 
 ### Framework Source
 
-- **Framework Root**: `/packages/framework/src/`
-- **Type Definitions**: `/packages/framework/src/types/`
-- **Handler Registry**: `/packages/framework/src/handlers/handler-registry.ts`
-- **View Registry**: `/packages/framework/src/registry/ViewRegistry.ts`
-- **State Management**: `/packages/framework/src/state/`
-- **Components**: `/packages/framework/src/components/`
-- **Utilities**: `/packages/framework/src/utils/`
+- **Framework Root**: `/packages/framework/nxt/`
+- **Definitions**: `/packages/framework/nxt/definitions/`
+- **Reducers**: `/packages/framework/nxt/reducers/`
+- **Effects**: `/packages/framework/nxt/effects/`
+- **Runtime**: `/packages/framework/nxt/runtime/`
+- **Selectors**: `/packages/framework/nxt/selectors/`
+- **Views**: `/packages/framework/nxt/views/`
 
 ### Test Examples
 
-- **Handler Tests**: `/packages/framework/src/handlers/**/__tests__/`
-- **Component Tests**: `/packages/framework/src/components/**/__tests__/`
+- **Framework Tests**: `/packages/framework/nxt/**/__tests__/`
 - **E2E Tests**: `/packages/playground/e2e/`
 
 ### External Documentation
