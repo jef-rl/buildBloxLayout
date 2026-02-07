@@ -1,7 +1,7 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { coreContext, type CoreContext } from '../../../../framework/src/nxt';
+import { coreContext, type CoreContext } from '@project/framework/nxt';
 import type { UIState } from '@project/framework';
 import type { VisualBlockDataState } from '../state/visual-block-data-state';
 import { visualBlockDataSelectorKey } from '../selectors/visual-block-data.selector';

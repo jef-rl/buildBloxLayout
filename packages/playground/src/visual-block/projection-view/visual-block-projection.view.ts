@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
-import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
+import { coreContext, type ActionName, type CoreContext } from '@project/framework/nxt';
 import type { UIState } from '@project/framework';
 import {
   type VisualBlockProjectionModel,

@@ -1,4 +1,4 @@
-import type { Action } from '../../../../framework/src/nxt/runtime/actions/action';
+import type { Action } from '@project/framework/nxt/runtime/actions/action';
 import type { VisualBlockDataState } from '../state/visual-block-data-state';
 
 type VisualBlockDataContainer = {

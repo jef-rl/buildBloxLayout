@@ -1,4 +1,4 @@
-import type { DefinitionPackDto } from '../../../framework/src/nxt/definitions/dto/definition-pack.dto';
+import type { DefinitionPackDto } from '@project/framework/nxt/definitions/dto/definition-pack.dto';
 import { VisualBlockActionCatalog } from './visual-block-action-catalog';
 import {
   VISUAL_BLOCK_DATA_LOAD_FAILED,
