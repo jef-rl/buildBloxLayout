@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, property, state } from 'lit/decorators.js';
-import { coreContext, type CoreContext, type UIState } from '@project/framework';
+import { coreContext, type CoreContext, type Panel, type UIState } from '@project/framework';
 import { ActionCatalog } from '../../../framework/src/runtime/actions/action-catalog';
 
 /**
@@ -309,8 +309,8 @@ export class ImprovedDemoView extends LitElement {
 
   private get panelInfo() {
     const panels = this.core?.state.panels ?? [];
-    const mainPanels = panels.filter((panel) => panel.region === 'main');
-    const activePanels = mainPanels.filter((panel) => panel.view !== null);
+    const mainPanels = panels.filter((panel: Panel) => panel.region === 'main');
+    const activePanels = mainPanels.filter((panel: Panel) => panel.view !== null);
 
     return {
       total: panels.length,

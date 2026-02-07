@@ -2,6 +2,7 @@ export type { AuthConfig, AuthMode, AuthState, AuthUiState, AuthUser } from './a
 export type {
   LayoutExpansion,
   LayoutExpansionState,
+  MainAreaPanelCount,
   LayoutPreset,
   LayoutPresets,
   LayoutState,

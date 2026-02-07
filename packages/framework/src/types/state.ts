@@ -97,7 +97,7 @@ export type LayoutState = {
   expansion: LayoutExpansion;
   inDesign?: boolean;
   viewportWidthMode?: string;
-  mainAreaCount?: number;
+  mainAreaCount?: MainAreaPanelCount;
   mainViewOrder?: string[];
   leftViewOrder?: string[];
   rightViewOrder?: string[];
@@ -120,3 +120,5 @@ export type UIState = {
   authUi: AuthUiState;
   viewTokens?: Record<string, unknown>;
 };
+
+export type MainAreaPanelCount = 1 | 2 | 3 | 4 | 5;
