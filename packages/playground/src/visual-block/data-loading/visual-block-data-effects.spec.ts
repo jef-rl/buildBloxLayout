@@ -1,6 +1,7 @@
 import {
   createVisualBlockDataEffectDepsForPlayground,
   createVisualBlockDataRequestedEffect,
+  type VisualBlockDataDispatchAction,
   visualBlockDataLoaded,
   visualBlockDataLoadFailed,
   visualBlockDataRequested,
@@ -91,13 +92,13 @@ test('successful fetch and mapping dispatches loaded action', async () => {
     activeLayoutId: 'layout_lg',
   };
 
-  const dispatchCalls: Array<{ action: string; payload: any }> = [];
+  const dispatchCalls: VisualBlockDataDispatchAction[] = [];
   const deps = {
     fetchJson: async (url: string) => {
       assert.equal(url, 'https://example.com/blocks', 'fetchJson receives expected url');
       return raw;
     },
-    dispatch: (action: { action: string; payload: any }) => {
+    dispatch: (action: VisualBlockDataDispatchAction) => {
       dispatchCalls.push(action);
     },
     buildUrlForSource: (sourceId: string) => {
@@ -122,13 +123,13 @@ test('successful fetch and mapping dispatches loaded action', async () => {
 });
 
 test('fetch failure dispatches failed action and logs error', async () => {
-  const dispatchCalls: Array<{ action: string; payload: any }> = [];
+  const dispatchCalls: VisualBlockDataDispatchAction[] = [];
   const logCalls: Array<{ message: string; error: unknown }> = [];
   const deps = {
     fetchJson: async () => {
       throw new Error('Network failure');
     },
-    dispatch: (action: { action: string; payload: any }) => {
+    dispatch: (action: VisualBlockDataDispatchAction) => {
       dispatchCalls.push(action);
     },
     buildUrlForSource: () => 'https://example.com/blocks',
@@ -154,11 +155,11 @@ test('fetch failure dispatches failed action and logs error', async () => {
 });
 
 test('mapping failure dispatches failed action and logs error', async () => {
-  const dispatchCalls: Array<{ action: string; payload: any }> = [];
+  const dispatchCalls: VisualBlockDataDispatchAction[] = [];
   const logCalls: Array<{ message: string; error: unknown }> = [];
   const deps = {
     fetchJson: async () => ({ layout_lg: { positions: [] } }),
-    dispatch: (action: { action: string; payload: any }) => {
+    dispatch: (action: VisualBlockDataDispatchAction) => {
       dispatchCalls.push(action);
     },
     buildUrlForSource: () => 'https://example.com/blocks',
@@ -184,10 +185,10 @@ test('mapping failure dispatches failed action and logs error', async () => {
 });
 
 test('unknown sourceId dispatches failed action from playground deps', async () => {
-  const dispatchCalls: Array<{ action: string; payload: any }> = [];
+  const dispatchCalls: VisualBlockDataDispatchAction[] = [];
   const logCalls: Array<{ message: string; error: unknown }> = [];
   const deps = createVisualBlockDataEffectDepsForPlayground([], {
-    dispatch: (action: { action: string; payload: any }) => {
+    dispatch: (action: VisualBlockDataDispatchAction) => {
       dispatchCalls.push(action);
     },
     fetchImpl: async () => {
