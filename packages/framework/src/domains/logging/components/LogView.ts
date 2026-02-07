@@ -1,9 +1,11 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
-import { dispatchUiEvent } from '../../../legacy/dispatcher';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import type { LogsViewData } from '../../../../nxt/selectors/logs/logs-view.selector';
+import { logsViewSelectorKey } from '../../../../nxt/selectors/logs/logs-view.selector';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 @customElement('log-view')
@@ -189,19 +191,32 @@ export class LogView extends LitElement {
 
   private entries: any[] = [];
   private maxEntries = 200;
+  private core: CoreContext<UIState> | null = null;
 
   private uiStateConsumer = new ContextConsumer(this, {
-    context: uiStateContext,
+    context: coreContext,
     subscribe: true,
-    callback: (value: UiStateContextValue | undefined) => {
-      this.entries = value?.state?.logs?.entries ?? [];
-      this.maxEntries = value?.state?.logs?.maxEntries ?? 0;
-      this.requestUpdate();
+    callback: (value: CoreContext<UIState> | undefined) => {
+      this.core = value ?? null;
+      this.refreshFromState();
     },
   });
 
   private handleClear() {
-    dispatchUiEvent(this, ActionCatalog.LogsClear);
+    this.core?.dispatch({ action: ActionCatalog.LogsClear, payload: {} });
+  }
+
+  private refreshFromState() {
+    if (!this.core) {
+      this.entries = [];
+      this.maxEntries = 0;
+      this.requestUpdate();
+      return;
+    }
+    const logs = this.core.select<LogsViewData>(logsViewSelectorKey);
+    this.entries = logs.entries;
+    this.maxEntries = logs.maxEntries;
+    this.requestUpdate();
   }
 
 
@@ -271,7 +286,7 @@ export class LogView extends LitElement {
         <div class="entries">
           ${this.entries.length === 0
         ? html`<div class="empty">Waiting for log activity...</div>`
-        : this.entries.reverse().map((entry: any) => {
+        : [...this.entries].reverse().map((entry: any) => {
           const data = this.formatData(entry.data);
           const eventType = this.getEventType(entry);
           return html`

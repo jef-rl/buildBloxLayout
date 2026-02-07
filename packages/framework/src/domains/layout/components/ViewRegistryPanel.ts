@@ -1,9 +1,11 @@
 import { LitElement, html, css, nothing } from 'lit';
-import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import { canDragViewsSelectorKey } from '../../../../nxt/selectors/layout/can-drag-views.selector';
+import { viewDefinitionsSelectorKey } from '../../../../nxt/selectors/views/view-definitions.selector';
 import type { ViewDefinitionSummary } from '../../../types/state';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 // import { Icons } from '../../../components/Icons';
 
@@ -13,15 +15,15 @@ import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
  * what is available without leaving design mode.
  */
 export class ViewRegistryPanel extends LitElement {
-    private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
+    private core: CoreContext<UIState> | null = null;
+    private viewDefinitions: ViewDefinitionSummary[] = [];
+    private canDragViews = false;
     private _consumer = new ContextConsumer(this, {
-        context: uiStateContext,
+        context: coreContext,
         subscribe: true,
-        callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
-            this.requestUpdate();
+        callback: (value: CoreContext<UIState> | undefined) => {
+            this.core = value ?? null;
+            this.refreshFromState();
         },
     });
 
@@ -30,7 +32,7 @@ export class ViewRegistryPanel extends LitElement {
      * @returns {boolean} True if the user is an admin and in design mode.
      */
     private isDraggable(): boolean {
-        return Boolean(this.uiState?.auth?.isAdmin && this.uiState?.layout?.inDesign);
+        return this.canDragViews;
     }
 
     /**
@@ -40,7 +42,7 @@ export class ViewRegistryPanel extends LitElement {
      * @param {string} viewId - The ID of the view being dragged.
      */
     private handleDragStart(event: DragEvent, viewId: string) {
-        if (!event.dataTransfer || !this.uiState) {
+        if (!event.dataTransfer) {
             event.preventDefault(); // Prevent default if not draggable or no dataTransfer
             return;
         }
@@ -49,7 +51,7 @@ export class ViewRegistryPanel extends LitElement {
         event.dataTransfer.effectAllowed = 'move';
 
         // Find the view definition to get its title for the drag ghost
-        const viewDefinition = this.uiState.viewDefinitions.find(v => v.id === viewId);
+        const viewDefinition = this.viewDefinitions.find((view) => view.id === viewId);
         const dragTitle = viewDefinition?.title || 'View';
 
         // Create a custom drag ghost element
@@ -77,14 +79,17 @@ export class ViewRegistryPanel extends LitElement {
         setTimeout(() => document.body.removeChild(ghost), 0);
 
         // Dispatch the action to notify the global state
-        this.uiDispatch?.({ type: ActionCatalog.LayoutDragStart, viewId });
+        this.core?.dispatch({
+            action: ActionCatalog.LayoutDragStart,
+            payload: { viewId },
+        });
     }
 
     /**
      * Handles the drag end event to clean up the global state.
      */
     private handleDragEnd() {
-        this.uiDispatch?.({ type: ActionCatalog.LayoutDragEnd });
+        this.core?.dispatch({ action: ActionCatalog.LayoutDragEnd, payload: {} });
     }
 
     private renderRegistryItem(view: ViewDefinitionSummary) {
@@ -109,11 +114,11 @@ export class ViewRegistryPanel extends LitElement {
     }
 
     override render() {
-        if (!this.uiState) {
+        if (!this.core) {
             return nothing;
         }
 
-        const views = this.uiState.viewDefinitions ?? [];
+        const views = this.viewDefinitions ?? [];
         const isDraggable = this.isDraggable();
 
         return html`
@@ -196,6 +201,18 @@ export class ViewRegistryPanel extends LitElement {
             color: var(--theme-color-on-surface-variant, #aaa);
         }
     `;
+
+    private refreshFromState() {
+        if (!this.core) {
+            this.viewDefinitions = [];
+            this.canDragViews = false;
+            this.requestUpdate();
+            return;
+        }
+        this.viewDefinitions = this.core.select(viewDefinitionsSelectorKey);
+        this.canDragViews = this.core.select(canDragViewsSelectorKey);
+        this.requestUpdate();
+    }
 }
 
 if (!customElements.get('view-registry-panel')) {

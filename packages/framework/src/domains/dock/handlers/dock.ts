@@ -1,5 +1,13 @@
 import { DockManager, DockPosition } from '../components/DockManager';
-import { dispatchUiEvent } from '../../../legacy/dispatcher';
+
+const dispatchDockEvent = (type: string, payload?: unknown) => {
+    const root = window.document?.querySelector('framework-root') ?? window;
+    root.dispatchEvent(new CustomEvent('ui-event', {
+        detail: { type, payload },
+        bubbles: true,
+        composed: true,
+    }));
+};
 
 export const dockHandlers = (dm: DockManager) => ({
     DOCK_TOGGLE_PICKER: (payload: { id: string }) => {
@@ -12,6 +20,6 @@ export const dockHandlers = (dm: DockManager) => ({
         dm.setPosition(payload.id, payload.position);
     },
     DOCK_UPDATE_STATE: () => {
-        dispatchUiEvent(window, 'dock-state-change', dm.getState());
+        dispatchDockEvent('dock-state-change', dm.getState());
     },
 });

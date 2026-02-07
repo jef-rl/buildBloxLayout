@@ -1,6 +1,5 @@
 import type { UIState, ViewDefinition, FrameworkAuthConfig } from '../types/index';
 import { viewRegistry } from '../../nxt/runtime/registries/views/view-registry-legacy-api';
-import { dispatchUiEvent } from '../legacy/dispatcher';
 import { ActionCatalog } from '../../nxt/runtime/actions/action-catalog';
 import { logInfo } from '../../nxt/runtime/engine/logging/framework-logger';
 import '../components/FrameworkRoot';
@@ -56,7 +55,11 @@ export const bootstrapFramework = ({ views, state, mount, auth }: BootstrapFrame
     const mergedState = state
         ? { ...state, viewDefinitions: state.viewDefinitions ?? viewDefinitions }
         : { viewDefinitions };
-    dispatchUiEvent(root, ActionCatalog.StateHydrate, { state: mergedState });
+    root.dispatchEvent(new CustomEvent('ui-event', {
+        detail: { type: ActionCatalog.StateHydrate, payload: { state: mergedState } },
+        bubbles: true,
+        composed: true,
+    }));
 
     logInfo('bootstrapFramework state hydrated.', summarizeState(mergedState));
 

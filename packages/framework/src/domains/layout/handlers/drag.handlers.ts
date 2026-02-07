@@ -1,6 +1,6 @@
 import { HandlerAction } from '../../../core/registry/HandlerAction.type';
 import { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
-import { UIState } from '../../../state/ui-state';
+import type { UIState } from '../../../types/state';
 import { cloneDeep } from 'lodash-es';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 

@@ -1,8 +1,7 @@
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import type { UIState } from '../../../types/state';
 import type { MenuItem, MenuPresetItem, MenuConfig } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
-
-type UiDispatch = UiStateContextValue['dispatch'];
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
@@ -10,54 +9,54 @@ type UiEventTarget = {
 
 export const createMenuHandlers = (
     _component: UiEventTarget,
-    getDispatch: () => UiDispatch | null,
+    getCore: () => CoreContext<UIState> | null,
 ) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
 
     loadPreset: (item: MenuPresetItem) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.PresetsLoad, name: item.presetName });
+        core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } });
     },
 
     executeAction: (item: MenuItem) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
 
         if (item.type === 'preset') {
-            dispatch({ type: ActionCatalog.PresetsLoad, name: item.presetName });
+            core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } });
         } else if (item.type === 'action') {
-            dispatch({ type: item.actionType, ...item.payload });
+            core.dispatch({ action: item.actionType as any, payload: item.payload ?? {} });
         }
     },
 
     reorderItems: (draggedId: string, targetId: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.MenuReorderItems, draggedId, targetId });
+        core.dispatch({ action: ActionCatalog.MenuReorderItems, payload: { draggedId, targetId } });
     },
 
     updateConfig: (config: MenuConfig) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.MenuUpdateConfig, config });
+        core.dispatch({ action: ActionCatalog.MenuUpdateConfig, payload: { config } });
     },
 
     hydrateMenu: () => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.EffectsMenuHydrate });
+        core.dispatch({ action: ActionCatalog.EffectsMenuHydrate, payload: {} });
     },
 });

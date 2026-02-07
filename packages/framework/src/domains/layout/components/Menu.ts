@@ -1,8 +1,9 @@
 import { LitElement, html, css, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import { menuItemsSelectorKey } from '../../../../nxt/selectors/layout/menu-items.selector';
 import type { UIState, MenuItem, MenuParentItem, MenuPresetItem } from '../../../types/state';
 import { createMenuHandlers } from '../handlers/menu.handlers';
 
@@ -16,18 +17,16 @@ export class Menu extends LitElement {
     @state() private menuItems: MenuItem[] = [];
 
     private _consumer = new ContextConsumer(this, {
-        context: uiStateContext,
+        context: coreContext,
         subscribe: true,
-        callback: (value: UiStateContextValue) => {
-            this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
-            this.menuItems = this.uiState?.layout?.menu?.items ?? [];
+        callback: (value: CoreContext<UIState> | undefined) => {
+            this.core = value ?? null;
+            this.refreshFromState();
         },
     });
 
-    private uiState: UIState | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
-    private handlers = createMenuHandlers(this, () => this.uiDispatch);
+    private core: CoreContext<UIState> | null = null;
+    private handlers = createMenuHandlers(this, () => this.core);
     private boundClickOutside = this.handleClickOutside.bind(this);
 
     static styles = css`
@@ -212,6 +211,16 @@ export class Menu extends LitElement {
     disconnectedCallback() {
         document.removeEventListener('click', this.boundClickOutside);
         super.disconnectedCallback();
+    }
+
+    private refreshFromState() {
+        if (!this.core) {
+            this.menuItems = [];
+            this.requestUpdate();
+            return;
+        }
+        this.menuItems = this.core.select(menuItemsSelectorKey);
+        this.requestUpdate();
     }
 
     private toggleMenu() {

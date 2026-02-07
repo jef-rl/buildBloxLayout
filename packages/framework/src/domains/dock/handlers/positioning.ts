@@ -1,4 +1,11 @@
-import { dispatchUiEvent } from '../../../legacy/dispatcher';
+const dispatchPositionEvent = (type: string, payload?: unknown) => {
+    const root = window.document?.querySelector('framework-root') ?? window;
+    root.dispatchEvent(new CustomEvent('ui-event', {
+        detail: { type, payload },
+        bubbles: true,
+        composed: true,
+    }));
+};
 
 const getFloatingCords = (id: string) => {
     // This is a placeholder. In a real application, you would get the coordinates
@@ -10,7 +17,7 @@ export const positionHandlers = {
     REQUEST_FLOATING_CORDS: (payload: { id: string }) => {
         const cords = getFloatingCords(payload.id);
         if (cords) {
-            dispatchUiEvent(window, 'floating-cords-update', cords);
+            dispatchPositionEvent('floating-cords-update', cords);
         }
     },
 };

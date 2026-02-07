@@ -6,10 +6,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import { dispatchUiEvent } from '../../../legacy/dispatcher';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import { authStateSelectorKey } from '../../../../nxt/selectors/auth/auth-state.selector';
+import { authUiSelectorKey } from '../../../../nxt/selectors/auth/auth-ui.selector';
 import type { AuthMode, AuthConfig } from '../../../types/auth';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 import { logInfo } from '../../../../nxt/runtime/engine/logging/framework-logger';
 
@@ -197,14 +199,16 @@ export class AuthView extends LitElement {
   @state() private pendingAction: AuthMode | 'google' | 'logout' | null = null;
   @state() private lastSuccess: string | null = null;
 
-  private uiState: UiStateContextValue['state'] | null = null;
+  private core: CoreContext<UIState> | null = null;
+  private authState: UIState['auth'] | null = null;
+  private authUiState: UIState['authUi'] | null = null;
 
   private uiStateConsumer = new ContextConsumer(this, {
-    context: uiStateContext,
+    context: coreContext,
     subscribe: true,
-    callback: (value: UiStateContextValue | undefined) => {
-      this.uiState = value?.state ?? null;
-      this.requestUpdate();
+    callback: (value: CoreContext<UIState> | undefined) => {
+      this.core = value ?? null;
+      this.refreshFromState();
     },
   });
 
@@ -214,15 +218,15 @@ export class AuthView extends LitElement {
   }
 
   private get isAuthenticated(): boolean {
-    return this.uiState?.auth?.isLoggedIn ?? false;
+    return this.authState?.isLoggedIn ?? false;
   }
 
   private get authUi() {
-    return this.uiState?.authUi ?? { loading: false, error: null, success: null };
+    return this.authUiState ?? { loading: false, error: null, success: null };
   }
 
   private get currentUser() {
-    return this.uiState?.auth?.user ?? null;
+    return this.authState?.user ?? null;
   }
 
   private resetForm() {
@@ -234,13 +238,13 @@ export class AuthView extends LitElement {
   private switchMode(newMode: AuthMode) {
     this.mode = newMode;
     this.resetForm();
-    dispatchUiEvent(this, ActionCatalog.AuthSetUi, { error: null, success: null });
+    this.dispatchAction(ActionCatalog.AuthSetUi, { error: null, success: null });
   }
 
   private handleLogin(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password) {
-      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
+      this.dispatchAction(ActionCatalog.AuthSetUi, {
         error: 'Please enter email and password',
         success: null,
         loading: false,
@@ -248,7 +252,7 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'login';
-    dispatchUiEvent(this, ActionCatalog.AuthLoginRequested, {
+    this.dispatchAction(ActionCatalog.AuthLoginRequested, {
       email: this.email,
       password: this.password,
     });
@@ -257,7 +261,7 @@ export class AuthView extends LitElement {
   private handleSignup(event: Event) {
     event.preventDefault();
     if (!this.email || !this.password || !this.confirmPassword) {
-      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
+      this.dispatchAction(ActionCatalog.AuthSetUi, {
         error: 'Please fill in all fields',
         success: null,
         loading: false,
@@ -266,7 +270,7 @@ export class AuthView extends LitElement {
     }
 
     if (this.password !== this.confirmPassword) {
-      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
+      this.dispatchAction(ActionCatalog.AuthSetUi, {
         error: 'Passwords do not match',
         success: null,
         loading: false,
@@ -275,7 +279,7 @@ export class AuthView extends LitElement {
     }
 
     if (this.password.length < 6) {
-      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
+      this.dispatchAction(ActionCatalog.AuthSetUi, {
         error: 'Password must be at least 6 characters',
         success: null,
         loading: false,
@@ -283,7 +287,7 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'signup';
-    dispatchUiEvent(this, ActionCatalog.AuthSignupRequested, {
+    this.dispatchAction(ActionCatalog.AuthSignupRequested, {
       email: this.email,
       password: this.password,
     });
@@ -292,7 +296,7 @@ export class AuthView extends LitElement {
   private handlePasswordReset(event: Event) {
     event.preventDefault();
     if (!this.email) {
-      dispatchUiEvent(this, ActionCatalog.AuthSetUi, {
+      this.dispatchAction(ActionCatalog.AuthSetUi, {
         error: 'Please enter your email address',
         success: null,
         loading: false,
@@ -300,17 +304,36 @@ export class AuthView extends LitElement {
       return;
     }
     this.pendingAction = 'reset-password';
-    dispatchUiEvent(this, ActionCatalog.AuthPasswordResetRequested, { email: this.email });
+    this.dispatchAction(ActionCatalog.AuthPasswordResetRequested, { email: this.email });
   }
 
   private handleGoogleLogin() {
     this.pendingAction = 'google';
-    dispatchUiEvent(this, ActionCatalog.AuthGoogleLoginRequested, {});
+    this.dispatchAction(ActionCatalog.AuthGoogleLoginRequested, {});
   }
 
   private handleLogout() {
     this.pendingAction = 'logout';
-    dispatchUiEvent(this, ActionCatalog.AuthLogoutRequested, {});
+    this.dispatchAction(ActionCatalog.AuthLogoutRequested, {});
+  }
+
+  private dispatchAction(action: string, payload: Record<string, unknown>) {
+    if (!this.core) {
+      return;
+    }
+    this.core.dispatch({ action: action as any, payload });
+  }
+
+  private refreshFromState() {
+    if (!this.core) {
+      this.authState = null;
+      this.authUiState = null;
+      this.requestUpdate();
+      return;
+    }
+    this.authState = this.core.select(authStateSelectorKey);
+    this.authUiState = this.core.select(authUiSelectorKey);
+    this.requestUpdate();
   }
 
   protected updated() {
