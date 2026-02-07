@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { styleMap } from 'lit/directives/style-map.js';
 import { coreContext, type CoreContext } from '../../../framework/src/nxt';
+import type { Action } from '../../../framework/src/nxt/runtime/actions/action';
 import type { UIState } from '@project/framework';
 import type { VisualBlockContentDto } from './dto/visual-block-content.dto';
 import type { VisualBlockRectDto } from './dto/visual-block-rect.dto';
@@ -157,7 +158,7 @@ export class VisualBlockRenderView extends LitElement {
   }
 
   private requestDemoData(): void {
-    this.core?.dispatch(visualBlockDataRequested('demo-default'));
+    this.core?.dispatch(visualBlockDataRequested('demo-default') as unknown as Action<any>);
   }
 
   render() {
