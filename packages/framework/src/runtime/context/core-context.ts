@@ -1,4 +1,4 @@
-import type { Action } from '../actions/action';
+import type { Action, ActionName } from '../actions/action';
 import { dispatchAction } from '../engine/dispatch/dispatch-action';
 import { CoreRegistries } from '../registries/core-registries';
 import type { FrameworkState } from '../state/framework-state';
@@ -27,7 +27,7 @@ export class CoreContext<S extends FrameworkState> {
         return selector(this.getState()) as R;
       }
 
-      dispatch(action: Action<any> | { type: string; payload?: Record<string, unknown> }): void {
+      dispatch(action: Action<any> | { type: ActionName; payload?: Record<string, unknown> }): void {
         const resolvedAction: Action =
           'action' in action
             ? action

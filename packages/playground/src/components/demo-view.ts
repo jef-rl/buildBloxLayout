@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, property, state } from 'lit/decorators.js';
 import { coreContext, type CoreContext, type UIState } from '@project/framework';
+import { ActionCatalog } from '../../../framework/src/runtime/actions/action-catalog';
 
 /**
  * Improved Demo View Component
@@ -332,7 +333,7 @@ export class ImprovedDemoView extends LitElement {
 
     // Dispatch event through the framework's event system
     this.core?.dispatch({
-      type: 'layout/setExpansion',
+      type: ActionCatalog.LayoutSetExpansion,
       payload: {
         side,
         expanded: !currentState,
@@ -346,7 +347,7 @@ export class ImprovedDemoView extends LitElement {
    */
   private changeViewportMode(mode: string) {
     this.core?.dispatch({
-      type: 'layout/setViewportWidthMode',
+      type: ActionCatalog.LayoutSetViewportWidthMode,
       payload: {
         mode,
       },
@@ -359,7 +360,7 @@ export class ImprovedDemoView extends LitElement {
    */
   private openSettings() {
     this.core?.dispatch({
-      type: 'layout/setOverlayView',
+      type: ActionCatalog.LayoutSetOverlayView,
       payload: {
         viewId: 'project-settings',
       },
@@ -372,7 +373,7 @@ export class ImprovedDemoView extends LitElement {
    */
   private simulateLogin() {
     this.core?.dispatch({
-      type: 'layout/setOverlayView',
+      type: ActionCatalog.LayoutSetOverlayView,
       payload: {
         viewId: 'firebase-auth',
       },
@@ -383,7 +384,7 @@ export class ImprovedDemoView extends LitElement {
    * Simulate logout
    */
   private simulateLogout() {
-    this.core?.dispatch({ type: 'auth/logoutRequested', payload: {} });
+    this.core?.dispatch({ type: ActionCatalog.AuthLogoutRequested, payload: {} });
   }
 
   // ===================//

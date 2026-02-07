@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, state } from 'lit/decorators.js';
 import { coreContext, type CoreContext, type UIState } from '@project/framework';
+import { ActionCatalog } from '../../../framework/src/runtime/actions/action-catalog';
 
 @customElement('login-overlay')
 export class LoginOverlay extends LitElement {
@@ -28,7 +29,7 @@ export class LoginOverlay extends LitElement {
 
       if (isLoggedIn && !this.hasClosedOverlay) {
         this.core?.dispatch({
-          type: 'layout/setOverlayView',
+          type: ActionCatalog.LayoutSetOverlayView,
           payload: { viewId: null },
         });
         this.hasClosedOverlay = true;
@@ -106,7 +107,7 @@ export class LoginOverlay extends LitElement {
     }
 
     this.core.dispatch({
-      type: 'auth/loginRequested',
+      type: ActionCatalog.AuthLoginRequested,
       payload: { email: this.email, password: this.password },
     });
   }
