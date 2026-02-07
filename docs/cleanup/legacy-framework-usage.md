@@ -4,8 +4,8 @@
 
 Scanned for:
 - `@project/framework` import usage (static + dynamic imports).
-- `packages/framework/src` import paths.
-- Path aliases targeting `../framework/src`.
+- Legacy framework source import paths.
+- Path aliases targeting the retired framework source directory.
 
 ## Findings
 
@@ -63,12 +63,14 @@ Scanned for:
     - `ToolbarContainer` → `packages/framework/nxt/views/components/ToolbarContainer.ts`
     - `CustomToolbar` → `packages/framework/nxt/views/components/CustomToolbar.ts`
 
-### `packages/framework/src` import paths
+### Legacy framework source import paths
 
-- No direct import statements referencing `packages/framework/src` were found.
+- No direct import statements referencing the retired source tree were found.
 
-### Path aliases targeting `../framework/src`
+### Path aliases targeting the retired source tree
 
-- `packages/playground/vite.config.ts`
-  - Alias: `@project/framework` → `../framework/src`
-  - Migration target: `packages/framework/nxt/index.ts` (or a `packages/framework/nxt` entrypoint)
+- All path aliases now point at the NXT framework entrypoint (`packages/framework/nxt`).
+
+### Support status
+
+- The NXT framework implementation is the only supported runtime going forward.

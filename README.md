@@ -48,15 +48,14 @@ BuildBlox is a production-ready framework for creating sophisticated, IDE-like w
 buildblox-framework/
 ├── packages/
 │   ├── framework/          # Core framework package
-│   │   ├── src/
-│   │   │   ├── components/    # UI components (panels, controls, layout)
-│   │   │   ├── handlers/      # State handlers (layout, workspace, etc.)
-│   │   │   ├── registry/      # View registry for lazy-loading
-│   │   │   ├── state/         # State management and context
-│   │   │   ├── types/         # TypeScript type definitions
-│   │   │   ├── utils/         # Utilities (dispatcher, logger, helpers)
-│   │   │   ├── bootstrap.ts   # Framework initialization
-│   │   │   └── index.ts       # Public API exports
+│   │   ├── nxt/              # NXT framework implementation (only supported runtime)
+│   │   │   ├── definitions/    # Serializable definitions + DTOs
+│   │   │   ├── reducers/       # Pure state reducers
+│   │   │   ├── effects/        # Side-effectful handlers
+│   │   │   ├── runtime/        # Core runtime + context wiring
+│   │   │   ├── selectors/      # State selectors
+│   │   │   ├── views/          # View components and hosts
+│   │   │   └── index.ts        # Public API exports
 │   │   └── package.json
 │   │
 │   ├── playground/         # Demo and testing environment
@@ -73,6 +72,8 @@ buildblox-framework/
 ├── package.json            # Workspace configuration
 └── README.md              # This file
 ```
+
+> **Note:** The framework package now ships only the NXT implementation; legacy `src` has been retired.
 
 ---
 

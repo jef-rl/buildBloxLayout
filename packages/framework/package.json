@@ -2,6 +2,7 @@
   "name": "@project/framework",
   "private": true,
   "version": "1.0.0",
+  "description": "BuildBlox framework package (NXT-only runtime)",
   "type": "module",
   "main": "dist/nxt/index.js",
   "types": "dist/nxt/index.d.ts",
