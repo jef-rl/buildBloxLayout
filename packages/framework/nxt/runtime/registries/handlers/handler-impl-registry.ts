@@ -1,7 +1,9 @@
     import type { Action } from '../../actions/action';
 
+    export type ReducerResult<S = any> = S | { state: S; followUps?: Action<any>[] };
+
     export type ReducerImpl<S = any, P = any> =
-      (state: S, action: Action<P>, config?: Record<string, unknown>) => S;
+      (state: S, action: Action<P>, config?: Record<string, unknown>) => ReducerResult<S>;
 
     export class HandlerImplRegistry<S = any> {
       private readonly impls = new Map<string, ReducerImpl<S, any>>();

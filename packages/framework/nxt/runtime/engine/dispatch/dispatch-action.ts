@@ -1,5 +1,6 @@
 import type { Action } from '../../actions/action';
 import type { CoreRegistries } from '../../registries/core-registries';
+import type { ReducerResult } from '../../registries/handlers/handler-impl-registry';
 import { logAction, summarizeState } from '../logging/framework-logger';
 
 export interface DispatchEnv<S> {
@@ -13,10 +14,20 @@ export function dispatchAction<S>(env: DispatchEnv<S>, action: Action<any>): voi
   const handlers = registries.handlers.getForAction(action.action);
   const prevState = getState();
   let state = prevState;
+  let followUps: Action<any>[] = [];
   if (handlers.length) {
     const prevStateSummary = summarizeState(prevState);
     for (const entry of handlers) {
-      state = entry.reduce(state, action, entry.config);
+      const result = entry.reduce(state, action, entry.config);
+      if (typeof result === 'object' && result !== null && 'state' in result) {
+        const reduced = result as Exclude<ReducerResult<S>, S>;
+        state = reduced.state;
+        if (Array.isArray(reduced.followUps)) {
+          followUps = followUps.concat(reduced.followUps);
+        }
+      } else {
+        state = result as S;
+      }
     }
     setState(state);
     // Logging reflects reducer execution; effect-only actions skip logging.
@@ -24,4 +35,7 @@ export function dispatchAction<S>(env: DispatchEnv<S>, action: Action<any>): voi
   }
 
   void registries.effects.runForAction(action, (a) => dispatchAction(env, a), getState);
+  if (followUps.length) {
+    followUps.forEach((followUp) => dispatchAction(env, followUp));
+  }
 }

@@ -1,6 +1,5 @@
 import type { UIState, LayoutPreset, LayoutPresets, MenuConfig, LayoutExpansion } from '../../../types/state';
 import type { HandlerAction } from '../../../core/registry/HandlerAction.type';
-import type { HandlerRegistry } from '../../../core/registry/HandlerRegistry.type';
 import type { ReducerHandler } from '../../../core/registry/ReducerHandler.type';
 import { applyLayoutAction, clampViewportModeToCapacity } from './workspace-layout.handlers';
 import { applyMainViewOrder, deriveMainViewOrderFromPanels, workspacePanelHandlers } from './workspace-panels.handlers';
@@ -10,6 +9,10 @@ import { menuPersistence } from '../../../utils/menu-persistence';
 import { migrateLegacyExpansion, type LegacyLayoutExpansion } from '../../../utils/expansion-helpers.js';
 import { generateAuthMenuItems } from '../../../utils/auth-menu-items';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
+import type { Action } from '../../../../nxt/runtime/actions/action';
+import type { CoreRegistries } from '../../../../nxt/runtime/registries/core-registries';
+import type { ReducerImpl } from '../../../../nxt/runtime/registries/handlers/handler-impl-registry';
+import type { HandlerDefDto } from '../../../../nxt/definitions/dto/handler-def.dto';
 
 export const FRAMEWORK_ADMIN_EMAILS: string[] = ['jef@@gourmetguide.co.uk']
 
@@ -812,54 +815,78 @@ const handleMenuHydrate: ReducerHandler<FrameworkContextState> = (context, actio
 
 // === END FRAMEWORK MENU HANDLERS ===
 
+const toAction = (action: HandlerAction): Action => ({
+  action: action.type,
+  payload: action.payload ?? {},
+});
+
+const wrapFrameworkHandler = (
+  handler: ReducerHandler<FrameworkContextState>,
+): ReducerImpl<UIState> => {
+  return (state, action) => {
+    const result = handler({ state }, { type: action.action, payload: action.payload });
+    return {
+      state: result.state.state,
+      followUps: result.followUps.map(toAction),
+    };
+  };
+};
+
 const registerHandler = (
-  registry: HandlerRegistry<FrameworkContextState>,
+  registries: CoreRegistries<UIState>,
   type: string,
   handler: ReducerHandler<FrameworkContextState>,
 ): void => {
-  registry.register(type, handler);
+  const implKey = `reducer:${type}@1`;
+  const def: HandlerDefDto = {
+    id: `handler:${type}`,
+    action: type,
+    implKey,
+  };
+  registries.handlerImpls.register(implKey, wrapFrameworkHandler(handler));
+  registries.handlers.applyDefinition(def);
 };
 
 export const registerWorkspaceHandlers = (
-  registry: HandlerRegistry<FrameworkContextState>,
+  registries: CoreRegistries<UIState>,
 ): void => {
   [
     ActionCatalog.LayoutSetExpansion,
     ActionCatalog.LayoutSetOverlayView,
     ActionCatalog.LayoutSetViewportWidthMode,
-  ].forEach((type) => registerHandler(registry, type, handleLayoutAction));
-  registerHandler(registry, ActionCatalog.LayoutSetMainAreaCount, handleMainAreaCount);
-  registerHandler(registry, ActionCatalog.LayoutResetWorkspace, handleLayoutReset);
-  registerHandler(registry, ActionCatalog.LayoutToggleInDesign, handleToggleInDesign);
-  registerHandler(registry, ActionCatalog.PanelsSelectPanel, handleSelectPanel);
+  ].forEach((type) => registerHandler(registries, type, handleLayoutAction));
+  registerHandler(registries, ActionCatalog.LayoutSetMainAreaCount, handleMainAreaCount);
+  registerHandler(registries, ActionCatalog.LayoutResetWorkspace, handleLayoutReset);
+  registerHandler(registries, ActionCatalog.LayoutToggleInDesign, handleToggleInDesign);
+  registerHandler(registries, ActionCatalog.PanelsSelectPanel, handleSelectPanel);
   
   // Use the robust handler from workspace-panels.handlers
-  registerHandler(registry, ActionCatalog.PanelsAssignView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsAssignView]));
-  registerHandler(registry, ActionCatalog.PanelsRemoveView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsRemoveView]));
+  registerHandler(registries, ActionCatalog.PanelsAssignView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsAssignView]));
+  registerHandler(registries, ActionCatalog.PanelsRemoveView, wrapHandler(workspacePanelHandlers[ActionCatalog.PanelsRemoveView]));
   
-  registerHandler(registry, ActionCatalog.PanelsSetMainViewOrder, handleSetMainViewOrder);
-  registerHandler(registry, ActionCatalog.AuthSetUser, handleAuthSetUser);
-  registerHandler(registry, ActionCatalog.AuthSetUi, handleAuthSetUi);
+  registerHandler(registries, ActionCatalog.PanelsSetMainViewOrder, handleSetMainViewOrder);
+  registerHandler(registries, ActionCatalog.AuthSetUser, handleAuthSetUser);
+  registerHandler(registries, ActionCatalog.AuthSetUi, handleAuthSetUi);
 
   // Register Drag Handlers
   Object.entries(dragHandlers).forEach(([type, handler]) => {
-      registerHandler(registry, type, wrapHandler(handler));
+      registerHandler(registries, type, wrapHandler(handler));
   });
 
   // Register View Instance Handlers
   Object.entries(viewInstanceHandlers).forEach(([type, handler]) => {
-      registerHandler(registry, type, handler);
+      registerHandler(registries, type, handler);
   });
 
   // Preset handlers
-  registerHandler(registry, ActionCatalog.PresetsSave, handlePresetSave);
-  registerHandler(registry, ActionCatalog.PresetsLoad, handlePresetLoad);
-  registerHandler(registry, ActionCatalog.PresetsDelete, handlePresetDelete);
-  registerHandler(registry, ActionCatalog.PresetsRename, handlePresetRename);
-  registerHandler(registry, ActionCatalog.PresetsHydrate, handlePresetHydrate);
+  registerHandler(registries, ActionCatalog.PresetsSave, handlePresetSave);
+  registerHandler(registries, ActionCatalog.PresetsLoad, handlePresetLoad);
+  registerHandler(registries, ActionCatalog.PresetsDelete, handlePresetDelete);
+  registerHandler(registries, ActionCatalog.PresetsRename, handlePresetRename);
+  registerHandler(registries, ActionCatalog.PresetsHydrate, handlePresetHydrate);
 
   // Framework menu handlers
-  registerHandler(registry, ActionCatalog.MenuReorderItems, handleMenuReorderItems);
-  registerHandler(registry, ActionCatalog.MenuUpdateConfig, handleMenuUpdateConfig);
-  registerHandler(registry, ActionCatalog.MenuHydrate, handleMenuHydrate);
+  registerHandler(registries, ActionCatalog.MenuReorderItems, handleMenuReorderItems);
+  registerHandler(registries, ActionCatalog.MenuUpdateConfig, handleMenuUpdateConfig);
+  registerHandler(registries, ActionCatalog.MenuHydrate, handleMenuHydrate);
 };
