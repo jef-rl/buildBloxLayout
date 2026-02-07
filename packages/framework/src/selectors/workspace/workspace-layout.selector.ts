@@ -1,7 +1,7 @@
 import type { SelectorImpl } from '../../runtime/registries/selectors/selector-impl-registry';
 import type { UIState } from '../../types/state';
 import type { Panel } from '../../domains/panels/types';
-import { isExpanderPanelOpen } from '../../../src/utils/expansion-helpers.js';
+import { isExpanderPanelOpen } from '../../utils/expansion-helpers.js';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 

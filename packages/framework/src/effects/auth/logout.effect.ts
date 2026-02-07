@@ -1,7 +1,7 @@
 import type { Action } from '../../runtime/actions/action';
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import { logout } from '../../../src/utils/firebase-auth';
+import { logout } from '../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
 export const authLogoutImplKey = 'effect:auth/logout@1';

@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import type { LayoutPreset } from '../../types/state';
-import { hybridPersistence } from '../../../src/utils/hybrid-persistence';
+import { hybridPersistence } from '../../utils/hybrid-persistence';
 import { logWarn } from '../../runtime/engine/logging/framework-logger';
 
 export const presetsSaveImplKey = 'effect:presets/save@1';

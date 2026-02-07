@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import { signupWithEmail } from '../../../src/utils/firebase-auth';
+import { signupWithEmail } from '../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
 export const authSignupImplKey = 'effect:auth/signup@1';

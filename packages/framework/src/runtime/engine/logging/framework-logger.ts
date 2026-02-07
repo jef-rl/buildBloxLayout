@@ -1,5 +1,5 @@
 import type { Action } from '../../actions/action';
-import { getFrameworkLogger } from '../../../../src/utils/logger';
+import { getFrameworkLogger } from '../../../utils/logger';
 
 export type StateSummary = {
   type: string;

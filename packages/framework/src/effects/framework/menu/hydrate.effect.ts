@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../../runtime/actions/action-catalog';
-import { menuPersistence } from '../../../../src/utils/menu-persistence';
+import { menuPersistence } from '../../../utils/menu-persistence';
 import { dispatchActions, dispatchLog } from './menu-effect-helpers';
 
 export const menuHydrateImplKey = 'effect:menu/hydrate@1';
