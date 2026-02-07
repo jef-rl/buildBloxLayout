@@ -6,6 +6,24 @@ export class DockContainer extends LitElement {
     static styles = css`
         :host {
             display: block;
+            position: absolute;
+            z-index: 60;
+        }
+
+        :host([fallbackposition="top-left"]) {
+            top: 12px;
+            left: 12px;
+        }
+
+        :host([fallbackposition="top-center"]) {
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        :host([fallbackposition="bottom-right"]) {
+            bottom: 12px;
+            right: 12px;
         }
 
         .dock {
