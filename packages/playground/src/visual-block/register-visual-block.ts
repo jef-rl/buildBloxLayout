@@ -1,7 +1,7 @@
-import type { CoreRegistries } from '../../../framework/src/nxt/runtime/registries/core-registries';
-import type { EffectImpl } from '../../../framework/src/nxt/runtime/registries/effects/effect-impl-registry';
-import type { ReducerImpl } from '../../../framework/src/nxt/runtime/registries/handlers/handler-impl-registry';
-import { loadDefinitionPack } from '../../../framework/src/nxt/definitions/loader/load-definition-pack';
+import type { CoreRegistries } from '@project/framework/nxt/runtime/registries/core-registries';
+import type { EffectImpl } from '@project/framework/nxt/runtime/registries/effects/effect-impl-registry';
+import type { ReducerImpl } from '@project/framework/nxt/runtime/registries/handlers/handler-impl-registry';
+import { loadDefinitionPack } from '@project/framework/nxt/definitions/loader/load-definition-pack';
 import { visualBlockDataReducer } from './reducers/visual-block-data.reducer';
 import { visualBlockUiReducer } from './reducers/visual-block-ui.reducer';
 import { createVisualBlockDataRequestedEffect } from './data-loading/visual-block-data-effects';

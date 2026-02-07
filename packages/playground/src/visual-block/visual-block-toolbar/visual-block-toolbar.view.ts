@@ -1,8 +1,8 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { coreContext, type ActionName, type CoreContext } from '../../../../framework/src/nxt';
-import type { Action } from '../../../../framework/src/nxt/runtime/actions/action';
+import { coreContext, type ActionName, type CoreContext } from '@project/framework/nxt';
+import type { Action } from '@project/framework/nxt/runtime/actions/action';
 import type { UIState } from '@project/framework';
 import type { VisualBlockUiStateDto } from '../dto/visual-block-ui-state.dto';
 import type { VisualBlockRenderModel } from '../selectors/visual-block-render-model.selector';

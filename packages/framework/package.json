@@ -10,6 +10,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./nxt": {
+      "types": "./dist/nxt/index.d.ts",
+      "import": "./dist/nxt/index.js",
+      "default": "./dist/nxt/index.js"
+    },
+    "./nxt/*": {
+      "types": "./dist/nxt/*.d.ts",
+      "import": "./dist/nxt/*.js",
+      "default": "./dist/nxt/*.js"
     }
   },
   "scripts": {
