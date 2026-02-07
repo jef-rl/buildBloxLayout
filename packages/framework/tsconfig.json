@@ -9,5 +9,6 @@
     "sourceMap": true,
     "emitDeclarationOnly": false
   },
-  "include": ["src", "nxt"]
+  "include": ["nxt"],
+  "exclude": ["src"]
 }
