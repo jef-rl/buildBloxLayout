@@ -13,6 +13,18 @@ export default [
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/framework/src/**', '**/packages/framework/src/**'],
+              message:
+                'Import from the NXT entrypoint (packages/framework/nxt or @project/framework).',
+            },
+          ],
+        },
+      ],
     },
   },
 ];
