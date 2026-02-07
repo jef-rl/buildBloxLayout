@@ -37,8 +37,9 @@ for (const file of files) {
       if (!specifier) {
         continue;
       }
-      if (forbiddenFragments.some((fragment) => specifier.includes(fragment))) {
-        violations.push({ file, specifier });
+      const normalizedSpecifier = specifier.replace(/\\/g, '/');
+      if (forbiddenFragments.some((fragment) => normalizedSpecifier.includes(fragment))) {
+        violations.push({ file, specifier: normalizedSpecifier });
       }
     }
   }
