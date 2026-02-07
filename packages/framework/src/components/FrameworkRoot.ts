@@ -19,6 +19,7 @@ import { ActionCatalog } from '../nxt/runtime/actions/action-catalog';
 import { CoreRegistries } from '../nxt/runtime/registries/core-registries';
 import { UiStateStore } from '../nxt/runtime/state/store/ui-state-store';
 import { logError, logInfo, logWarn } from '../nxt/runtime/engine/logging/framework-logger';
+import { dispatchAction } from '../nxt/runtime/engine/dispatch/dispatch-action';
 import { validateState } from '../state/state-validator';
 import {
   registerWorkspaceHandlers,
@@ -115,21 +116,23 @@ export class FrameworkRoot extends LitElement {
   private coreAdapter: CoreContext<UIState> = {
     registries: this.coreRegistries,
     store: this.coreStore,
-    getState: () => uiState.getState(),
+    getState: () => this.coreStore.getState(),
     select: (key: string) => {
       const selector = this.coreRegistries.selectorImpls.getOrThrow(key);
-      return selector(uiState.getState());
+      return selector(this.coreStore.getState());
     },
     dispatch: (action: Action) => {
       if (!action?.action) {
         return;
       }
-      this.dispatchActions([
+      dispatchAction(
         {
-          type: action.action,
-          payload: action.payload ?? {},
+          registries: this.coreRegistries,
+          getState: () => this.coreStore.getState(),
+          setState: (next) => this.coreStore.setState(next),
         },
-      ]);
+        action,
+      );
     },
   };
 
@@ -349,14 +352,7 @@ export class FrameworkRoot extends LitElement {
       state: this.getContextState(),
       dispatch: this.dispatchUiAction,
     });
-    const nextCoreContext: CoreContext<UIState> = {
-      registries: this.coreRegistries,
-      store: this.coreStore,
-      getState: this.coreAdapter.getState,
-      select: this.coreAdapter.select,
-      dispatch: this.coreAdapter.dispatch,
-    };
-    this.coreProvider.setValue(nextCoreContext);
+    this.coreProvider.setValue(this.coreAdapter);
     this.requestUpdate();
   }
 
