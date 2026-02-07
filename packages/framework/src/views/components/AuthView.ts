@@ -202,8 +202,8 @@ export class AuthView extends LitElement {
     if (!this.core) {
       return;
     }
-    const authState = this.core.select(authStateSelectorKey);
-    const authUi = this.core.select(authUiSelectorKey);
+    const authState = this.core.select<UIState['auth']>(authStateSelectorKey);
+    const authUi = this.core.select<UIState['authUi']>(authUiSelectorKey);
 
     this.authEnabled = authState.enabled;
     this.allowSignup = authUi.allowSignup;
@@ -540,7 +540,7 @@ export class AuthView extends LitElement {
       return this.renderConfigForm();
     }
 
-    const authState = this.core?.select(authStateSelectorKey);
+    const authState = this.core?.select<UIState['auth']>(authStateSelectorKey);
     if (authState?.currentUser) {
       return this.renderLoggedInView();
     }

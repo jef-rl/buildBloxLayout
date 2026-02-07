@@ -122,8 +122,10 @@ export function validateState(state: FrameworkState): void {
     }
 
     if (panel.view) {
-      const panelViewId = panel.view.id;
-      if (!viewInstanceIdSet.has(panelViewId) && !viewIds.includes(panelViewId)) {
+      const panelViewId = typeof panel.view.id === 'string' ? panel.view.id : null;
+      if (!panelViewId || panelViewId.trim() === '') {
+        errors.push(`Panel '${panel.id}' has a view entry with an invalid id.`);
+      } else if (!viewInstanceIdSet.has(panelViewId) && !viewIds.includes(panelViewId)) {
         errors.push(`Panel '${panel.id}' has view '${panelViewId}' not present in state.views.`);
       }
     }
