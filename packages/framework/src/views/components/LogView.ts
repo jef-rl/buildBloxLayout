@@ -5,7 +5,7 @@ import type { CoreContext } from '../../runtime/context/core-context';
 import { coreContext } from '../../runtime/context/core-context-key';
 import type { LogsViewData } from '../../selectors/logs/logs-view.selector';
 import { logsViewSelectorKey } from '../../selectors/logs/logs-view.selector';
-import type { UIState } from '../../types/state';
+import type { LogEntry, UIState } from '../../types/state';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
 
 @customElement('log-view')
@@ -175,7 +175,7 @@ export class LogView extends LitElement {
   `;
 
   private core: CoreContext<UIState> | null = null;
-  private logs: LogsViewData[] = [];
+  private logs: LogsViewData | null = null;
 
   private _consumer = new ContextConsumer(this, {
     context: coreContext,
@@ -188,7 +188,7 @@ export class LogView extends LitElement {
 
   private refreshFromState() {
     if (!this.core) {
-      this.logs = [];
+      this.logs = null;
       this.requestUpdate();
       return;
     }
@@ -200,18 +200,19 @@ export class LogView extends LitElement {
     this.core?.dispatch({ action: ActionCatalog.LogsClear });
   }
 
-  private formatLogMessage(log: LogsViewData) {
+  private formatLogMessage(log: LogEntry) {
     return log.message;
   }
 
-  private formatLogExtra(log: LogsViewData) {
-    if (!log.extra) {
+  private formatLogExtra(log: LogEntry) {
+    const extra = log.extra ?? log.data;
+    if (!extra) {
       return null;
     }
-    return JSON.stringify(log.extra, null, 2);
+    return JSON.stringify(extra, null, 2);
   }
 
-  private renderLog(log: LogsViewData) {
+  private renderLog(log: LogEntry) {
     const extra = this.formatLogExtra(log);
     return html`
       <div class="log-entry">
@@ -228,6 +229,7 @@ export class LogView extends LitElement {
   }
 
   render() {
+    const entries = this.logs?.entries ?? [];
     return html`
       <div class="root">
         <header>
@@ -240,8 +242,8 @@ export class LogView extends LitElement {
           </div>
         </header>
         <div class="content">
-          ${this.logs.length
-            ? this.logs.map(log => this.renderLog(log))
+          ${entries.length
+            ? entries.map((log) => this.renderLog(log))
             : html`<div class="empty">No log entries yet.</div>`}
         </div>
       </div>

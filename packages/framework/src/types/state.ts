@@ -8,6 +8,7 @@ export type LogEntry = {
   message: string;
   level: LogLevel;
   timestamp: number;
+  extra?: unknown;
   data?: unknown;
   source?: string;
 };
