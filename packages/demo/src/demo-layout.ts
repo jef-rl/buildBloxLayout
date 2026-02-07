@@ -2,14 +2,47 @@ import type { Panel, UIState, View } from '@project/framework';
 import type { VisualBlockDataState } from '../../playground/src/visual-block/state/visual-block-data-state';
 import { getDemoViewDefinitionSummaries } from './demo-view-registry';
 
-const VISUAL_BLOCK_VIEW_DEFINITION_ID = 'visual-block-render';
-const VISUAL_BLOCK_VIEW_ID = 'visual-block-canvas';
+const VISUAL_BLOCK_RENDER_VIEW_DEFINITION_ID = 'visual-block-render';
+const VISUAL_BLOCK_PREVIEW_VIEW_DEFINITION_ID = 'visual-block-preview';
+const VISUAL_BLOCK_PROJECTION_VIEW_DEFINITION_ID = 'visual-block-projection-view';
+const VISUAL_BLOCK_INSPECTOR_VIEW_DEFINITION_ID = 'visual-block-inspector-view';
+const VISUAL_BLOCK_TOOLBAR_VIEW_DEFINITION_ID = 'visual-block-toolbar';
+
+const VISUAL_BLOCK_RENDER_VIEW_ID = 'visual-block-canvas';
+const VISUAL_BLOCK_PREVIEW_VIEW_ID = 'visual-block-preview-panel';
+const VISUAL_BLOCK_PROJECTION_VIEW_ID = 'visual-block-projection-panel';
+const VISUAL_BLOCK_INSPECTOR_VIEW_ID = 'visual-block-inspector-panel';
+const VISUAL_BLOCK_TOOLBAR_VIEW_ID = 'visual-block-toolbar-panel';
 
 const DEMO_VIEWS: View[] = [
   {
-    id: VISUAL_BLOCK_VIEW_ID,
+    id: VISUAL_BLOCK_RENDER_VIEW_ID,
     name: 'Visual Block Canvas',
-    component: VISUAL_BLOCK_VIEW_DEFINITION_ID,
+    component: VISUAL_BLOCK_RENDER_VIEW_DEFINITION_ID,
+    data: {},
+  },
+  {
+    id: VISUAL_BLOCK_PREVIEW_VIEW_ID,
+    name: 'Visual Block Preview',
+    component: VISUAL_BLOCK_PREVIEW_VIEW_DEFINITION_ID,
+    data: {},
+  },
+  {
+    id: VISUAL_BLOCK_PROJECTION_VIEW_ID,
+    name: 'Visual Block Projection',
+    component: VISUAL_BLOCK_PROJECTION_VIEW_DEFINITION_ID,
+    data: {},
+  },
+  {
+    id: VISUAL_BLOCK_INSPECTOR_VIEW_ID,
+    name: 'Visual Block Inspector',
+    component: VISUAL_BLOCK_INSPECTOR_VIEW_DEFINITION_ID,
+    data: {},
+  },
+  {
+    id: VISUAL_BLOCK_TOOLBAR_VIEW_ID,
+    name: 'Visual Block Toolbar',
+    component: VISUAL_BLOCK_TOOLBAR_VIEW_DEFINITION_ID,
     data: {},
   },
 ];
@@ -19,8 +52,36 @@ const DEMO_PANELS: Panel[] = [
     id: 'panel-main',
     name: 'Visual Block',
     region: 'main',
-    viewId: VISUAL_BLOCK_VIEW_ID,
+    viewId: VISUAL_BLOCK_RENDER_VIEW_ID,
     view: DEMO_VIEWS[0],
+  },
+  {
+    id: 'panel-projection',
+    name: 'Projection',
+    region: 'right',
+    viewId: VISUAL_BLOCK_PROJECTION_VIEW_ID,
+    view: DEMO_VIEWS[2],
+  },
+  {
+    id: 'panel-inspector',
+    name: 'Inspector',
+    region: 'right',
+    viewId: VISUAL_BLOCK_INSPECTOR_VIEW_ID,
+    view: DEMO_VIEWS[3],
+  },
+  {
+    id: 'panel-toolbar',
+    name: 'Toolbar',
+    region: 'bottom',
+    viewId: VISUAL_BLOCK_TOOLBAR_VIEW_ID,
+    view: DEMO_VIEWS[4],
+  },
+  {
+    id: 'panel-preview',
+    name: 'Preview',
+    region: 'bottom',
+    viewId: VISUAL_BLOCK_PREVIEW_VIEW_ID,
+    view: DEMO_VIEWS[1],
   },
 ];
 
@@ -129,10 +190,10 @@ export const DEMO_LAYOUT_STATE: Partial<UIState> = {
     inDesign: false,
     viewportWidthMode: '1x',
     mainAreaCount: 1,
-    mainViewOrder: [VISUAL_BLOCK_VIEW_ID],
+    mainViewOrder: [VISUAL_BLOCK_RENDER_VIEW_ID],
     leftViewOrder: [],
-    rightViewOrder: [],
-    bottomViewOrder: [],
+    rightViewOrder: [VISUAL_BLOCK_PROJECTION_VIEW_ID, VISUAL_BLOCK_INSPECTOR_VIEW_ID],
+    bottomViewOrder: [VISUAL_BLOCK_TOOLBAR_VIEW_ID, VISUAL_BLOCK_PREVIEW_VIEW_ID],
   },
   auth: {
     isLoggedIn: false,
