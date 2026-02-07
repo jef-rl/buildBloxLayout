@@ -227,21 +227,18 @@ const TOOLBAR_VIEWS: View[] = [
 const MAIN_PANELS: Panel[] = [
   {
     id: 'panel-main-1',
-    name: 'Counter',
     region: 'main',
     viewId: 'counter-demo-1', // Points to Instance
     view: INTERACTIVE_VIEWS[0] // Note: this view object will be replaced by hydration but serves as placeholder
   },
   {
     id: 'panel-main-2',
-    name: 'Ticker',
     region: 'main',
     viewId: 'stock-ticker-1', // Points to Instance
     view: INTERACTIVE_VIEWS[1]
   },
   {
     id: 'panel-main-3',
-    name: 'Config',
     region: 'main',
     viewId: 'config-panel-1', // Points to Instance
     view: INTERACTIVE_VIEWS[3]
@@ -254,21 +251,18 @@ const MAIN_PANELS: Panel[] = [
 const EXPANSION_PANELS: Panel[] = [
   {
     id: 'panel-left',
-    name: 'Left Panel',
     region: 'left',
     viewId: LEFT_PANEL_VIEWS[0].id,
     view: LEFT_PANEL_VIEWS[0]
   },
   {
     id: 'panel-right',
-    name: 'Right Panel',
     region: 'right',
     viewId: RIGHT_PANEL_VIEWS[0].id,
     view: RIGHT_PANEL_VIEWS[0]
   },
   {
     id: 'panel-bottom',
-    name: 'Bottom Panel',
     region: 'bottom',
     viewId: 'system-logs-1', // Points to Instance
     view: INTERACTIVE_VIEWS[2]
@@ -442,6 +436,9 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
 
   // Authentication state (isAdmin will be determined by handlers)
   auth: {
+    enabled: false,
+    configChecked: false,
+    currentUser: null,
     isLoggedIn: false,
     isAdmin: false,
     user: null
@@ -450,7 +447,11 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
   authUi: {
     loading: false,
     error: null,
-    success: null
+    success: null,
+    allowSignup: false,
+    allowGoogleSignIn: false,
+    allowPasswordReset: false,
+    oauthProviders: []
   },
 
   // Panel state tracking
