@@ -1,5 +1,5 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
-import { hybridPersistence } from '../../../src/utils/hybrid-persistence';
+import { hybridPersistence } from '../../utils/hybrid-persistence';
 import { logWarn } from '../../runtime/engine/logging/framework-logger';
 
 export const presetsRenameImplKey = 'effect:presets/rename@1';

@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../../runtime/registries/effects/effect-impl-registry';
 import type { MenuConfig } from '../../../types/state';
-import { menuPersistence } from '../../../../src/utils/menu-persistence';
+import { menuPersistence } from '../../../utils/menu-persistence';
 import { logWarn } from '../../../runtime/engine/logging/framework-logger';
 
 export const menuSaveImplKey = 'effect:menu/save@1';

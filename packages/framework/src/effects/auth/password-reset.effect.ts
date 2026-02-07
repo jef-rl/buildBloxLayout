@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import { sendPasswordReset } from '../../../src/utils/firebase-auth';
+import { sendPasswordReset } from '../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
 export const authPasswordResetImplKey = 'effect:auth/password-reset@1';

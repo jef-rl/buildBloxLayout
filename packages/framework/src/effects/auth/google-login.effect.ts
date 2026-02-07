@@ -1,6 +1,6 @@
 import type { EffectImpl } from '../../runtime/registries/effects/effect-impl-registry';
 import { ActionCatalog } from '../../runtime/actions/action-catalog';
-import { loginWithGoogle } from '../../../src/utils/firebase-auth';
+import { loginWithGoogle } from '../../utils/firebase-auth';
 import { clearAuthSuccessLater, dispatchActions, dispatchAuthUi, toErrorMessage } from './auth-effect-helpers';
 
 export const authGoogleLoginImplKey = 'effect:auth/google-login@1';
