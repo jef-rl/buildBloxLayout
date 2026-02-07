@@ -1,5 +1,7 @@
-import type { Action } from '../../../../framework/src/nxt';
-import type { VisualBlockDataEffectDeps } from './visual-block-data-effects';
+import type {
+  VisualBlockDataDispatchAction,
+  VisualBlockDataEffectDeps,
+} from './visual-block-data-effects';
 import { mapRawVisualBlockDataToDefinitionDTO } from './visual-block-data-mapper';
 
 export interface VisualBlockDataSourceConfig {
@@ -23,7 +25,7 @@ export function createVisualBlockDataSourceConfig(
 type FetchImpl = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 type VisualBlockDataEffectDepsOptions = {
-  dispatch: (action: Action<any>) => void;
+  dispatch: (action: VisualBlockDataDispatchAction) => void;
   fetchImpl?: FetchImpl;
   logError?: (message: string, error?: unknown) => void;
 };
