@@ -423,6 +423,14 @@
 
 **3.6 Views & Registries**
 - Playground demo uses view registry to render editor stack. 
+- **Playground/demo wiring paths (current runtime):**
+  - View registries, demo loaders, and view wrappers live under `packages/demo/src/visual-block/*`. 
+  - Core visual-block registry wiring lives under `packages/playground/src/visual-block/register-visual-block.ts`. 
+- **Steps to expose migrated views/effects in the demo:**
+  1. Ensure reducers/selectors/effects are registered in `packages/playground/src/visual-block/register-visual-block.ts` so the CoreContext can resolve migrated visual-block state. 
+  2. Register migrated views (render, grid overlay, toolbar, preview, projection, inspector) in the demo view registry under `packages/demo/src/visual-block/*`. 
+  3. Export the demo view registry entries from the demo package so the demo host can render the visual-block stack. 
+  4. Verify the demo host imports the visual-block demo registry wiring and mounts the visual-block view entrypoint. 
 
 ---
 
