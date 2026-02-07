@@ -70,7 +70,6 @@ class FrameworkRoot extends LitElement {
   @property({ attribute: false }) core?: CoreContext<UIState>;
   private provider = new ContextProvider(this, {
     context: coreContext,
-    initialValue: null as CoreContext<UIState> | null,
   });
 
   configureFirestore(_db: unknown) {
