@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
 import { customElement, property } from 'lit/decorators.js';
 import { coreContext, type CoreContext, type UIState } from '@project/framework';
+import { ActionCatalog } from '../../../framework/src/runtime/actions/action-catalog';
 
 @customElement('configurator-view')
 export class ConfiguratorView extends LitElement {
@@ -65,7 +66,7 @@ export class ConfiguratorView extends LitElement {
 
   private updateSetting(key: string, value: string) {
     this.core?.dispatch({
-      type: 'view/updateLocalContext',
+      type: ActionCatalog.ViewUpdateLocalContext,
       payload: {
         instanceId: this.instanceId,
         context: { [key]: value },
