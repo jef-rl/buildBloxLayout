@@ -3,6 +3,10 @@
     "target": "ES2016",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@project/framework": ["packages/framework/nxt/index.ts"]
+    },
     "lib": ["ES2020", "DOM"],
     "strict": true,
     "skipLibCheck": true,
