@@ -1,24 +1,32 @@
 import type { View } from '../../../types/index';
-import { dispatchUiEvent } from '../../../legacy/dispatcher';
+
+const dispatchViewEvent = (type: string, payload?: unknown) => {
+    const root = window.document?.querySelector('framework-root') ?? window;
+    root.dispatchEvent(new CustomEvent('ui-event', {
+        detail: { type, payload },
+        bubbles: true,
+        composed: true,
+    }));
+};
 
 export const viewHandlers = {
     VIEW_ADDED: (payload: { view: View }) => {
-        dispatchUiEvent(window, 'view-added', payload);
+        dispatchViewEvent('view-added', payload);
     },
     VIEW_REMOVED: (payload: { viewId: string }) => {
-        dispatchUiEvent(window, 'view-removed', payload);
+        dispatchViewEvent('view-removed', payload);
     },
     VIEW_UPDATED: (payload: { viewId: string, data: Partial<View> }) => {
-        dispatchUiEvent(window, 'view-updated', payload);
+        dispatchViewEvent('view-updated', payload);
     },
     VIEW_FOCUSED: (payload: { viewId: string }) => {
-        dispatchUiEvent(window, 'view-focused', payload);
+        dispatchViewEvent('view-focused', payload);
     },
     VIEW_DRAG_START: (payload: { viewId: string, event: DragEvent }) => {
         payload.event.dataTransfer?.setData('text/plain', payload.viewId);
-        dispatchUiEvent(window, 'view-drag-start', payload);
+        dispatchViewEvent('view-drag-start', payload);
     },
     VIEW_DRAG_END: (payload: { viewId: string }) => {
-        dispatchUiEvent(window, 'view-drag-end', payload);
+        dispatchViewEvent('view-drag-end', payload);
     },
 };

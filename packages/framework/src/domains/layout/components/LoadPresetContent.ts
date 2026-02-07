@@ -1,8 +1,11 @@
 import { LitElement, html, css } from 'lit';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import { layoutPresetsSelectorKey } from '../../../../nxt/selectors/layout/presets.selector';
+import { activePresetSelectorKey } from '../../../../nxt/selectors/layout/active-preset.selector';
 import type { LayoutPreset } from '../../../types/state';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 /**
@@ -10,16 +13,16 @@ import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
  * Designed to be rendered inside the generic overlay-expander.
  */
 export class LoadPresetContent extends LitElement {
-    private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
+    private core: CoreContext<UIState> | null = null;
+    private presetsList: LayoutPreset[] = [];
+    private activePreset: string | null = null;
 
     private _consumer = new ContextConsumer(this, {
-        context: uiStateContext,
+        context: coreContext,
         subscribe: true,
-        callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
-            this.requestUpdate();
+        callback: (value: CoreContext<UIState> | undefined) => {
+            this.core = value ?? null;
+            this.refreshFromState();
         },
     });
 
@@ -127,12 +130,23 @@ export class LoadPresetContent extends LitElement {
     `;
 
     private get presets(): LayoutPreset[] {
-        const presetsMap = this.uiState?.layout?.presets ?? {};
-        return Object.values(presetsMap);
+        return this.presetsList;
     }
 
     private get activePresetName(): string | null {
-        return this.uiState?.layout?.activePreset ?? null;
+        return this.activePreset;
+    }
+
+    private refreshFromState() {
+        if (!this.core) {
+            this.presetsList = [];
+            this.activePreset = null;
+            this.requestUpdate();
+            return;
+        }
+        this.presetsList = this.core.select(layoutPresetsSelectorKey);
+        this.activePreset = this.core.select(activePresetSelectorKey);
+        this.requestUpdate();
     }
 
     private handleKeydown(event: KeyboardEvent) {
@@ -142,12 +156,18 @@ export class LoadPresetContent extends LitElement {
     }
 
     private close() {
-        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
+        this.core?.dispatch({
+            action: ActionCatalog.LayoutSetOverlayView,
+            payload: { viewId: null },
+        });
     }
 
     private handleLoad(name: string) {
-        this.uiDispatch?.({ type: ActionCatalog.PresetsLoad, name });
-        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
+        this.core?.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name } });
+        this.core?.dispatch({
+            action: ActionCatalog.LayoutSetOverlayView,
+            payload: { viewId: null },
+        });
     }
 
     connectedCallback() {

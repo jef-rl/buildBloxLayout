@@ -1,7 +1,6 @@
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
-
-type UiDispatch = UiStateContextValue['dispatch'];
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
@@ -9,49 +8,52 @@ type UiEventTarget = {
 
 export const createPresetManagerHandlers = (
     _component: UiEventTarget,
-    getDispatch: () => UiDispatch | null,
+    getCore: () => CoreContext<UIState> | null,
 ) => ({
     stopClickPropagation: (event: Event) => {
         event.stopPropagation();
     },
 
     savePreset: (name: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch || !name.trim()) {
+        const core = getCore();
+        if (!core || !name.trim()) {
             return;
         }
-        dispatch({ type: ActionCatalog.PresetsSave, name: name.trim() });
+        core.dispatch({ action: ActionCatalog.PresetsSave, payload: { name: name.trim() } });
     },
 
     loadPreset: (name: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.PresetsLoad, name });
+        core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name } });
     },
 
     deletePreset: (name: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.PresetsDelete, name });
+        core.dispatch({ action: ActionCatalog.PresetsDelete, payload: { name } });
     },
 
     renamePreset: (oldName: string, newName: string) => {
-        const dispatch = getDispatch();
-        if (!dispatch || !newName.trim()) {
+        const core = getCore();
+        if (!core || !newName.trim()) {
             return;
         }
-        dispatch({ type: ActionCatalog.PresetsRename, oldName, newName: newName.trim() });
+        core.dispatch({
+            action: ActionCatalog.PresetsRename,
+            payload: { oldName, newName: newName.trim() },
+        });
     },
 
     toggleDesignMode: (inDesign?: boolean) => {
-        const dispatch = getDispatch();
-        if (!dispatch) {
+        const core = getCore();
+        if (!core) {
             return;
         }
-        dispatch({ type: ActionCatalog.LayoutToggleInDesign, inDesign });
+        core.dispatch({ action: ActionCatalog.LayoutToggleInDesign, payload: { inDesign } });
     },
 });

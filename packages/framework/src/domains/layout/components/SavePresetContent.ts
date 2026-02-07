@@ -1,8 +1,10 @@
 import { LitElement, html, css } from 'lit';
 import { state } from 'lit/decorators.js';
 import { ContextConsumer } from '@lit/context';
-import { uiStateContext } from '../../../state/context';
-import type { UiStateContextValue } from '../../../state/ui-state';
+import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
+import { coreContext } from '../../../../nxt/runtime/context/core-context-key';
+import { activePresetSelectorKey } from '../../../../nxt/selectors/layout/active-preset.selector';
+import type { UIState } from '../../../types/state';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 
 /**
@@ -12,21 +14,17 @@ import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
 export class SavePresetContent extends LitElement {
     @state() private presetName = '';
 
-    private uiState: UiStateContextValue['state'] | null = null;
-    private uiDispatch: UiStateContextValue['dispatch'] | null = null;
+    private core: CoreContext<UIState> | null = null;
+    private activePreset: string | null = null;
     private hasInitialized = false;
 
     private _consumer = new ContextConsumer(this, {
-        context: uiStateContext,
+        context: coreContext,
         subscribe: true,
-        callback: (value: UiStateContextValue | undefined) => {
-            this.uiState = value?.state ?? null;
-            this.uiDispatch = value?.dispatch ?? null;
+        callback: (value: CoreContext<UIState> | undefined) => {
+            this.core = value ?? null;
+            this.refreshFromState();
             // Initialize preset name from active preset on first context update
-            if (!this.hasInitialized && this.uiState?.layout?.activePreset) {
-                this.presetName = this.uiState.layout.activePreset;
-                this.hasInitialized = true;
-            }
         },
     });
 
@@ -148,15 +146,38 @@ export class SavePresetContent extends LitElement {
 
     private close() {
         this.presetName = '';
-        this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
+        this.core?.dispatch({
+            action: ActionCatalog.LayoutSetOverlayView,
+            payload: { viewId: null },
+        });
     }
 
     private confirmSave() {
         if (this.presetName.trim()) {
-            this.uiDispatch?.({ type: ActionCatalog.PresetsSave, name: this.presetName.trim() });
+            this.core?.dispatch({
+                action: ActionCatalog.PresetsSave,
+                payload: { name: this.presetName.trim() },
+            });
             this.presetName = '';
-            this.uiDispatch?.({ type: ActionCatalog.LayoutSetOverlayView, viewId: null });
+            this.core?.dispatch({
+                action: ActionCatalog.LayoutSetOverlayView,
+                payload: { viewId: null },
+            });
         }
+    }
+
+    private refreshFromState() {
+        if (!this.core) {
+            this.activePreset = null;
+            this.requestUpdate();
+            return;
+        }
+        this.activePreset = this.core.select(activePresetSelectorKey);
+        if (!this.hasInitialized && this.activePreset) {
+            this.presetName = this.activePreset;
+            this.hasInitialized = true;
+        }
+        this.requestUpdate();
     }
 
     connectedCallback() {
@@ -164,8 +185,8 @@ export class SavePresetContent extends LitElement {
         // Reset initialization flag so we pick up the current active preset
         this.hasInitialized = false;
         // Initialize from active preset if context is already available
-        if (this.uiState?.layout?.activePreset) {
-            this.presetName = this.uiState.layout.activePreset;
+        if (this.activePreset) {
+            this.presetName = this.activePreset;
             this.hasInitialized = true;
         }
         // Focus the input when connected
