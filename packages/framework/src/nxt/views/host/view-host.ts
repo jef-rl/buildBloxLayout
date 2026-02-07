@@ -107,7 +107,12 @@ export class ViewHost extends LitElement {
         if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
             return CSS.escape(value);
         }
-        return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return value
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\a ')
+            .replace(/\r/g, '\\d ')
+            .replace(/\f/g, '\\c ');
     }
 
     private async ensureViewElement(wrapper: HTMLElement, instance: ViewInstanceDto): Promise<void> {
