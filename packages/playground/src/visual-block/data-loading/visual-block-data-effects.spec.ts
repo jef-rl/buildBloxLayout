@@ -58,6 +58,25 @@ const runAllTests = async () => {
   }
 };
 
+const assertLoadFailedPayload = (
+  value: VisualBlockDataDispatchAction,
+): { error: string } => {
+  assert.equal(
+    value.action,
+    'VisualBlockDataLoadFailed',
+    'dispatches failed action',
+  );
+  const payload = value.payload;
+  if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+    throw new Error('Expected failed action payload with error.');
+  }
+  const error = (payload as { error?: unknown }).error;
+  if (typeof error !== 'string') {
+    throw new Error('Expected failed action payload error to be a string.');
+  }
+  return { error };
+};
+
 test('successful fetch and mapping dispatches loaded action', async () => {
   const raw = {
     layout_lg: {
@@ -203,9 +222,9 @@ test('unknown sourceId dispatches failed action from playground deps', async () 
   await effect(visualBlockDataRequested('missing-source'));
 
   assert.equal(dispatchCalls.length, 1, 'dispatch called once');
-  assert.equal(dispatchCalls[0].action, 'VisualBlockDataLoadFailed', 'dispatches failed action');
+  const { error } = assertLoadFailedPayload(dispatchCalls[0]);
   assert.includes(
-    dispatchCalls[0].payload.error,
+    error,
     'Unknown visual block data source',
     'error mentions unknown source',
   );
