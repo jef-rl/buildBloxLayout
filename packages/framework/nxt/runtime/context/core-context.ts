@@ -14,6 +14,10 @@ export class CoreContext<S extends FrameworkState> {
         this.store = new UiStateStore<S>(initialState);
       }
 
+      get state(): S {
+        return this.getState();
+      }
+
       getState(): S {
         return this.store.getState();
       }
@@ -23,7 +27,14 @@ export class CoreContext<S extends FrameworkState> {
         return selector(this.getState()) as R;
       }
 
-      dispatch(action: Action<any>): void {
+      dispatch(action: Action<any> | { type: string; payload?: Record<string, unknown> }): void {
+        const resolvedAction: Action =
+          'action' in action
+            ? action
+            : {
+                action: action.type,
+                payload: action.payload ?? {},
+              };
         const env = {
           registries: this.registries,
           getState: () => this.store.getState(),
@@ -32,7 +43,7 @@ export class CoreContext<S extends FrameworkState> {
             this.store.setState(next);
           },
         };
-        dispatchAction(env, action);
+        dispatchAction(env, resolvedAction);
       }
     }
   
