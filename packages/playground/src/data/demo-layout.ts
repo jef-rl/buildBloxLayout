@@ -286,34 +286,6 @@ const ALL_VIEWS = [
 // ====================
 
 export const IMPROVED_DEMO_LAYOUT: UIState = {
-  // Panel containers define layout structure
-  containers: [
-    {
-      id: 'container-main',
-      name: 'Main Area',
-      direction: 'row',
-      panels: MAIN_PANELS
-    },
-    {
-      id: 'container-left',
-      name: 'Left Sidebar',
-      direction: 'column',
-      panels: [EXPANSION_PANELS[0]]
-    },
-    {
-      id: 'container-right',
-      name: 'Right Sidebar',
-      direction: 'column',
-      panels: [EXPANSION_PANELS[1]]
-    },
-    {
-      id: 'container-bottom',
-      name: 'Bottom Panel',
-      direction: 'row',
-      panels: [EXPANSION_PANELS[2]]
-    }
-  ],
-
   // All panels (main + expansion)
   panels: [...MAIN_PANELS, ...EXPANSION_PANELS],
 
@@ -370,8 +342,6 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     icon: getIconForView(view.id)
   })),
 
-  viewInstanceCounter: 0,
-
   // View token state for the view controls toolbar
   viewTokens: {
     registered: ALL_VIEWS.map((view) => ({
@@ -400,33 +370,8 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     bottomViewOrder: ['system-logs-1'],
   },
 
-  // Toolbar positioning
-  toolbars: {
-    positions: {
-      'views': 'bottom-center',
-      'viewport': 'bottom-right',
-      'expander': 'bottom-left',
-      'control': 'top-center'
-    },
-    activePicker: null
-  },
-
   // Active view state
   activeView: MAIN_VIEWS[0].id,
-
-  // Dock configuration (extensible)
-  dock: {
-    theme: 'dark',
-    snapToGrid: true,
-    gridSize: 8
-  },
-
-  // Theme configuration (extensible)
-  theme: {
-    mode: 'dark',
-    primaryColor: '#3b82f6',
-    accentColor: '#8b5cf6'
-  },
 
   // Log storage for the built-in log view
   logs: {
@@ -452,13 +397,6 @@ export const IMPROVED_DEMO_LAYOUT: UIState = {
     allowGoogleSignIn: false,
     allowPasswordReset: false,
     oauthProviders: []
-  },
-
-  // Panel state tracking
-  panelState: {
-    open: {},
-    data: {},
-    errors: {}
   }
 };
 
