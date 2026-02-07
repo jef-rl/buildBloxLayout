@@ -1,11 +1,17 @@
 import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
-import type { UIState } from '../../../types/state';
-import type { MenuItem, MenuPresetItem, MenuConfig } from '../../../types/state';
+import type { Action, ActionName } from '../../../../nxt/runtime/actions/action';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
+import type { UIState } from '../../../types/state';
+import type { MenuConfig, MenuItem, MenuPresetItem } from '../../../types/state';
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
 };
+
+const actionNames = new Set(Object.values(ActionCatalog));
+
+const resolveActionName = (actionType: string): ActionName | null =>
+    actionNames.has(actionType as ActionName) ? (actionType as ActionName) : null;
 
 export const createMenuHandlers = (
     _component: UiEventTarget,
@@ -20,7 +26,8 @@ export const createMenuHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } });
+        const action: Action = { action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } };
+        core.dispatch(action);
     },
 
     executeAction: (item: MenuItem) => {
@@ -30,9 +37,15 @@ export const createMenuHandlers = (
         }
 
         if (item.type === 'preset') {
-            core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } });
+            const action: Action = { action: ActionCatalog.PresetsLoad, payload: { name: item.presetName } };
+            core.dispatch(action);
         } else if (item.type === 'action') {
-            core.dispatch({ action: item.actionType as any, payload: item.payload ?? {} });
+            const actionName = resolveActionName(item.actionType);
+            if (!actionName) {
+                return;
+            }
+            const action: Action = { action: actionName, payload: item.payload ?? {} };
+            core.dispatch(action);
         }
     },
 
@@ -41,7 +54,8 @@ export const createMenuHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.MenuReorderItems, payload: { draggedId, targetId } });
+        const action: Action = { action: ActionCatalog.MenuReorderItems, payload: { draggedId, targetId } };
+        core.dispatch(action);
     },
 
     updateConfig: (config: MenuConfig) => {
@@ -49,7 +63,8 @@ export const createMenuHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.MenuUpdateConfig, payload: { config } });
+        const action: Action = { action: ActionCatalog.MenuUpdateConfig, payload: { config } };
+        core.dispatch(action);
     },
 
     hydrateMenu: () => {
@@ -57,6 +72,7 @@ export const createMenuHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.EffectsMenuHydrate, payload: {} });
+        const action: Action = { action: ActionCatalog.EffectsMenuHydrate, payload: {} };
+        core.dispatch(action);
     },
 });

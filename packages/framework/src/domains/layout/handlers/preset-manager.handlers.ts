@@ -1,6 +1,7 @@
 import type { CoreContext } from '../../../../nxt/runtime/context/core-context';
-import type { UIState } from '../../../types/state';
+import type { Action } from '../../../../nxt/runtime/actions/action';
 import { ActionCatalog } from '../../../../nxt/runtime/actions/action-catalog';
+import type { UIState } from '../../../types/state';
 
 type UiEventTarget = {
   dispatchEvent: (event: Event) => boolean;
@@ -19,7 +20,8 @@ export const createPresetManagerHandlers = (
         if (!core || !name.trim()) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.PresetsSave, payload: { name: name.trim() } });
+        const action: Action = { action: ActionCatalog.PresetsSave, payload: { name: name.trim() } };
+        core.dispatch(action);
     },
 
     loadPreset: (name: string) => {
@@ -27,7 +29,8 @@ export const createPresetManagerHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.PresetsLoad, payload: { name } });
+        const action: Action = { action: ActionCatalog.PresetsLoad, payload: { name } };
+        core.dispatch(action);
     },
 
     deletePreset: (name: string) => {
@@ -35,7 +38,8 @@ export const createPresetManagerHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.PresetsDelete, payload: { name } });
+        const action: Action = { action: ActionCatalog.PresetsDelete, payload: { name } };
+        core.dispatch(action);
     },
 
     renamePreset: (oldName: string, newName: string) => {
@@ -43,10 +47,11 @@ export const createPresetManagerHandlers = (
         if (!core || !newName.trim()) {
             return;
         }
-        core.dispatch({
+        const action: Action = {
             action: ActionCatalog.PresetsRename,
             payload: { oldName, newName: newName.trim() },
-        });
+        };
+        core.dispatch(action);
     },
 
     toggleDesignMode: (inDesign?: boolean) => {
@@ -54,6 +59,7 @@ export const createPresetManagerHandlers = (
         if (!core) {
             return;
         }
-        core.dispatch({ action: ActionCatalog.LayoutToggleInDesign, payload: { inDesign } });
+        const action: Action = { action: ActionCatalog.LayoutToggleInDesign, payload: { inDesign } };
+        core.dispatch(action);
     },
 });
