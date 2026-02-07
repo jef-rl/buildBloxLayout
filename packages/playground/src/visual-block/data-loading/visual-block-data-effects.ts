@@ -1,3 +1,4 @@
+import type { Action } from '../../../../framework/src/nxt';
 import type { VisualBlockDataDefinitionDTO } from './visual-block-data-dto';
 import type { VisualBlockDataRequestedAction } from './visual-block-data-actions';
 import {
@@ -7,7 +8,7 @@ import {
 
 export interface VisualBlockDataEffectDeps {
   fetchJson: (url: string) => Promise<unknown>;
-  dispatch: (action: { action: string; payload: any }) => void;
+  dispatch: (action: Action<any>) => void;
   buildUrlForSource: (sourceId: string, params?: Record<string, unknown>) => string;
   mapRawToDefinition: (raw: unknown) => VisualBlockDataDefinitionDTO;
   logError?: (message: string, error?: unknown) => void;
